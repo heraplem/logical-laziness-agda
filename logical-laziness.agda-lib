@@ -1,0 +1,3 @@
+name: logical-laziness
+include: .
+depend: standard-library

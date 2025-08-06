@@ -1,3 +1,4 @@
 name: logical-laziness
-include: .
 depend: standard-library
+include: .
+flags: --cubical-compatible --safe -WnoUnsupportedIndexedMatch

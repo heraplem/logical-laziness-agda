@@ -656,6 +656,13 @@ lemma₂ (Demand.`tick t) g outD = lemma₂ t g outD
 lemma₂ (Demand.`lazy t) g outD = {!!}
 lemma₂ (Demand.`force t) g outD = `let (lemma₂ t g (thunk outD)) `in `T-case-thunk (`proj1 (` zeroᵛ)) (` zeroᵛ) `, `proj2 (` zeroᵛ)
 
+-- t : Γ ⊢ α
+-- ⌊ t ⌋ : ⌊ Γ ⌋ ⊢ Tick ⌊ α ⌋
+
+-- If you have a term t : Γ , α ⊢ β
+-- and an evaluation context of shape Γ
+-- and a value of type α
+-- and a demand on β in context Γ , α
 sound : ∀ {Γ α β}
   {g : 𝔼⟦ Γ ⟧ᶜ}
   (a : 𝔼⟦ α ⟧ᵗ)

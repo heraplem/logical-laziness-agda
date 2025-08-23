@@ -6,33 +6,18 @@ open import Agda.Primitive
   renaming ( Set  to Type
            ; Setω to Typeω
            )
+open import Level
+  public
+  using ( Level
+        ; 0ℓ
+        )
+  renaming ( suc to sucℓ
+           ; _⊔_ to _⊔ℓ_
+           )
 
-open import Relation.Nullary
-  public
-  using (contraposition)
-open import Relation.Nullary.Decidable
-  public
-  using ( Dec
-        ; yes
-        ; no
-        )
-module Decidable = Relation.Nullary.Decidable
-open import Relation.Binary
-  public
-  using (DecidableEquality)
-open import Relation.Binary.PropositionalEquality
-  public
-  using ( _≡_
-        ; refl
-        ; cong
-        ; isDecEquivalence
-        )
-open import Relation.Binary.TypeClasses
-  public
-open import Data.Product
-  public
-  using ( _×_
-        ; _,_
-        ; proj₁
-        ; proj₂
-        )
+variable
+  a b c p ℓ ℓ₁ ℓ₂ : Level
+  A : Type a
+  B : Type b
+  C : Type c
+  P : A → Type p

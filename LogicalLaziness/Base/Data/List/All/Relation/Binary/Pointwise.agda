@@ -41,28 +41,19 @@ data Pointwise {a p} {A : Type a} {P : Pred A p} (_∼_ : ∀ {x} → P x → P 
       → Pointwise _∼_ pxs₁ pxs₂
       → Pointwise _∼_ (px₁ ∷ pxs₁) (px₂ ∷ pxs₂)
 
--- lookup : ∀ {P} {pxs₁ pxs₂ : All P xs}
---            {R : ∀ {x} → P x → P x → Type}
---        → Pointwise R pxs₁ pxs₂
---        → (x∈xs : x ∈ xs)
---        → R {x} (All.lookup {P = P} pxs₁ x∈xs) (All.lookup {P = P} pxs₂ x∈xs)
--- lookup (rpx₁px₂ ∷ _)   (here ≡.refl) = rpx₁px₂
--- lookup (_ ∷ rpxs₁pxs₂) (there x∈xs)  = lookup rpxs₁pxs₂ x∈xs
-
 updateAt : (x∈xs : x ∈ xs)
-           {R : ∀ {x} → P x → P x → Type}
+           {_∼_ : ∀ {x} → P x → P x → Type}
            {pxs₁ pxs₂ : All P xs}
            {f₁ f₂ : P x → P x}
-         → ({px₁ px₂ : P x} → R px₁ px₂ → R (f₁ px₁) (f₂ px₂))
-         → Pointwise R pxs₁ pxs₂
-         → Pointwise R (All.updateAt x∈xs f₁ pxs₁) (All.updateAt x∈xs f₂ pxs₂)
-updateAt (here ≡.refl) rfr (rpx₁px₂ ∷ rpxs₁pxs₂) = rfr rpx₁px₂ ∷ rpxs₁pxs₂
-updateAt (there x∈xs)  rfr (rpx₁px₂ ∷ rpxs₁pxs₂) = rpx₁px₂ ∷ updateAt x∈xs rfr rpxs₁pxs₂
+         → ({px₁ px₂ : P x} → px₁ ∼ px₂ → f₁ px₁ ∼ f₂ px₂)
+         → Pointwise _∼_ pxs₁ pxs₂
+         → Pointwise _∼_ (All.updateAt x∈xs f₁ pxs₁) (All.updateAt x∈xs f₂ pxs₂)
+updateAt (here ≡.refl) ∼→f∼f (px₁∼px₂ ∷ pxs₁∼pxs₂) = ∼→f∼f px₁∼px₂ ∷ pxs₁∼pxs₂
+updateAt (there x∈xs)  ∼→f∼f (px₁∼px₂ ∷ pxs₁∼pxs₂) = px₁∼px₂ ∷ updateAt x∈xs ∼→f∼f pxs₁∼pxs₂
 
 private
   variable
-    _∼_ : ∀ {x} → P x → P x → Type ℓ
-    _≤_ : ∀ {x} → P x → P x → Type ℓ
+    _∼_ _≤_ : ∀ {x} → P x → P x → Type ℓ
     _∨_ : ∀ {x} → P x → P x → P x
     ⊥ : ∀ {x} → P x
 
@@ -107,7 +98,7 @@ module _ (≤-minimum : ∀ {x} → Minimum (_≤_ {x}) (⊥ {x})) where
 -- Bundles
 
 module _ (≤-isPreorder : (∀ {x} → IsPreorder _≡_ (_≤_ {x}))) where
-  isPreorder : ∀ {x} → IsPreorder _≡_ (Pointwise (_≤_ {x}) {xs = xs})
+  isPreorder : IsPreorder _≡_ (Pointwise (λ {x} → _≤_ {x}) {xs = xs})
   isPreorder .IsPreorder.isEquivalence =
     ≡.isEquivalence
   isPreorder .IsPreorder.reflexive ≡.refl =
@@ -116,16 +107,21 @@ module _ (≤-isPreorder : (∀ {x} → IsPreorder _≡_ (_≤_ {x}))) where
     transitive (≤-isPreorder .IsPreorder.trans)
 
 module _ (≤-isPartialOrder : (∀ {x} → IsPartialOrder _≡_ (_≤_ {x}))) where
-  isPartialOrder : IsPartialOrder _≡_ (Pointwise (_≤_ {x}) {xs = xs})
+  isPartialOrder : IsPartialOrder _≡_ (Pointwise (λ {x} → _≤_ {x}) {xs = xs})
   isPartialOrder .IsPartialOrder.isPreorder =
-    isPreorder (λ {x} → ≤-isPartialOrder {x} .IsPartialOrder.isPreorder)
+    isPreorder (≤-isPartialOrder .IsPartialOrder.isPreorder)
   isPartialOrder .IsPartialOrder.antisym =
     antisymmetric (≤-isPartialOrder .IsPartialOrder.antisym)
 
 module _ (≤-isJoinSemilattice : (∀ {x} → IsJoinSemilattice _≡_ (_≤_ {x}) (_∨_ {x}))) where
-  isJoinSemilattice : IsJoinSemilattice _≡_ (Pointwise (_≤_ {x}) {xs = xs}) (curry (All.zipWith (uncurry _∨_)))
+  isJoinSemilattice :
+    IsJoinSemilattice
+      _≡_
+      (Pointwise (λ {x} → _≤_ {x}) {xs = xs})
+      (curry (All.zipWith (uncurry _∨_)))
   isJoinSemilattice .IsJoinSemilattice.isPartialOrder =
-    isPartialOrder (λ {x} → ≤-isJoinSemilattice {x} .IsJoinSemilattice.isPartialOrder)
+    isPartialOrder
+      (≤-isJoinSemilattice .IsJoinSemilattice.isPartialOrder)
   isJoinSemilattice .IsJoinSemilattice.supremum =
     supremum (≤-isJoinSemilattice .IsJoinSemilattice.supremum)
 
@@ -133,10 +129,10 @@ module _ {⊥ : ∀ {x} → P x} (≤-isBoundedJoinSemilattice : (∀ {x} → Is
   isBoundedJoinSemilattice :
     IsBoundedJoinSemilattice
       _≡_
-      (Pointwise (_≤_ {x}) {xs = xs})
+      (Pointwise (λ {x} → _≤_ {x}) {xs = xs})
       (curry (All.zipWith (uncurry _∨_)))
       (All.universal (λ _ → ⊥) _)
   isBoundedJoinSemilattice .IsBoundedJoinSemilattice.isJoinSemilattice =
-    isJoinSemilattice (λ {x} → ≤-isBoundedJoinSemilattice {x} .IsBoundedJoinSemilattice.isJoinSemilattice)
+    isJoinSemilattice (≤-isBoundedJoinSemilattice .IsBoundedJoinSemilattice.isJoinSemilattice)
   isBoundedJoinSemilattice .IsBoundedJoinSemilattice.minimum =
     minimum (≤-isBoundedJoinSemilattice .IsBoundedJoinSemilattice.minimum)

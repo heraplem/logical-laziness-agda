@@ -41,4 +41,4 @@ module _ {ℓ : Level} where
       }
 
 tick : Tick ⊤
-tick = (tt , 1)
+tick = tt , 1

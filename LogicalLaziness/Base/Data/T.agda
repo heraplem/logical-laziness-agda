@@ -36,6 +36,10 @@ private
 -- Basic operations --
 ----------------------
 
+rec : (A → B) → B → T A → B
+rec t u undefined = u
+rec t u (thunk x) = t x
+
 map : (A → B) → T A → T B
 map f undefined = undefined
 map f (thunk x) = thunk (f x)

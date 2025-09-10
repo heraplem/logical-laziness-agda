@@ -42,5 +42,5 @@ pattern zeroᵛ  = here refl
 pattern sucᵛ p = there p
 
 -- XXX This is codepoint 0x2e34.
-infixl 4 _⸴_
+infixl 5 _⸴_
 pattern _⸴_ Γ τ = τ ∷ Γ

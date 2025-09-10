@@ -1,5 +1,6 @@
 module LogicalLaziness.Language.Explicit.Semantics.Clairvoyant where
 
+open import Relation.Binary
 open import Data.Bool
   hiding (T)
 open import Data.Product
@@ -8,8 +9,13 @@ open import Data.List.Relation.Unary.All
   as All
 
 open import LogicalLaziness.Base
+open import LogicalLaziness.Base.Data.List.All.Relation.Binary.Pointwise
+  renaming (Pointwise to AllPointwise)
 open import LogicalLaziness.Base.Data.T
+  hiding (All)
+open import LogicalLaziness.Base.Data.List.Membership.Propositional
 open import LogicalLaziness.Base.Data.ListA
+  as ListA
 open import LogicalLaziness.Language.Explicit
 open import LogicalLaziness.Language.Explicit.Semantics.Eval
   as 𝔼
@@ -31,6 +37,7 @@ private
   variable
     Γ : Ctx
     α β τ : Ty
+    γ₁ γ₂ : ⟦ Γ ⟧ᶜ
 
 mutual
 
@@ -109,3 +116,52 @@ mutual
       ∀ {g as b c}
       → ⟦foldr t₁ , t₂ ⟧ᵉ g as ∋ (b , c)
       → ⟦foldr′ t₁ , t₂ ⟧ᵉ g (thunk as) ∋ (thunk b , c)
+
+data ⟦_⟧[_≲ᵉ_] : (α : Ty) → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type where
+  undefined : ∀ {v}
+            → ⟦ `T α         ⟧[ undefined ≲ᵉ v         ]
+  thunk     : ∀ {v v′}
+            → ⟦ α            ⟧[ v         ≲ᵉ v′        ]
+            → ⟦ `T α         ⟧[ thunk v   ≲ᵉ thunk v′  ]
+  false     : ⟦ `Bool        ⟧[ false     ≲ᵉ false     ]
+  true      : ⟦ `Bool        ⟧[ true      ≲ᵉ true      ]
+  []        : ⟦ `List α      ⟧[ []        ≲ᵉ []        ]
+  _∷_       : ∀ {v₁ v₁′ v₂ v₂′}
+            → ⟦ `T α         ⟧[ v₁        ≲ᵉ v₁′       ]
+            → ⟦ `T (`List α) ⟧[ v₂        ≲ᵉ v₂′       ]
+            → ⟦ `List α      ⟧[ v₁ ∷ v₂   ≲ᵉ v₁′ ∷ v₂′ ]
+
+_≲ᵉ_ : {α : Ty} → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
+v₁ ≲ᵉ v₂ = ⟦ _ ⟧[ v₁ ≲ᵉ v₂ ]
+
+≲ᵉ-refl : Reflexive ⟦ α ⟧[_≲ᵉ_]
+≲ᵉ-refl {α = `Bool} {x = false} = false
+≲ᵉ-refl {α = `Bool} {x = true} = true
+≲ᵉ-refl {α = `T α} {x = undefined} = undefined
+≲ᵉ-refl {α = `T α} {x = thunk x} = thunk ≲ᵉ-refl
+≲ᵉ-refl {α = `List α} = ListA.ind (λ x → ⟦ `List α ⟧[ x ≲ᵉ x ]) (λ{ undefined _ undefined → undefined ∷ undefined ; undefined _ (thunk x) → undefined ∷ thunk x ; (thunk x) _ undefined → thunk ≲ᵉ-refl ∷ undefined ; (thunk x) _ (thunk x₁) → thunk ≲ᵉ-refl ∷ thunk x₁ }) [] _
+
+⟦_⟧[_≲_]ᶜ : (Γ : Ctx) → ⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ → Type
+⟦ Γ ⟧[ γ₁ ≲ γ₂ ]ᶜ = AllPointwise ⟦ _ ⟧[_≲ᵉ_] γ₁ γ₂
+
+-- ≲-refl : Reflexive ⟦ Γ ⟧[_≲_]ᶜ
+-- ≲-refl = {!!}
+
+-- ctx-mono-var : (x : α ∈ᴸ Γ)
+--              → ⟦ Γ ⟧[ γ₁ ≲ γ₂ ]ᶜ
+--              → ⟦ ` x ⟧ᵉ γ₂ ∋
+
+-- ctx-mono : {t : Γ ⊢ α} {v : ⟦ α ⟧ᵗ} {c : ℕ} → ⟦ Γ ⟧[ γ₁ ≲ γ₂ ]ᶜ → ⟦ t ⟧ᵉ γ₁ ∋ (v , c) → ⟦ t ⟧ᵉ γ₂ ∋ (v , c)
+-- ctx-mono γ₁≲γ₂ (` x) = {!` ?!}
+-- ctx-mono γ₁≲γ₂ (`let φ₁ `in φ₂) = `let ctx-mono γ₁≲γ₂ φ₁ `in ctx-mono (γ₁≲γ₂ ⸴ ≲ᵉ-refl) φ₂
+-- ctx-mono γ₁≲γ₂ `false = `false
+-- ctx-mono γ₁≲γ₂ `true = `true
+-- ctx-mono γ₁≲γ₂ (`if φ₁ `else φ₂) = `if ctx-mono γ₁≲γ₂ φ₁ `else ctx-mono γ₁≲γ₂ φ₂
+-- ctx-mono γ₁≲γ₂ (`if φ₁ `then φ₂) = `if ctx-mono γ₁≲γ₂ φ₁ `then ctx-mono γ₁≲γ₂ φ₂
+-- ctx-mono γ₁≲γ₂ `[] = `[]
+-- ctx-mono γ₁≲γ₂ (φ₁ `∷ φ₂) = ctx-mono γ₁≲γ₂ φ₁ `∷ ctx-mono γ₁≲γ₂ φ₂
+-- ctx-mono γ₁≲γ₂ (`foldr φ₁ φ₂) = {!!}
+-- ctx-mono γ₁≲γ₂ (`tick φ) = `tick (ctx-mono γ₁≲γ₂ φ)
+-- ctx-mono γ₁≲γ₂ `lazy-undefined = `lazy-undefined
+-- ctx-mono γ₁≲γ₂ (`lazy-thunk φ) = `lazy-thunk (ctx-mono γ₁≲γ₂ φ)
+-- ctx-mono γ₁≲γ₂ (`force φ) = `force (ctx-mono γ₁≲γ₂ φ)

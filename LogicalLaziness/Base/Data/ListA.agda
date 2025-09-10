@@ -35,6 +35,12 @@ private
 -- Basic operations --
 ----------------------
 
+module _ (P : ListA A → Type p) (c : (xT : T A) (xsT : T (ListA A)) → T.All P xsT → P (xT ∷ xsT)) (n : P []) where
+  ind : (xs : ListA A) → P xs
+  ind []               = n
+  ind (xT ∷ undefined) = c xT undefined undefined
+  ind (xT ∷ thunk x  ) = c xT (thunk x) (thunk (ind x))
+
 module _ (f : T A → T B → B) (e : B) where
   foldrA : ListA A → B
   foldrA []         = e

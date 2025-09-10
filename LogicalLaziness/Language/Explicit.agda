@@ -48,7 +48,7 @@ infixr 1.55  _`∷_
 infix  1.505 `if_`then_`else_
 infix  1.50  `let_`in_
 
-infix 3 _⊢_
+infix 2 _⊢_
 data _⊢_ : Ctx → Ty → Type where
   `_               : α ∈ᴸ Γ
                    → Γ ⊢ α
@@ -73,7 +73,8 @@ data _⊢_ : Ctx → Ty → Type where
 
   `foldr           : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂
                    → Γ ⊢ α₂
-                   → Γ ⊢ `List α₁ → Γ ⊢ α₂
+                   → Γ ⊢ `List α₁
+                   → Γ ⊢ α₂
 
   `tick            : Γ ⊢ α
                    → Γ ⊢ α
@@ -88,7 +89,7 @@ data _⊢_ : Ctx → Ty → Type where
 --   variable
 --     t : Γ ⊢ α
 
--- Tm = _⊢_
+Tm = _⊢_
 
 -- -- 𝔼⟦_⟧ᵗ : Ty → Type
 -- -- 𝔼⟦ `Bool   ⟧ᵗ = Bool

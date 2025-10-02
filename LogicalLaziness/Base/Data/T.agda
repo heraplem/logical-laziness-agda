@@ -30,7 +30,7 @@ data T (A : Type a) : Type a where
 
 private
   variable
-    yT : T A
+    xT yT : T A
 
 ----------------------
 -- Basic operations --
@@ -79,6 +79,10 @@ instance
 data All {a p} {A : Type a} (P : Pred A p) : Pred (T A) (a ⊔ℓ p) where
   undefined :       All P undefined
   thunk     : P x → All P (thunk x)
+
+All-const : All (λ _ → B) xT → T B
+All-const undefined = undefined
+All-const (thunk b) = thunk b
 
 ------------------------------
 -- Lifting binary relations --

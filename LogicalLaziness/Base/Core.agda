@@ -16,8 +16,7 @@ open import Level
            )
 
 variable
-  a b c p ℓ ℓ₁ ℓ₂ : Level
+  a b p ℓ ℓ₁ ℓ₂ : Level
   A : Type a
   B : Type b
-  C : Type c
   P : A → Type p

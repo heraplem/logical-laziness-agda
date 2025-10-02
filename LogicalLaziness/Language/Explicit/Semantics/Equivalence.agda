@@ -79,12 +79,12 @@ mapToList {pxs = px ∷ pxs} η (px₁ ∷ qpxs) = η _ px px₁ ∷ mapToList �
 ≤⇒≲ (d₁₁≤d₂₁ ∷ d₁₂≤d₂₂) = ≤⇒≲ d₁₁≤d₂₁ ∷ ≤⇒≲ d₁₂≤d₂₂
 
 ⊔-≲-l : {α : Ty} {v : 𝔼.⟦ α ⟧ᵗ} (d₁ d₂ : 𝔻.⟦ α ⟧≺ᵉ v) → ⌊ d₁ ⌋ᵉ ≲ᵉ ⌊ d₁ ⊔ᵉ d₂ ⌋ᵉ
-⊔-≲-l false false = false
-⊔-≲-l true true = true
-⊔-≲-l undefined d₂ = undefined
-⊔-≲-l (thunk d₁₁) undefined = ≲ᵉ-refl
+⊔-≲-l false false             = false
+⊔-≲-l true true               = true
+⊔-≲-l undefined d₂            = undefined
+⊔-≲-l (thunk d₁₁) undefined   = ≲ᵉ-refl
 ⊔-≲-l (thunk d₁₁) (thunk d₂₁) = thunk (⊔-≲-l d₁₁ d₂₁)
-⊔-≲-l [] [] = []
+⊔-≲-l [] []                   = []
 ⊔-≲-l (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = ⊔-≲-l d₁₁ d₂₁ ∷ ⊔-≲-l d₁₂ d₂₂
 
 ⟦_⟧⌊_⌋ᶜ : (Γ : Ctx) {γ : 𝔼.⟦ Γ ⟧ᶜ} → 𝔻.⟦ Γ ⟧≺ᶜ γ → ℂ.⟦ Γ ⟧ᶜ
@@ -99,6 +99,56 @@ mapToList {pxs = px ∷ pxs} η (px₁ ∷ qpxs) = η _ px px₁ ∷ mapToList �
 --                        → ℂ.⟦ t ⟧ χ ∋ a
 --                        → a ≺ᶜ 𝔼.⟦ t ⟧ γ
 
+postulate
+  cost-existence :
+    ∀ {Γ α} (M : Γ ⊢ α)
+      (g : 𝔼.⟦ Γ ⟧ᶜ) (a₁ : 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ M ⟧ᵉ g)
+    → let (g₁ , n) = 𝔻.⟦ M ⟧ᵉ g a₁
+      in (g₂ : 𝔻.⟦ Γ ⟧≺ᶜ g)
+       → g₁ ≤ᶜ g₂
+       → Σ[ a₂ ∈ 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ M ⟧ᵉ g ] (a₁ ≤ᵉ a₂ × ℂ.⟦ M ⟧ᵉ ⌊ g₂ ⌋ᶜ ∋ (⌊ a₂ ⌋ᵉ , n))
+
+  cost-minimality :
+    ∀ {Γ α}
+      {t : Γ ⊢ α}
+      (γ : 𝔼.⟦ Γ ⟧ᶜ)
+      (a₁ : 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ t ⟧ᵉ γ)
+      {δ₂ : 𝔻.⟦ Γ ⟧≺ᶜ γ}
+      {a₂ : ℂ.⟦ α ⟧ᵗ}
+      {c₂ : ℕ}
+    → ℂ.⟦ t ⟧ᵉ ⌊ δ₂ ⌋ᶜ ∋ (a₂ , c₂)
+    → let (δ₁ , c₁) = 𝔻.⟦ t ⟧ᵉ γ a₁
+      in (δ₁ , c₁) ≤ᵐ (δ₂ , c₂)
+-- cost-minimality γ a₁ (ℂ.` x) = {!!} , z≤n
+-- cost-minimality γ a₁ (ℂ.`let x `in x₁) = {!!}
+-- cost-minimality γ a₁ `false = ⊥ᵐ-minimum _
+-- cost-minimality γ a₁ `true = ⊥ᵐ-minimum _
+-- cost-minimality {t = t₁} γ a₁ (ℂ.`if φ `else φ₁) = {!!}
+-- cost-minimality γ a₁ (ℂ.`if φ `then φ₁) = {!!}
+-- cost-minimality γ a₁ `[] = ⊥ᵐ-minimum _
+-- cost-minimality γ a₁ (x `∷ x₁) = {!!}
+-- cost-minimality γ a₁ (ℂ.`foldr x x₁) = {!!}
+-- cost-minimality γ a₁ (`tick x) = cost-minimality γ a₁ x .proj₁ , s≤s (cost-minimality γ a₁ x .proj₂)
+-- cost-minimality γ (thunk a₁) `lazy-undefined = {!`lazy-undefined!}
+-- cost-minimality γ undefined `lazy-undefined = ⊥ᵐ-minimum _
+-- cost-minimality γ (thunk a₁) (`lazy-thunk x) = cost-minimality γ a₁ x
+-- cost-minimality γ undefined (`lazy-thunk x) = ⊥ᵐ-minimum _
+-- cost-minimality γ a₁ (`force x) = cost-minimality γ (thunk a₁) x
+-- -- ℂ.⟦ t ⟧ᵉ ⌊ inDs ⌋ᶜ ∋ (⌊ outD ⌋ᵉ , c)
+-- -- theorem₁ (` x) γ outD = {!!}
+-- -- theorem₁ (`let t₁ `in t₂) γ outD = {!!}
+-- -- theorem₁ `false γ false = `false
+-- -- theorem₁ `true γ true = `true
+-- -- theorem₁ (`if t₁ `then t₂ `else t₃) γ outD = {!!}
+-- -- theorem₁ `[] γ [] = `[]
+-- -- theorem₁ (t₁ `∷ t₂) γ (outD₁ ∷ outD₂) = {!theorem₁ t₁ γ outD₁!}
+-- -- theorem₁ (`foldr t t₁ t₂) γ outD = {!!}
+-- -- theorem₁ (`tick t) γ outD = `tick (theorem₁ t γ outD)
+-- -- theorem₁ (`lazy t) γ undefined = `lazy-undefined
+-- -- theorem₁ (`lazy t) γ (thunk outD) = `lazy-thunk (theorem₁ t γ outD)
+-- -- theorem₁ (`force t) γ outD = `force (theorem₁ t γ (thunk outD))
+
+
 
 theorem₁′ :
   ∀ {Γ α}
@@ -108,55 +158,6 @@ theorem₁′ :
     let (inDs , c) = 𝔻.⟦ M ⟧ᵉ g outD
     in ℂ.⟦ M ⟧ᵉ ⌊ inDs ⌋ᶜ ∋ (⌊ outD ⌋ᵉ , c)
 theorem₁′ = {!!}
-
-cost-existence :
-  ∀ {Γ α} (M : Γ ⊢ α)
-    (g : 𝔼.⟦ Γ ⟧ᶜ) (a₁ : 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ M ⟧ᵉ g)
-  → let (g₁ , n) = 𝔻.⟦ M ⟧ᵉ g a₁
-    in (g₂ : 𝔻.⟦ Γ ⟧≺ᶜ g)
-     → g₁ ≤ᶜ g₂
-     → Σ[ a₂ ∈ 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ M ⟧ᵉ g ] (a₁ ≤ᵉ a₂ × ℂ.⟦ M ⟧ᵉ ⌊ g₂ ⌋ᶜ ∋ (⌊ a₂ ⌋ᵉ , n))
-cost-existence = {!!}
-
-cost-minimality :
-  ∀ {Γ α}
-    {t : Γ ⊢ α}
-    (γ : 𝔼.⟦ Γ ⟧ᶜ)
-    (a₁ : 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ t ⟧ᵉ γ)
-    {δ₂ : 𝔻.⟦ Γ ⟧≺ᶜ γ}
-    {a₂ : ℂ.⟦ α ⟧ᵗ}
-    {c₂ : ℕ}
-  → ℂ.⟦ t ⟧ᵉ ⌊ δ₂ ⌋ᶜ ∋ (a₂ , c₂)
-  → let (δ₁ , c₁) = 𝔻.⟦ t ⟧ᵉ γ a₁
-    in (δ₁ , c₁) ≤ᵐ (δ₂ , c₂)
-cost-minimality γ a₁ (ℂ.` x) = {!!} , z≤n
-cost-minimality γ a₁ (ℂ.`let x `in x₁) = {!!}
-cost-minimality γ a₁ `false = ⊥ᵐ-minimum _
-cost-minimality γ a₁ `true = ⊥ᵐ-minimum _
-cost-minimality {t = t₁} γ a₁ (ℂ.`if φ `else φ₁) = {!!}
-cost-minimality γ a₁ (ℂ.`if φ `then φ₁) = {!!}
-cost-minimality γ a₁ `[] = ⊥ᵐ-minimum _
-cost-minimality γ a₁ (x `∷ x₁) = {!!}
-cost-minimality γ a₁ (ℂ.`foldr x x₁) = {!!}
-cost-minimality γ a₁ (`tick x) = cost-minimality γ a₁ x .proj₁ , s≤s (cost-minimality γ a₁ x .proj₂)
-cost-minimality γ (thunk a₁) `lazy-undefined = {!`lazy-undefined!}
-cost-minimality γ undefined `lazy-undefined = ⊥ᵐ-minimum _
-cost-minimality γ (thunk a₁) (`lazy-thunk x) = cost-minimality γ a₁ x
-cost-minimality γ undefined (`lazy-thunk x) = ⊥ᵐ-minimum _
-cost-minimality γ a₁ (`force x) = cost-minimality γ (thunk a₁) x
--- ℂ.⟦ t ⟧ᵉ ⌊ inDs ⌋ᶜ ∋ (⌊ outD ⌋ᵉ , c)
--- theorem₁ (` x) γ outD = {!!}
--- theorem₁ (`let t₁ `in t₂) γ outD = {!!}
--- theorem₁ `false γ false = `false
--- theorem₁ `true γ true = `true
--- theorem₁ (`if t₁ `then t₂ `else t₃) γ outD = {!!}
--- theorem₁ `[] γ [] = `[]
--- theorem₁ (t₁ `∷ t₂) γ (outD₁ ∷ outD₂) = {!theorem₁ t₁ γ outD₁!}
--- theorem₁ (`foldr t t₁ t₂) γ outD = {!!}
--- theorem₁ (`tick t) γ outD = `tick (theorem₁ t γ outD)
--- theorem₁ (`lazy t) γ undefined = `lazy-undefined
--- theorem₁ (`lazy t) γ (thunk outD) = `lazy-thunk (theorem₁ t γ outD)
--- theorem₁ (`force t) γ outD = `force (theorem₁ t γ (thunk outD))
 
 
 

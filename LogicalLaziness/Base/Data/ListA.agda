@@ -43,9 +43,8 @@ module _ (P : ListA A → Type p) (n : P []) (c : (xT : T A) (xsT : T (ListA A))
   ind (xT ∷ undefined) = c xT undefined undefined
   ind (xT ∷ thunk x  ) = c xT (thunk x) (thunk (ind x))
 
-module _ (n : B) (c : T A → T B → B) where
-  rec : ListA A → B
-  rec = ind (λ _ → B) n (λ aT _ bT → c aT (T.All-const bT))
+rec : B → (T A → T B → B) → ListA A → B
+rec n c = ind _ n (λ aT _ bT → c aT (T.All-const bT))
 
 foldrA : (T A → T B → B) → B → ListA A → B
 foldrA f e = rec e f

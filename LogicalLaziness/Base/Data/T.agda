@@ -36,19 +36,22 @@ private
 -- Basic operations --
 ----------------------
 
-rec : (A → B) → B → T A → B
-rec t u undefined = u
-rec t u (thunk x) = t x
+module _ (t : A → B) (u : B) where
+  rec : T A → B
+  rec undefined = u
+  rec (thunk x) = t x
 
-map : (A → B) → T A → T B
-map f undefined = undefined
-map f (thunk x) = thunk (f x)
+module _ (f : A → B) where
+  map : T A → T B
+  map undefined = undefined
+  map (thunk x) = thunk (f x)
 
-unionWith : Op₂ A → Op₂ (T A)
-unionWith _·_ undefined undefined = undefined
-unionWith _·_ undefined (thunk y) = thunk y
-unionWith _·_ (thunk x) undefined = thunk x
-unionWith _·_ (thunk x) (thunk y) = thunk (x · y)
+module _ (_·_ : Op₂ A) where
+  unionWith : Op₂ (T A)
+  unionWith undefined undefined = undefined
+  unionWith undefined (thunk y) = thunk y
+  unionWith (thunk x) undefined = thunk x
+  unionWith (thunk x) (thunk y) = thunk (x · y)
 
 ----------------------------
 -- Properties of equality --

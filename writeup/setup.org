@@ -1,0 +1,84 @@
+#+latex_header: \usepackage{ebproof}
+#+latex_header: \usepackage{mathtools}
+#+latex_header: \usepackage{quiver}
+#+latex_header: \usepackage{simplebnf}
+#+latex_header: \usepackage{stmaryrd}
+#+latex_header: \usepackage{tikz-cd}
+
+#+latex_header: \usepackage{xcolor}
+#+latex_header: \newcommand{\N}{\mathbb{N}}
+#+latex_header: \newcommand{\Z}{\mathbb{Z}}
+#+latex_header: \newcommand{\Q}{\mathbb{Q}}
+#+latex_header: \newcommand{\R}{\mathbb{R}}
+#+latex_header: \newcommand{\C}{\mathbb{C}}
+
+#+latex_header: \DeclarePairedDelimiter{\braces}{\lbrace}{\rbrace}
+#+latex_header: \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+#+latex_header: \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+#+latex_header: \DeclarePairedDelimiter{\parens}{\lparen}{\rparen}
+#+latex_header: \DeclarePairedDelimiter{\verts}{\lvert}{\rvert}
+#+latex_header: \DeclarePairedDelimiter{\bbrackets}{\llbracket}{\rrbracket}
+
+#+latex_header: \DeclareMathOperator{\dom}{dom}
+#+latex_header: \DeclareMathOperator{\lub}{lub}
+#+latex_header: \DeclareMathOperator{\glb}{glb}
+
+#+latex_header: \newtheorem{lemma}{Lemma}
+#+latex_header: \newtheorem{theorem}{Theorem}
+#+latex_header: \newcommand{\set}[1]{\braces*{#1}}
+#+latex_header: \newcommand{\setbuilder}[2]{\set{{#1} \mid {#2}}}
+#+latex_header: \newcommand{\LB}{\mathbf{B}}
+#+latex_header: \newcommand{\LL}{\mathbf{L}}
+#+latex_header: \newcommand{\tlet}[3]{\texttt{let\ \({#1}\)\ =\ \({#2}\)\ in\ \({#3}\)}}
+#+latex_header: \newcommand{\TBool}{\texttt{Bool}}
+#+latex_header: \newcommand{\ttrue}{\texttt{true}}
+#+latex_header: \newcommand{\tfalse}{\texttt{false}}
+#+latex_header: \newcommand{\teq}[2]{\texttt{\(#1\)\ ==\ \(#2\)}}
+#+latex_header: \newcommand{\tle}[2]{\texttt{\(#1\)\ <=\ \(#2\)}}
+#+latex_header: \newcommand{\tif}[3]{\texttt{if\ \({#1}\)\ then\ \({#2}\)\ else\ \({#3}\)}}
+#+latex_header: \newcommand{\sbool}{\set{\strue, \sfalse}}
+#+latex_header: \newcommand{\strue}{\text{true}}
+#+latex_header: \newcommand{\sfalse}{\text{false}}
+#+latex_header: \newcommand{\sle}[2]{{#1} \leqslant {#2}}
+#+latex_header: \newcommand{\snle}[2]{{#1} \nleqslant {#2}}
+#+latex_header: \newcommand{\TList}[1]{\texttt{List \({#1}\)}}
+#+latex_header: \newcommand{\tnil}{\texttt{[]}}
+#+latex_header: \newcommand{\tcons}[2]{\texttt{\(#1\)\ ::\ \(#2\)}}
+#+latex_header: \newcommand{\tfoldr}[5]{\texttt{foldr(\(\lambda{#1}{#2}\).\ \(#3\),\ \(#4\),\ \(#5\))}}
+#+latex_header: \newcommand{\slist}[1]{{#1}^*}
+#+latex_header: \newcommand{\snil}{\varepsilon}
+#+latex_header: \newcommand{\scons}[2]{(#1, #2)}
+#+latex_header: \newcommand{\sfoldr}[3]{\text{foldr}(#1, #2, #3)}
+#+latex_header: \newcommand{\TThunk}[1]{\texttt{Thunk\ \(#1\)}}
+#+latex_header: \newcommand{\tlazy}[1]{\texttt{lazy\ \(#1\)}}
+#+latex_header: \newcommand{\tforce}[1]{\texttt{force\ \({#1}\)}}
+#+latex_header: \newcommand{\tthunk}[1]{\texttt{thunk\ \({#1}\)}}
+#+latex_header: \newcommand{\tundefined}{\texttt{undefined}}
+#+latex_header: \newcommand{\tcase}[4]{\texttt{case \(#1\) of thunk \(#2\) => \(#3\); undefined => \(#4\)}}
+#+latex_header: \newcommand{\sthunk}[1]{\text{thunk\ \({#1}\)}}
+#+latex_header: \newcommand{\sundefined}{\bot}
+#+latex_header: \newcommand{\ttick}[1]{\texttt{tick\ \({#1}\)}}
+#+latex_header: \newcommand{\BE}{\mathbb{E}}
+#+latex_header: \newcommand{\Eval}[1]{\BE\bbrackets{#1}}
+#+latex_header: \newcommand{\Approx}[1]{\mathbb{A}\bbrackets{#1}}
+#+latex_header: \newcommand{\BD}{\mathbb{D}}
+#+latex_header: \newcommand{\Demand}[1]{\BD\bbrackets{#1}}
+#+latex_header: \newcommand{\BC}{\mathbb{C}}
+#+latex_header: \newcommand{\Clair}[1]{\C\bbrackets{#1}}
+#+latex_header: \newcommand{\CV}[4]{{{#1} \mathbin{;} {#2}} \Downarrow^\BC_{#3} {#4}}
+#+latex_header: \newcommand{\BL}{\mathbb{L}}
+#+latex_header: \newcommand{\Log}[1]{\BL\bbrackets{#1}}
+#+latex_header: \newcommand{\TProd}[2]{\texttt{\(#1\)\ *\ \(#2\)}}
+#+latex_header: \newcommand{\tpair}[2]{\texttt{(\(#1\),\ \(#2\))}}
+#+latex_header: \newcommand{\TNat}{\texttt{Nat}}
+#+latex_header: \newcommand{\tadd}[2]{\texttt{\(#1\)\ +\ \(#2\)}}
+#+latex_header: \newcommand{\tchoose}[2]{\texttt{\(#1\)\ ?\ \(#2\)}}
+#+latex_header: \newcommand{\tfree}[1]{\texttt{free\ \(#1\)}}
+#+latex_header: \newcommand{\tfail}{\texttt{fail}}
+#+latex_header: \newcommand{\LV}[3]{{{#1} \mathbin{;} {#2}} \Downarrow^\BL {#3}}
+#+latex_header: \newcommand{\TM}[1]{\texttt{M \(#1\)}}
+#+latex_header: \newcommand{\treturn}[1]{\texttt{return \(#1\)}}
+# #+latex_header: \newcommand{\tbind}[2]{\texttt{\(#1)\ \> \(#1\)}}
+#+latex_header: \usepackage{listings}
+#+latex_header: \lstdefinestyle{lststyle}{basicstyle=\ttfamily}
+#+latex_header: \lstset{style=lststyle}

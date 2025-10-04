@@ -1,0 +1,896 @@
+#+setupfile: setup.org
+
+* the base language \( \LB \)
+
+** syntax
+
+\begin{center}
+\begin{bnf}
+\( T \) ::=
+| \TBool
+| \TList{T}
+| \TThunk{T}
+;;
+\end{bnf}
+\end{center}
+
+\begin{center}
+\begin{bnf}
+$t$ ::=
+| $x$
+| \tlet{x}{t}{t}
+| \ttrue
+| \tfalse
+| \tif{t}{t}{t}
+| \tnil
+| \tcons{t}{t}
+| \tfoldr{x}{x}{t}{t}{t}
+| \tlazy{t}
+| \tforce{t}
+| \ttick{t}
+;;
+\end{bnf}
+\end{center}
+
+The inclusion of explicit \( \texttt{lazy} \), \( \texttt{force} \), and \( \texttt{tick} \) terms decouples our results from any particular evaluation or cost model.
+
+** types
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma(x) = T}
+  \infer1{\Gamma \vdash^\LB x : T}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : T_1}
+  \hypo{\Gamma, x : T \vdash^\LB t_2 : T_2}
+  \infer2{\Gamma \vdash^\LB \texttt{let $x$ = $t_1$ in $t_2$} : T_2}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \ttrue : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \tfalse : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : \TBool}
+  \hypo{\Gamma \vdash^\LB t_2 : T}
+  \hypo{\Gamma \vdash^\LB t_3 : T}
+  \infer3{\Gamma \vdash^\LB \tif{t_1}{t_2}{t_3} : T}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \tnil : \TList{T}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : \TThunk{T}}
+  \hypo{\Gamma \vdash^\LB t_2 : \TThunk{(\TList{T})}}
+  \infer2{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{T}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma, x_1 : \TThunk{T}, x_2 : \TThunk{B} \vdash^\LB t_1 : B}
+  \hypo{\Gamma \vdash^\LB t_2 : B}
+  \hypo{\Gamma \vdash^\LB t_3 : \TList{T}}
+  \infer3{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : T}
+  \infer1{\Gamma \vdash^\LB \tlazy{t} : \TThunk{T}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : \TThunk{T}}
+  \infer1{\Gamma \vdash^\LB \tforce{t} : T}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : T}
+  \infer1{\Gamma \vdash^\LB \ttick{t} : T}
+\end{prooftree}
+\end{center}
+
+** exact values and approximations
+
+Each type \( T \) comes equipped with a set of /exact values/ \( \Eval{T} \) and a set of /approximations/ \( \Approx{T} \).
+
+\begin{align*}
+  \Eval{\TBool} &= \sbool \\
+  \Eval{\TThunk{T}} &= \Eval{T} \\
+  \Eval{\TList{T}} &= \set{\varepsilon} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{T}, v_2 \in \Eval{\TList{T}}}
+\end{align*}
+
+\begin{align*}
+  \Approx{\TBool} &= \sbool \\
+  \Approx{\TThunk{T}} &= \set{\sundefined} \cup \setbuilder{\sthunk{d}}{d \in \Approx{T}} \\
+  \Approx{\TList{T}} &= \set{\snil} \cup \setbuilder{\scons{v^A_1}{v^A_2}}{v^A_1 \in \Approx{\TThunk{T}}, v^A_2 \in \Approx{\TThunk{(\TList{T})}}}
+\end{align*}
+
+There is an /approximation/ relation \( v^A \prec_T v \) between exact values \( v \in \Eval{T} \) and approximations \( v^A \in \Approx{T} \).
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\strue \prec_\TBool \strue}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\sfalse \prec_\TBool \sfalse}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\sundefined \prec_{\TThunk{T}} v}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{v^A \prec_T v}
+  \infer1{\sthunk{v^A} \prec_{\TThunk{T}} v}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\snil \prec_{\TList{T}} \snil}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{v^A_1 \prec_{\TThunk{T}} v_1}
+  \hypo{v^A_2 \prec_{\TThunk{(\TList{T})}} v_2}
+  \infer2{\scons{v^A_1}{v^A_2} \prec_{\TList{T}} \scons{v_1}{v_2}}
+\end{prooftree}
+\end{center}
+
+There is also a /definedness/ ordering \( a_1 \le_T a_2 \) between approximations \( a_1, a_2 \in \Approx{T} \).
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\strue \le_{\TBool} \strue}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\sfalse \le_{\TBool} \sfalse}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\sundefined \le_{\TThunk{T}} v^A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{v^A_1 \le_T v^A_2}
+  \infer1{\sthunk{v^A_1} \le_{\TThunk{T}} \sthunk{v^A_2}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\snil \le_{\TList{T}} \snil}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{v^A_{11} \le_{\TThunk{T}} v^A_{21}}
+  \hypo{v^A_{12} \le_{\TThunk{(\TList{T})}} v^A_{22}}
+  \infer2{\scons{v^A_{11}}{v^A_{12}} \le_{\TList{T}} \scons{v^A_{21}}{v^A_{22}}}
+\end{prooftree}
+\end{center}
+
+#+begin_lemma
+\( \le_T \) is a partial order.
+#+end_lemma
+
+#+begin_lemma
+If \( v^A_1 \le_T v^A_2 \) and \( v^A_2 \prec_T v \), then \( v^A_1 \prec_T v \).
+#+end_lemma
+
+** semantics
+
+We equip \( \LB \) with three different semantics (none of which are a standard Launchbury-style lazy semantics).
+
+*** evaluation semantics \( \BE \)
+
+Intuitively, evaluation semantics simply ignores all occurrences of \( \texttt{lazy} \), \( \texttt{force} \), and \( \texttt{tick} \), projecting \( \LB \) down to its “strict cost-unaware fragment”.
+
+\begin{align*}
+  \Eval{-} &: \Gamma \vdash T \to \Eval{\Gamma} \to \Eval{T} \\
+  \Eval{x}(\gamma) &= \gamma(x) \\
+  \Eval{\tlet{x}{t_1}{t_2}}(\gamma) &= \Eval{t_2}(\gamma, x \mapsto \Eval{t_1}(\gamma)) \\
+  \Eval{\ttrue}(\gamma) &= \strue \\
+  \Eval{\tfalse}(\gamma) &= \sfalse \\
+  \Eval{\tif{t_1}{t_2}{t_3}} &=
+    \begin{cases}
+      \Eval{t_2}(\gamma) & \text{if \( \Eval{t_{1}} = \strue \)} \\
+      \Eval{t_{3}}(\gamma) & \text{otherwise}
+    \end{cases} \\
+  \Eval{\tnil}(\gamma) &= \varepsilon \\
+  \Eval{\tcons{t_1}{t_2}}(\gamma) &= \scons{\Eval{t_1}(\gamma)}{\Eval{t_2}(\gamma)} \\
+  \Eval{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}(\gamma) &= \sfoldr{(v_1, v_2) \mapsto \Eval{t_1}(\gamma, x_1 \mapsto v_1, x_2 \mapsto v_2)}{\Eval{t_2}(\gamma)}{\Eval{t_3}(\gamma)} \\
+  \Eval{\tlazy{t}}(\gamma) &= \Eval{t}(\gamma) \\
+  \Eval{\tforce{t}}(\gamma) &= \Eval{t}(\gamma) \\
+  \Eval{\ttick{t}}(\gamma) &= \Eval{t}(\gamma)
+\end{align*}
+
+\begin{align*}
+  \sfoldr{f}{y}{(x_1, x_2, \ldots, x_n)} = f(x_1, f(x_2, \cdots f(x_n, y) \cdots))
+\end{align*}
+
+** clairvoyance semantics \( \BC \)
+
+Given \( \Gamma \vdash^\LB t : T \), clairvoyance semantics has the judgment schema \( \CV{\gamma}{t}{c}{v} \), where \( \gamma \in \Approx{\Gamma} \), \( v \in \Approx{T} \), and \( c \in \N \).  Intuitively, \( c \) is the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to \( d \).
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\gamma(x) = v}
+  \infer1{\CV{\gamma}{x}{0}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\CV{\gamma}{t_1}{c_1}{v_1}}
+  \hypo{\CV{\gamma, x \mapsto d_1}{t_2}{c_2}{v_2}}
+  \infer2{\CV{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\CV{\gamma}{\ttrue}{0}{\strue}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\CV{\gamma}{\tfalse}{0}{\sfalse}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\CV{\gamma}{t_1}{c_1}{\strue}}
+  \hypo{\CV{\gamma}{t_2}{c_2}{v}}
+  \infer2{\CV{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\CV{\gamma}{t_1}{c_1}{\sfalse}}
+  \hypo{\CV{\gamma}{t_3}{c_3}{a}}
+  \infer2{\CV{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{a}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\CV{\gamma}{\tnil}{0}{\snil}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\CV{\gamma}{t_1}{c_1}{v_1}}
+  \hypo{\CV{\gamma}{t_2}{c_1}{v_2}}
+  \infer2{\CV{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\CV{\gamma}{\tlazy{t}}{0}{\sundefined}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\CV{\gamma}{t}{c}{v}}
+  \infer1{\CV{\gamma}{\tlazy{t}}{c}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\CV{\gamma}{t}{c}{v}}
+  \infer1{\CV{\gamma}{\tforce{t}}{c}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\CV{\gamma}{t}{c}{v}}
+  \infer1{\CV{\gamma}{\ttick{t}}{c+1}{v}}
+\end{prooftree}
+\end{center}
+
+Clairvoyance semantics is monotonic in the following sense.
+
+#+begin_lemma
+*Monotonicity of clairvoyance semantics.*  Let \( \Gamma \vdash^\LB t : T \), \( \gamma^A_1 \le \gamma^A_2 \), \( \CV{\gamma^A_1}{t}{c_1}{v^A_1} \) and \( \CV{\gamma^A_2}{t}{c_2}{v^A_2} \).  Then \( v^A_1 \le v^A_2 \) and \( c_1 \le c_2 \).
+#+end_lemma
+
+Clairvoyance semantics agrees with evaluation semantics in the following sense.
+
+#+begin_theorem
+*Functional correctness of clairvoyance semantics.*  Let \( \Gamma \vdash^\LB t : T \), \( \gamma^A \prec \gamma \), and \( \CV{\gamma^A}{t}{c}{v^A} \).  Then \( v^A \prec \Eval{t}(\gamma) \).
+#+end_theorem
+
+** demand semantics \( \BD \)
+
+The demand semantics \( \Demand{t} \) of a term \( t : \Gamma \vdash^\LB A \) is a function that takes
+
+- an (exact) evaluation context \( \gamma : \Eval{\Gamma} \), and
+- an approximation \( v^A \prec \Eval{t}(\gamma) \);
+
+it computes
+
+- an approximation context \( \gamma^A \prec \gamma \), and
+- a natural number \( c \).
+
+\[
+  \Demand{-} : \Gamma \vdash^\LB A \to (\gamma : \Eval{\Gamma}) \times \Demand{A}_{\prec \Eval{t}(\gamma)} \to \Demand{\Gamma}_{\prec \gamma} \times \N
+\]
+
+Intuitively, if \( \Demand{t}(\gamma, v^A) = (\gamma^A, c) \), then \( \gamma^A \) is the least approximation of \( \gamma \) that \( t \) needs in order to compute as least as much information as is contained in \( v^A \), and \( c \) is the number of \( \texttt{tick} \)s that would be encountered during such a computation.
+
+Demand semantics is monotonic in the following sense.
+
+#+begin_lemma
+*Monotonicity of demand semantics.*  Let \( \Gamma \vdash^\LB t : A \), \( \gamma \in \Eval{\Gamma} \), and \( v^A_1 \le v^A_2 \prec \Eval{t}(\gamma) \).  Define \( (\gamma^A_1, c_1) = \Demand{t}(\gamma, v^A_1) \) and \( (\gamma^A_2, c_2) = \Demand{t}(\gamma, v^A_2) \).  Then \( \gamma^A_1 \le \gamma^A_2 \) and \( c_1 \le c_2 \).
+#+end_lemma
+
+Demand semantics agrees with evaluation semantics in the following sense.
+
+#+begin_theorem
+*Functional correctness of demand semantics.*  Let \( \Gamma \vdash^\LB t : A \), \( \gamma \in \Eval{\Gamma} \), and \( v^A \prec \Eval{t}(\gamma) \).  Define \( (\gamma^A, c) = \Demand{t}(\gamma, v^A) \).  Then \( \gamma^A \prec \gamma \).
+#+end_theorem
+
+*** why no function types?
+
+It might be worth remarking on the conflict between demand semantics and function types.
+
+Function types internalize syntactic entailment, so their interpretation in a given semantics should reflect the “type” of that semantics.  Compare a hypothetical interpretation of function types in evaluation semantics with the “type” of evaluation semantics:
+
+\begin{align*}
+  \Eval{-} : {\color{red}\Gamma} \vdash {\color{blue}T} \to {\color{red}\Eval{\Gamma}} \to {\color{blue}\Eval{T}} \\
+  \Eval{\texttt{$\color{red}A$ -> $\color{blue}B$}} = {\color{red}\Eval{A}} \to {\color{blue}\Eval{B}}
+\end{align*}
+
+By analogy, we might naively interpret function types in demand semantics as:
+
+\begin{align*}
+  \Demand{-} : {\color{red}\Gamma} \vdash {\color{blue}T} \to {\color{red}\Eval{\Gamma}} \times {\color{blue}\Approx{T}} \to {\color{red}\Approx{\Gamma}} \times \N \\
+  \Demand{\texttt{$\color{red}A$ -> $\color{blue}B$}} = {\color{red}\Eval{A}} \times {\color{blue}\Approx{B}} \to {\color{red}\Approx{A}} \times \N
+\end{align*}
+
+But a little thinking reveals that this cannot be correct, because a closure must induce a demand on its captured environment at call time.
+
+It is possible that a contextual modal type theory could resolve this issue, but we will not investigate that here.
+
+*** relationship between clairvoyance and demand semantics
+
+#+begin_theorem
+*Cost existence.*  Let \( \Gamma \vdash^\LB t : A \), \( \gamma \in \Eval{\Gamma} \), and \( v^A_1 \prec \Eval{t}(\gamma) \).  Define \( (\gamma^A_1, c_1) = \Demand{t}(\gamma, v^A_1) \) and let \( \gamma_2 \in \Approx{\Gamma} \) such that \( \gamma_1 \le \gamma_2 \prec \gamma \).  Then there exist \( v^A_2 \in \Approx{A} \), \( c_2 \in \N \) such that \( \CV{\gamma^A_2}{t}{c}{v^A_2} \), \( v_2^A \ge v_1^A \), and \( c_2 = c_1 \).
+#+end_theorem
+
+Intuitively, cost existence says that, starting with an output demand and going “backwards” via demand semantics, one can then always go “forwards” via clairvoyance semantics to obtain an approximation at least as defined as the original output demand at a cost equal to the cost computed by demand semantics.
+
+#+begin_theorem
+*Cost minimality.*  Let \( \Gamma \vdash^\LB t : T \), \( \gamma \in \Eval{\Gamma} \), and \( v^A_1 \prec \Eval{t}(\gamma) \).  Define \( (\gamma^A_1, c) = \Demand{t}(\gamma, d_1) \) and let \( \gamma^A_2 \prec \gamma \), \( v^A_2 \in \Approx{A} \), and \( c_2 \in \N \) such that \( v_2^A \ge v_1^A \) and \( \CV{\gamma_2}{t}{c_2}{v^A_2} \).  Then \( \gamma^A_2 \ge \gamma^A_1 \) and \( c_2 \ge c_1 \).
+#+end_theorem
+
+Intuitively, cost minimality says that, starting with an output demand and going “backwards” via demand semantics and then going “forwards” via clairvoyance semantics,
+
+**** TODO Should there be an additional theorem about first going “forwards” and then going “backwards”?
+
+Something like:
+
+#+begin_theorem
+Let \( \Gamma \vdash^\LB t : T \), \( \gamma \in \Eval{\gamma} \), \( \gamma^A_1 \prec \gamma \), and \( \CV{\gamma^A_1}{t}{c_1}{v^A_1} \).  Define \(  (\gamma^A_2, c_2) = \Demand{t}(\gamma, v^A_1) \).  Then \( \gamma^A_2 \le \gamma^A_1 \) and \( c_2 \le c_1 \).
+#+end_theorem
+
+* the logic language \( \LL \)
+
+** syntax
+
+\begin{center}
+\begin{bnf}
+\( A \) ::=
+| \TBool
+| \TProd{A}{A}
+| \TThunk{A}
+| \TNat
+| \TList{A}
+;;
+\end{bnf}
+\end{center}
+
+Note that the set of types in \( \LB \) is a subset of the set of types in \( \LL \).
+
+\begin{center}
+\begin{bnf}
+$t$ ::=
+| $x$
+| \tlet{x}{t}{t}
+| \ttrue
+| \tfalse
+| \teq{t}{t}
+| \tle{t}{t}
+| \tif{t}{t}{t}
+| \tpair{t}{t}
+| \tthunk{t}
+| \tundefined
+| \tcase{t}{x}{t}{t}
+| $n$
+| \tadd{t}{t}
+| \tif{t}{t}{t}
+| \tnil
+| \tcons{t}{t}
+| \tfoldr{x}{x}{t}{t}{t}
+| \tchoose{t}{t}
+| \tfree{A}
+| \tfail
+;;
+\end{bnf}
+\end{center}
+
+** typing
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma(x) = A}
+  \infer1{\Gamma \vdash^\LL x : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : A}
+  \hypo{\Gamma, x : A \vdash^\LL t_2 : B}
+  \infer2{\Gamma \vdash^\LL \texttt{let $x$ = $t_1$ in $t_2$} : B}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LL \ttrue : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LL \tfalse : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : A}
+  \hypo{\Gamma \vdash^\LL t_2 : A}
+  \infer2{\Gamma \vdash^\LL \teq{t_1}{t_2} : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : A}
+  \hypo{\Gamma \vdash^\LL t_2 : A}
+  \infer2{\Gamma \vdash^\LL \tle{t_1}{t_2} : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : \TBool}
+  \hypo{\Gamma \vdash^\LL t_2 : A}
+  \hypo{\Gamma \vdash^\LL t_3 : A}
+  \infer3{\Gamma \vdash^\LL \tif{t_1}{t_2}{t_3} : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : A}
+  \hypo{\Gamma \vdash^\LL t_2 : B}
+  \infer2{\Gamma \vdash^\LL \tpair{t_1}{t_2} : \TProd{A}{B}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t : A}
+  \infer1{\Gamma \vdash^\LL \tthunk{t} : \TThunk{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LL \tundefined : \TThunk{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : \TThunk{A}}
+  \hypo{\Gamma, x : A \vdash^\LL t_2 : B}
+  \hypo{\Gamma \vdash^\LL t_3 : B}
+  \infer3{\Gamma \vdash^\LL \tcase{t_1}{x}{t_2}{t_3} : B}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LL n : \TNat}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : \TNat}
+  \hypo{\Gamma \vdash^\LL t_2 : \TNat}
+  \infer2{\Gamma \vdash^\LL \tadd{t_1}{t_2} : \TNat}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LL \tnil : \TList{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : \TThunk{A}}
+  \hypo{\Gamma \vdash^\LL t_2 : \TThunk{(\TList{A}})}
+  \infer2{\Gamma \vdash^\LL \tcons{t_1}{t_2} : \TList{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma, x_1 : \TThunk{A}, x_2 : \TThunk{B} \vdash^\LB t_1 : B}
+  \hypo{\Gamma \vdash^\LB t_2 : B}
+  \hypo{\Gamma \vdash^\LB t_3 : \TList{A}}
+  \infer3{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : A}
+  \hypo{\Gamma \vdash^\LL t_2 : A}
+  \infer2{\Gamma \vdash^\LL \tchoose{t_1}{t_2} : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LL \tfree A : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LL \tfail : A}
+\end{prooftree}
+\end{center}
+
+** evaluation
+
+\begin{align*}
+  \Log{\TBool} &= \sbool \\
+  \Log{\TProd{T_1}{T_2}} &= \Log{T_1} \times \Log{T_2} \\
+  \Log{\TThunk{T}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Log{T}} \\
+  \Log{\TNat} &= \N \\
+  \Log{\TList{T}} &= \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Log{\TThunk{T}}, v_2 \in \Log{\TThunk{(\TList{T})}}}
+\end{align*}
+
+Note that \( \Log{T} = \Approx{T} \) for all types \( T \) in \( \LB \).
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\gamma(x) = v}
+  \infer1{\LV{\gamma}{x}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{v_1}}
+  \hypo{\LV{\gamma, x \mapsto v_1}{t_2}{v_2}}
+  \infer2{\LV{\gamma}{\tlet{x}{t_1}{t_2}}{v_2}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\LV{\gamma}{\ttrue}{\strue}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\LV{\gamma}{\tfalse}{\sfalse}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\gamma; t_1 \Downarrow^\BL v}
+  \hypo{\gamma; t_2 \Downarrow^\BL v}
+  \infer2{\LV{\gamma}{\teq{t_1}{t_2}}{\strue}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{v_1}}
+  \hypo{\LV{\gamma}{t_2}{v_2}}
+  \hypo{v_1 \ne v_2}
+  \infer3{\LV{\gamma}{\teq{t_1}{t_2}}{\sfalse}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{v_1}}
+  \hypo{\LV{\gamma}{t_2}{v_2}}
+  \hypo{\sle{v_1}{v_2}}
+  \infer3{\LV{\gamma}{\tle{t_1}{t_2}}{\strue}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{v_1}}
+  \hypo{\LV{\gamma}{t_2}{v_2}}
+  \hypo{\snle{v_1}{v_2}}
+  \infer3{\LV{\gamma}{\tle{t_1}{t_2}}{\sfalse}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{\strue}}
+  \hypo{\LV{\gamma}{t_2}{v}}
+  \infer2{\LV{\gamma}{\tif{t_1}{t_2}{t_3}}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{\sfalse}}
+  \hypo{\LV{\gamma}{t_3}{v}}
+  \infer2{\LV{\gamma}{\tif{t_1}{t_2}{t_3}}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{v_1}}
+  \hypo{\LV{\gamma}{t_2}{v_2}}
+  \infer2{\LV{\gamma}{\tpair{t_1}{t_2}}{(v_1, v_2)}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t}{a}}
+  \infer1{\LV{\gamma}{\tthunk{t}}{\sthunk{a}}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\LV{\gamma}{\tundefined}{\sundefined}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{\sthunk{v_1}}}
+  \hypo{\LV{\gamma, x \mapsto a}{t_2}{v_2}}
+  \infer2{\LV{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v_2}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{\sundefined}}
+  \hypo{\LV{\gamma}{t_3}{v}}
+  \infer2{\LV{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\LV{\gamma}{n}{n}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{n_1}}
+  \hypo{\LV{\gamma}{t_2}{n_2}}
+  \infer2{\LV{\gamma}{\tadd{t_1}{t_2}}{n_1 + n_2}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\LV{\gamma}{\tnil}{\snil}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{v_1}}
+  \hypo{\LV{\gamma}{t_2}{v_2}}
+  \infer2{\LV{\gamma}{\tcons{t_1}{t_2}}{\scons{v_1}{v_2}}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{v : A}
+  \infer1{\LV{\gamma}{\tfree{A}}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{v}}
+  \infer1{\LV{\gamma}{\tchoose{t_1}{t_2}}{v}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_2}{v}}
+  \infer1{\LV{\gamma}{\tchoose{t_1}{t_2}}{v}}
+\end{prooftree}
+\end{center}
+
+** derived constructs
+
+\begin{align*}
+  \texttt{assert $t_1$ in $t_2$} &= \texttt{if $t_1$ then $t_2$ else fail} \\
+  \texttt{let ($x$, $y$) = $t_1$ in $t_2$} &= \texttt{let $z$ = $t_1$ in let $x$ = fst $z$ in let $y$ = snd $z$ in $t_2$}
+\end{align*}
+
+* Translations
+
+** The writer monad $\texttt{M}$
+
+\[
+  \TM{T} = \TProd{T}{\TNat}
+\]
+
+\begin{align*}
+  \texttt{$t_1$ >>= $t_2$} &= \text{\lstinline[mathescape]|let\ ($x$, $c_1$)\ =\ $t_1$\ in\ let\ ($y$,\ $c_2$) == $t_2$\ in\ ($y$,\ $c_1$\ +\ $c_2$)|}
+  % \texttt{return $t$} &= \texttt{($t$, 0)}
+\end{align*}
+
+The following typing and derivation rules are straightforwardly derivable.
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\mathbf{L} t : T}
+  \infer1{\Gamma \vdash^\mathbf{L} \treturn{t} : \TM{T}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t}{v}}
+  \infer1{\LV{\gamma}{\treturn{t}}{(v, 0)}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LL t_1 : \TM{T_1}}
+  \hypo{\Gamma, x : T_1 \vdash^\LL t_2 : \TM{T_2}}
+  \infer2{\Gamma \vdash^\LL \texttt{$t_1$ >>= $t_2$} : \TM{T_2}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\LV{\gamma}{t_1}{(v_1, c_1)}}
+  \hypo{\LV{\gamma, x \mapsto v_1}{t_2}{(v_2, c_2)}}
+  \infer2{\LV{\gamma}{\texttt{$t_1$ >>= $t_2$}}{(t_2, c_1 + c_2)}}
+\end{prooftree}
+\end{center}
+
+* the clairvoyance translation
+
+The clairvoyance translation takes a term of type \( T \) in \( \LB \) and converts it to a term of type \( \TM{T} \) in \( \mathbf{L} \).
+
+\[
+  \C\floor{-} : \Gamma \vdash^\LB T \to \Gamma \vdash_\mathbf{L} \TM{T}
+\]
+
+\begin{align*}
+  \C\floor{x} &= \texttt{return $x$} \\
+  \C\floor{\texttt{let $x$ = $t_1$ in $t_2$}} &= \texttt{$\C\floor{t_1}$ >>= $\C\floor{t_2}$} \\
+  \C\floor{\ttrue} &= \texttt{return true} \\
+  \C\floor{\tfalse} &= \texttt{return false} \\
+  \C\floor{\tnil} &= \texttt{return \tnil} \\
+  \C\floor{\texttt{force $t$}} &= \texttt{$\C\floor{t}$ >>= case $x$ of $\bot$ $\to$ fail; thunk $x$ $\to$ $x$}
+\end{align*}
+
+The clairvoyance translation mimics clairvoyance semantics in the following precise sense.
+
+#+begin_lemma
+Let \( \Gamma \vdash^\LB t : T \).  Then \( \LV{\gamma}{\C\floor{t}}{(v, c)} \) if and only if \( \CV{\gamma}{t}{c}{v} \).
+#+end_lemma
+
+* The demand translation
+
+The demand translation takes:
+
+- a term \( t \) in \( \LB \) of type \( B \) with a parameter (i.e., a distinguished free variable) \( x : A \), and
+- a fully-defined argument \( a : \Eval{A} \).
+
+It produces a term in \( \mathbf{L} \) of type \( \texttt{M $\lfloor A \rfloor$} \) with a parameter \( y : \lfloor B \rfloor \).
+
+\[
+ \mathbb{D}\lfloor - \rfloor : \Gamma, x : A \vdash^\LB B \to \Eval{A} \to \lfloor \Gamma , y : B \rfloor \vdash_\mathbf{L} \texttt{M} \lfloor A \rfloor
+\]
+
+#+begin_verbatim
+let x = reify ⌊a⌋ in
+let (xA, c) = free (A * Nat) in
+assert xA <= x in
+assert ⌊t⌋ == (yA, c) in
+(xA, c)
+#+end_verbatim
+
+(~reify~ is a meta-level function that lifts a value of \( \LL \) to a term in \( \LL \).)
+
+\( \mathbb{D}\floor{-} \) is intended to mimic demand semantics in the following loose sense: \( \mathbb{D}\lfloor t \rfloor(a) \) runs \( t \) “in reverse”, taking a partially-defined argument \( b_A : B \) and computing the least approximation \( a_A : A \) of \( a \) such that the assignment \( x \mapsto a_A \) is sufficient for \( t \) to compute \( b_A \); in addition, \( \mathbb{D}\lfloor t \rfloor(a) \) computes the cost to perform this computation.
+
+The following theorem, our main technical contribution, makes the correspondence precise.
+
+#+begin_theorem
+Let \( \Gamma, x : A \vdash^\LB t : B \), \( \gamma \in \Eval{\Gamma} \), \( a \in \Eval{A} \), \( a_A \in \Demand{A}_{\prec a} \).  Define \( b = \Eval{t}(\gamma, x \mapsto a) \) and let \( b_A \in \Demand{B}_{\prec b} \).  Then \( \floor{\gamma}, y_A \mapsto b_A ; \mathbb{D}\floor{t}(a) \Downarrow^\mathbf{L} (a_A, c) \) if and only if \( \Demand{t}(\gamma, a)(b_A) = (a_A, c) \).
+#+end_theorem

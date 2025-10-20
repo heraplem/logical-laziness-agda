@@ -37,65 +37,59 @@ private
   variable
     Γ : Ctx
     α β τ : Ty
-    γ₁ γ₂ : ⟦ Γ ⟧ᶜ
+    x : α ∈ᴸ Γ
+    γ γ₁ γ₂ : ⟦ Γ ⟧ᶜ
 
 mutual
 
   data ⟦_⟧ᵉ : Γ ⊢ τ → ⟦ Γ ⟧ᶜ → ⟦ τ ⟧ᵗ × ℕ → Type where
     `_ :
-      ∀ {g : ⟦ Γ ⟧ᶜ}
-        (x : τ ∈ᴸ Γ)
-      → ⟦ ` x ⟧ᵉ g ∋ (All.lookup g x , 0)
+        (x : α ∈ᴸ Γ)
+      → ⟦ ` x ⟧ᵉ γ ∋ (All.lookup γ x , 0)
     `let_`in_ :
-      ∀ {g : ⟦ Γ ⟧ᶜ} {t₁ : Γ ⊢ α} {t₂ : Γ ⸴ α ⊢ β} {a b c₁ c₂}
-      → ⟦ t₁ ⟧ᵉ g ∋ (a , c₁)
-      → ⟦ t₂ ⟧ᵉ (g ⸴ a) ∋ (b , c₂)
-      → ⟦ `let t₁ `in t₂ ⟧ᵉ g ∋ (b , c₁ + c₂)
-    `false :
-      ∀ {g : ⟦ Γ ⟧ᶜ}
-      → ⟦ `false ⟧ᵉ g ∋ (false , 0)
-    `true :
-      ∀ {g : ⟦ Γ ⟧ᶜ}
-      → ⟦ `true ⟧ᵉ g ∋ (true , 0)
+      ∀ {t₁ : Γ ⊢ α} {t₂ : Γ ⸴ α ⊢ β} {a b c₁ c₂}
+      → ⟦ t₁ ⟧ᵉ γ ∋ (a , c₁)
+      → ⟦ t₂ ⟧ᵉ (γ ⸴ a) ∋ (b , c₂)
+      → ⟦ `let t₁ `in t₂ ⟧ᵉ γ ∋ (b , c₁ + c₂)
+    `false : ⟦ `false ⟧ᵉ γ ∋ (false , 0)
+    `true : ⟦ `true ⟧ᵉ γ ∋ (true , 0)
     `if_`else_ :
-      ∀ {g : ⟦ Γ ⟧ᶜ} {t₁} {t₂ t₃ : Γ ⊢ τ} {v c₁ c₂}
-      → ⟦ t₁ ⟧ᵉ g (false , c₁)
-      → ⟦ t₃ ⟧ᵉ g (v , c₂)
-      → ⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ g (v , c₁ + c₂)
+      ∀ {t₁} {t₂ t₃ : Γ ⊢ τ} {v c₁ c₂}
+      → ⟦ t₁ ⟧ᵉ γ (false , c₁)
+      → ⟦ t₃ ⟧ᵉ γ (v , c₂)
+      → ⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ γ (v , c₁ + c₂)
     `if_`then_ :
-      ∀ {g : ⟦ Γ ⟧ᶜ} {t₁} {t₂ t₃ : Γ ⊢ τ} {v c₁ c₂}
-      → ⟦ t₁ ⟧ᵉ g (true , c₁)
-      → ⟦ t₂ ⟧ᵉ g (v , c₂)
-      → ⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ g (v , c₁ + c₂)
-    `[] :
-      ∀ {g : ⟦ Γ ⟧ᶜ}
-      → ⟦ `[] ∶ Γ ⊢ `List τ ⟧ᵉ g ∋ ([] , 0)
+      ∀ {t₁} {t₂ t₃ : Γ ⊢ τ} {v c₁ c₂}
+      → ⟦ t₁ ⟧ᵉ γ (true , c₁)
+      → ⟦ t₂ ⟧ᵉ γ (v , c₂)
+      → ⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ γ (v , c₁ + c₂)
+    `[] : ⟦ `[] ∶ Γ ⊢ `List τ ⟧ᵉ γ ∋ ([] , 0)
     _`∷_ :
-      ∀ {t₁ : Γ ⊢ `T τ} {t₂ : Γ ⊢ `T (`List τ)} {g : ⟦ Γ ⟧ᶜ} {a₁ a₂ c₁ c₂}
-      → ⟦ t₁ ⟧ᵉ g ∋ (a₁ , c₁)
-      → ⟦ t₂ ⟧ᵉ g ∋ (a₂ , c₂)
-      → ⟦ t₁ `∷ t₂ ⟧ᵉ g ∋ (a₁ ∷ a₂ , c₁ + c₂)
+      ∀ {t₁ : Γ ⊢ `T τ} {t₂ : Γ ⊢ `T (`List τ)} {a₁ a₂ c₁ c₂}
+      → ⟦ t₁ ⟧ᵉ γ ∋ (a₁ , c₁)
+      → ⟦ t₂ ⟧ᵉ γ ∋ (a₂ , c₂)
+      → ⟦ t₁ `∷ t₂ ⟧ᵉ γ ∋ (a₁ ∷ a₂ , c₁ + c₂)
     `foldr :
       ∀ {t₁ : Γ ⸴ `T α ⸴ `T β ⊢ β} {t₂ : Γ ⊢ β} {t₃ : Γ ⊢ `List α}
-        {g : ⟦ Γ ⟧ᶜ} {as b c₁ c₂}
-      → ⟦foldr t₁ , t₂ ⟧ᵉ g as ∋ (b , c₂)
-      → ⟦ t₃ ⟧ᵉ g ∋ (as , c₁)
-      → ⟦ `foldr t₁ t₂ t₃ ⟧ᵉ g ∋ (b , c₁ + c₂)
+        {as b c₁ c₂}
+      → ⟦foldr t₁ , t₂ ⟧ᵉ γ as ∋ (b , c₂)
+      → ⟦ t₃ ⟧ᵉ γ ∋ (as , c₁)
+      → ⟦ `foldr t₁ t₂ t₃ ⟧ᵉ γ ∋ (b , c₁ + c₂)
     `tick :
-      ∀ {t₁ : Γ ⊢ τ} {g : ⟦ Γ ⟧ᶜ} {a c}
-      → ⟦ t₁ ⟧ᵉ g ∋ (a , c)
-      → ⟦ `tick t₁ ⟧ᵉ g ∋ (a , suc c)
+      ∀ {t₁ : Γ ⊢ τ} {a c}
+      → ⟦ t₁ ⟧ᵉ γ ∋ (a , c)
+      → ⟦ `tick t₁ ⟧ᵉ γ ∋ (a , suc c)
     `lazy-undefined :
-      ∀ {t₁ : Γ ⊢ τ} {g : ⟦ Γ ⟧ᶜ}
-      → ⟦ `lazy t₁ ⟧ᵉ g ∋ (undefined , 0)
+      ∀ {t₁ : Γ ⊢ τ}
+      → ⟦ `lazy t₁ ⟧ᵉ γ ∋ (undefined , 0)
     `lazy-thunk :
-      ∀ {t₁ : Γ ⊢ τ} {g : ⟦ Γ ⟧ᶜ} {a c}
-      → ⟦ t₁ ⟧ᵉ g ∋ (a , c)
-      → ⟦ `lazy t₁ ⟧ᵉ g ∋ (thunk a , c)
+      ∀ {t₁ : Γ ⊢ τ} {a c}
+      → ⟦ t₁ ⟧ᵉ γ ∋ (a , c)
+      → ⟦ `lazy t₁ ⟧ᵉ γ ∋ (thunk a , c)
     `force :
-      ∀ {t₁ : Γ ⊢ `T τ} {g : ⟦ Γ ⟧ᶜ} {a c}
-      → ⟦ t₁ ⟧ᵉ g ∋ (thunk a , c)
-      → ⟦ `force t₁ ⟧ᵉ g ∋ (a , c)
+      ∀ {t₁ : Γ ⊢ `T τ} {a c}
+      → ⟦ t₁ ⟧ᵉ γ ∋ (thunk a , c)
+      → ⟦ `force t₁ ⟧ᵉ γ ∋ (a , c)
 
   data ⟦foldr_,_⟧ᵉ (t₁ : Γ ⸴ `T α ⸴ `T β ⊢ β) (t₂ : Γ ⊢ β) : ⟦ Γ ⟧ᶜ → ListA ⟦ α ⟧ᵗ → ⟦ β ⟧ᵗ × ℕ → Type where
     `foldr-[] :
@@ -104,8 +98,8 @@ mutual
       → ⟦foldr t₁ , t₂ ⟧ᵉ g [] ∋ (b , c)
     `foldr-∷ :
       ∀ {g a as b b′ c₁ c₂}
-      → ⟦ t₁ ⟧ᵉ (g ⸴ a ⸴ b) ∋ (b′ , c₁)
       → ⟦foldr′ t₁ , t₂ ⟧ᵉ g as ∋ (b , c₂)
+      → ⟦ t₁ ⟧ᵉ (g ⸴ a ⸴ b) ∋ (b′ , c₁)
       → ⟦foldr t₁ , t₂ ⟧ᵉ g (a ∷ as) ∋ (b′ , c₁ + c₂)
 
   data ⟦foldr′_,_⟧ᵉ (t₁ : Γ ⸴ `T α ⸴ `T β ⊢ β) (t₂ : Γ ⊢ β) : ⟦ Γ ⟧ᶜ → T (ListA ⟦ α ⟧ᵗ) → T ⟦ β ⟧ᵗ × ℕ → Type where
@@ -139,7 +133,7 @@ v₁ ≲ᵉ v₂ = ⟦ _ ⟧[ v₁ ≲ᵉ v₂ ]
 ≲ᵉ-refl {α = `Bool} {x = true} = true
 ≲ᵉ-refl {α = `T α} {x = undefined} = undefined
 ≲ᵉ-refl {α = `T α} {x = thunk x} = thunk ≲ᵉ-refl
-≲ᵉ-refl {α = `List α} = ListA.ind (λ x → ⟦ `List α ⟧[ x ≲ᵉ x ]) (λ{ undefined _ undefined → undefined ∷ undefined ; undefined _ (thunk x) → undefined ∷ thunk x ; (thunk x) _ undefined → thunk ≲ᵉ-refl ∷ undefined ; (thunk x) _ (thunk x₁) → thunk ≲ᵉ-refl ∷ thunk x₁ }) [] _
+≲ᵉ-refl {α = `List α} = ListA.ind (λ x → ⟦ `List α ⟧[ x ≲ᵉ x ]) [] (λ{ undefined _ undefined → undefined ∷ undefined ; undefined _ (thunk x) → undefined ∷ thunk x ; (thunk x) _ undefined → thunk ≲ᵉ-refl ∷ undefined ; (thunk x) _ (thunk x₁) → thunk ≲ᵉ-refl ∷ thunk x₁ }) _
 
 ⟦_⟧[_≲_]ᶜ : (Γ : Ctx) → ⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ → Type
 ⟦ Γ ⟧[ γ₁ ≲ γ₂ ]ᶜ = AllPointwise ⟦ _ ⟧[_≲ᵉ_] γ₁ γ₂

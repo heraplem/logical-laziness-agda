@@ -215,7 +215,7 @@ _→ʳ_ : Ctx → Ctx → Type
 variable
   ρ : Γ →ʳ Δ
 
-↑ʳ_ : Γ →ʳ Δ → Γ ⸴ τ →ʳ Δ ⸴ τ
+↑ʳ_ : (Γ →ʳ Δ) → ((Γ ⸴ τ) →ʳ (Δ ⸴ τ))
 ↑ʳ_ ρ zeroᵛ    = zeroᵛ
 ↑ʳ_ ρ (sucᵛ x) = sucᵛ (ρ x)
 
@@ -243,7 +243,8 @@ _$ʳ_ : Γ →ʳ Δ → Γ ⊢ α → Δ ⊢ α
 ρ $ʳ t₁ `? t₂                 = (ρ $ʳ t₁) `? (ρ $ʳ t₂)
 ρ $ʳ `fail                    = `fail
 
-↑ᵗ_ : Γ ⊢ α → Γ ⸴ τ ⊢ α
+↑ᵗ_ : Γ ⊢ α
+    → Γ ⸴ τ ⊢ α
 ↑ᵗ_ = (sucᵛ $ʳ_)
 
 exchange : Γ ⸴ τ₁ ⸴ τ₂ ⊢ α → Γ ⸴ τ₂ ⸴ τ₁ ⊢ α
@@ -415,13 +416,114 @@ mutual
                   → ⟦foldrA t₁ , t₂ ⟧ᵉ γ xs ∋ v
                   → ⟦foldrA′ t₁ , t₂ ⟧ᵉ γ (thunk xs) ∋ thunk v
 
+weaken-lemma : (t : Γ ⸴ α ⊢ τ) → ((↑ʳ there) $ʳ t) ≡ (↑ᵗ t)
+weaken-lemma (` x) = {!!}
+weaken-lemma (`let t₁ `in t₂) = {!!}
+weaken-lemma `false = refl
+weaken-lemma `true = refl
+weaken-lemma (`if t `then t₁ `else t₂) = {!!}
+weaken-lemma (t₁ `≟ t₂) = cong₂ _`≟_ (weaken-lemma t₁) (weaken-lemma t₂)
+weaken-lemma (t `≲ t₁) = {!!}
+weaken-lemma (t `, t₁) = {!!}
+weaken-lemma (`proj₁ t) = {!!}
+weaken-lemma (`proj₂ t) = {!!}
+weaken-lemma `undefined = {!!}
+weaken-lemma (`thunk t) = {!!}
+weaken-lemma (`T-case t t₁ t₂) = {!!}
+weaken-lemma (# x) = {!!}
+weaken-lemma (t `+ t₁) = {!!}
+weaken-lemma `[] = {!!}
+weaken-lemma (t `∷ t₁) = {!!}
+weaken-lemma (`foldrA t t₁ t₂) = {!!}
+weaken-lemma `free = {!!}
+weaken-lemma (t `? t₁) = {!!}
+weaken-lemma `fail = {!!}
+
+-- t               : Γ , α ⊢ τ
+-- ↑ᵗ t            : Γ , α , β ⊢ τ
+-- (↑ʳ there) $ʳ t : Γ ⸴ β , α ⊢ τ
+
+-- subsumeⁿ : Γ ⸴ α ⊢ τ → (Γ ++ Δ) ⸴ α ⊢ τ
+-- subsume-n-lemma :
+
+open import Data.List.Relation.Unary.Any.Properties
+
+-- ↑ʳ-lemma : {ρ : Γ →ʳ Δ}
+--            {v₁ : ⟦ α ⟧ᵗ} {v₂ : ⟦ τ ⟧ᵗ}
+--          → ⟦ ρ $ʳ t ⟧ᵉ γ ∋ v₁
+--          → ⟦ ↑ʳ ρ $ʳ t ⟧ᵉ (γ ⸴ v₂) ∋ v₁
+-- ↑ʳ-lemma φ = ?
+
+subsumeⁿ : ∀ Δ → (Γ ⸴ α) →ʳ ((Δ ++ Γ) ⸴ α)
+subsumeⁿ Δ = ↑ʳ (++⁺ʳ Δ)
+
+-- ((Δ ++ (Γ ⸴ τ₁)) ⸴ τ₂) =  τ₂ ∷ (Δ ++ (τ₁ ∷ Γ))
+
+-- ((Δ ++ (Γ ⸴ τ₁ ⸴ τ₂))
+
+-- WANT
+-- ((Δ ++ Γ) ⸴ τ₁ ⸴ τ₂)
+-- =
+-- τ₂ ∷ τ₁ ∷ Δ ++ Γ
+
+-- ((Δ ++ (Γ ⸴ τ₁)) ⸴ τ₂)
+-- =
+-- τ₂ ∷ Δ ++ τ₁ ∷ Γ
+
+-- subsumeⁿ-var-lemma : ∀ {α} (x : α ∈ᴸ Γ ⸴ τ₁)
+--                        {β : Ty} {Δ : Ctx}
+--                    → (↑ʳ subsumeⁿ Δ) x ≡ {!subsumeⁿ Δ x!}
+-- subsumeⁿ-var-lemma x = {!!}
+
+-- subsumeⁿ-lemma : (Δ : Ctx)
+--                  {γ : ⟦ Γ ⟧ᶜ} {δ : ⟦ Δ ⟧ᶜ}
+--                  {v₁ : ⟦ α ⟧ᵗ}
+--                  {v₂ : ⟦ β ⟧ᵗ}
+--                → ⟦ t ⟧ᵉ (γ ⸴ v₁) ∋ v₂
+--                → ⟦ subsumeⁿ Δ $ʳ t ⟧ᵉ (++⁺ δ γ ⸴ v₁) ∋ v₂
+-- subsumeⁿ-lemma Δ (⇓ x) = {!!}
+-- subsumeⁿ-lemma Δ (⇓let_⇓in_ {t₁ = t₁} {t₂ = t₂} φ₁ φ₂) = ⇓let {!!} ⇓in {! (↑ʳ subsumeⁿ Δ) $ʳ t₂!}
+-- subsumeⁿ-lemma Δ ⇓false = {!!}
+-- subsumeⁿ-lemma Δ ⇓true = {!!}
+-- subsumeⁿ-lemma Δ (⇓if x ⇓else x₁) = {!!}
+-- subsumeⁿ-lemma Δ (⇓if x ⇓then x₁) = {!!}
+-- subsumeⁿ-lemma Δ (⇓≟-true x x₁) = {!!}
+-- subsumeⁿ-lemma Δ (⇓≟-false x x₁ x₂) = {!!}
+-- subsumeⁿ-lemma Δ (⇓≲-true x x₁ x₂) = {!!}
+-- subsumeⁿ-lemma Δ (⇓≲-false x x₁ x₂) = {!!}
+-- subsumeⁿ-lemma Δ (x ⇓, x₁) = {!!}
+-- subsumeⁿ-lemma Δ (⇓proj₁ x) = {!!}
+-- subsumeⁿ-lemma Δ (⇓proj₂ φ) = {!!}
+-- subsumeⁿ-lemma Δ ⇓undefined = {!!}
+-- subsumeⁿ-lemma Δ (⇓thunk x) = {!!}
+-- subsumeⁿ-lemma Δ (⇓T-case-undefined x x₁) = {!!}
+-- subsumeⁿ-lemma Δ (⇓T-case-thunk x x₁) = {!!}
+-- subsumeⁿ-lemma Δ (# n) = {!!}
+-- subsumeⁿ-lemma Δ (x ⇓+ x₁) = {!!}
+-- subsumeⁿ-lemma Δ ⇓[] = {!!}
+-- subsumeⁿ-lemma Δ (φ ⇓∷ φ₁) = {!!}
+-- subsumeⁿ-lemma Δ (⇓foldrA φ x) = {!!}
+-- subsumeⁿ-lemma Δ ⇓free = {!!}
+-- subsumeⁿ-lemma Δ (?l φ) = {!!}
+-- subsumeⁿ-lemma Δ (?r φ) = {!!}
+
+-- ↑ʳ-lemma : (ρ₁ ρ₂ : Γ →ʳ Δ)
+--            {v : ⟦ α ⟧ᵗ}
+--          → (⟦ ρ₁ $ʳ t ⟧ᵉ γ ∋ v → ⟦ ρ₂ $ʳ t ⟧ᵉ γ ∋ v)
+--          → (⟦ ↑ʳ ρ₁ $ʳ t ⟧ᵉ γ ∋ v → ⟦ ↑ʳ ρ₂ $ʳ t ⟧ᵉ γ ∋ v)
+-- ↑ʳ-lemma ρ₁ ρ₂ η = ?
+
+
+-- ⟦ ρ₁ $ʳ t ⟧ γ ≡ ⟦ ρ₂ $ʳ t ⟧ γ
+-- ⟦ ↑ʳ ρ₁ $ʳ t ⟧ (γ , x) ≡ ⟦ ↑ʳ ρ₂ $ʳ t ⟧ (γ , x)
+
 ⇓weaken :
   ∀ {Γ α τ} {t : Γ ⊢ τ} {g : ⟦ Γ ⟧ᶜ} {a : ⟦ α ⟧ᵗ}
     {v : ⟦ τ ⟧ᵗ}
   → ⟦ t ⟧ᵉ g ∋ v
   → ⟦ ↑ᵗ t ⟧ᵉ (g ⸴ a) ∋ v
 ⇓weaken (⇓ x) = ⇓ sucᵛ x
-⇓weaken (⇓let φ₁ ⇓in φ₂) = ⇓let ⇓weaken φ₁ ⇓in {!⇓weaken φ₂!}
+⇓weaken (⇓let_⇓in_ {t₁ = t₁} {t₂ = t₂} φ₁ φ₂) = ⇓let ⇓weaken φ₁ ⇓in {!⇓weaken φ₂!}
 ⇓weaken ⇓false = ⇓false
 ⇓weaken ⇓true = ⇓true
 ⇓weaken (⇓if φ₁ ⇓else φ₂) = ⇓if ⇓weaken φ₁ ⇓else ⇓weaken φ₂
@@ -441,7 +543,7 @@ mutual
 ⇓weaken (φ₁ ⇓+ φ₂) = ⇓weaken φ₁ ⇓+ ⇓weaken φ₂
 ⇓weaken ⇓[] = ⇓[]
 ⇓weaken (φ₁ ⇓∷ φ₂) = ⇓weaken φ₁ ⇓∷ ⇓weaken φ₂
-⇓weaken (⇓foldrA φ₁ φ₂) = {!!}
+⇓weaken (⇓foldrA φ₁ φ₂) = ⇓foldrA {!!} {!!}
 ⇓weaken ⇓free = ⇓free
 ⇓weaken (?l φ₁) = ?l (⇓weaken φ₁)
 ⇓weaken (?r φ₁) = ?r (⇓weaken φ₁)
@@ -457,7 +559,7 @@ mutual
           → ⟦ t ⟧ᵉ (g ⸴ v₁) ∋ v
           → ⟦ subsume1 t ⟧ᵉ (g ⸴ v₂ ⸴ v₁) ∋ v
 ⇓subsume1 (⇓ x)                     = {!!}
-⇓subsume1 (⇓let φ₁ ⇓in φ₂)          = {!!}
+⇓subsume1 (⇓let φ₁ ⇓in φ₂)          = ⇓let (⇓subsume1 φ₁) ⇓in {!!}
 ⇓subsume1 ⇓false                    = ⇓false
 ⇓subsume1 ⇓true                     = ⇓true
 ⇓subsume1 (⇓if φ₁ ⇓else φ₂)         = ⇓if ⇓subsume1 φ₁ ⇓else ⇓subsume1 φ₂
@@ -670,9 +772,9 @@ var-inv (⇓ x) = refl
 ℂ⟦_⟧⌈_⌉ᵈ Explicit.`false {v = false} (⇓return ⇓false) = ℂ.`false
 ℂ⟦_⟧⌈_⌉ᵈ Explicit.`true  {v = true } (⇓return ⇓true ) = ℂ.`true
 ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`if t₁ `then t₂ `else t₃) {c = c₂} φ with ⇑>>= c₂ φ
-... | (v₁ , c₁ , φ₁ , φ₂ , φ₃) with v₁ | φ₂
-... | false | ⇓if φ₂₁ ⇓else φ₂₂ = ℂ.`if {!φ₂₁!} `else {!!}
-... | true  | ⇓if φ₂₁ ⇓then φ₂₂ = {!!}
+... | (v₁ , c₁ , φ₁ , φ₂ , φ₃) = {!!}
+-- ... | false | ⇓if φ₂₁ ⇓else φ₂₂ = ℂ.`if {!φ₂₁!} `else {!!}
+-- ... | true  | ⇓if φ₂₁ ⇓then φ₂₂ = {!!}
 ℂ⟦_⟧⌈_⌉ᵈ Explicit.`[] {v = []} (⇓return ⇓[]) = ℂ.`[]
 ℂ⟦_⟧⌈_⌉ᵈ (t₁ Explicit.`∷ t₂) φ = {!⇑>>= _ φ!}
 ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`foldr t t₁ t₂) φ = {!!}

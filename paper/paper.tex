@@ -1,5 +1,10 @@
 \documentclass{article}
 
+% these two are probably only necessary for the draft
+\usepackage{geometry}
+\usepackage{pdflscape}
+
+% these are needed for substantive stuff
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -9,10 +14,46 @@
 \usepackage{mathtools}
 \usepackage{simplebnf}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% GUIDE TO LATEX MACROS %
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% There are two languages:
+%   + 𝐁, the base language
+%   + 𝐋, the logic language
+% - \L<X> is the symbol for language X
+
+% - There are five "semantics symbols":
+%   + 𝔼, for exact values and evaluation semantics
+%   + 𝔸, for approximation values
+%   + ℂ, for clairvoyance semantics
+%   + 𝔻, for demand semantics
+%   + 𝕃, for logic semantics
+% - \S<X> is the semantics symbol X
+
+% - \T<X> is the type X
+% - \S<X> is the set of values for the type X
+% - \t<X> is the term (or term-level construct) X
+% - \s<X> is the semantic construct <X>
+
+% - \T<X> is also the typing relation for language X
+% - \E<X> is the evaluation relation for semantics X
+% - \trans<X> is the translation from B to L corresponding to semantics X
+
+% - Macros are generally n-ary; i.e., the macro \TThunk for thunk types takes
+% one argument, the type argument.  If we need a zero-arity version of macro M,
+% we use <M>Z.  For example, the zero-ary version of \TThunk is \TThunkZ.
+
+%%%%%%%%%%%%%%%%%%%%%
+% MACRO DEFINITIONS %
+%%%%%%%%%%%%%%%%%%%%%
+
 % paired delimiters
 \DeclarePairedDelimiter{\bbrackets}{\llbracket}{\rrbracket}
 \DeclarePairedDelimiter{\braces}{\lbrace}{\rbrace}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\verts}{\lvert}{\rvert}
 
 % theorem environments
 \newtheorem{lemma}{Lemma}
@@ -27,7 +68,7 @@
 \newcommand{\LB}{\mathbf{B}}
 \newcommand{\LL}{\mathbf{L}}
 
-% semantic symbols
+% semantics symbols
 \newcommand{\SA}{\mathbb{A}}
 \newcommand{\SC}{\mathbb{C}}
 \newcommand{\SD}{\mathbb{D}}
@@ -43,7 +84,8 @@
 \newcommand{\TProd}[2]{\texttt{\(#1\)\ *\ \(#2\)}}
 \newcommand{\TNat}{\texttt{Nat}}
 \newcommand{\TList}[1]{\texttt{List \({#1}\)}}
-\newcommand{\TThunk}[1]{\texttt{Thunk\ \(#1\)}}
+\newcommand{\TThunkZ}{\texttt{Thunk}}
+\newcommand{\TThunk}[1]{\texttt{\TThunkZ\ \(#1\)}}
 \newcommand{\TM}[1]{\texttt{M\ \(#1\)}}
 
 % terms
@@ -69,6 +111,7 @@
 \newcommand{\tchoose}[2]{\texttt{\(#1\)\ ?\ \(#2\)}}
 \newcommand{\tfree}[1]{\texttt{free\ \(#1\)}}
 \newcommand{\tfail}{\texttt{fail}}
+\newcommand{\tassert}[1]{\texttt{assert\ \(#1\)}}
 \newcommand{\treturn}[1]{\texttt{return\ \(#1\)}}
 \newcommand{\ttranspose}[1]{\texttt{transpose\ \(#1\)}}
 \newcommand{\tfoldMZ}{\texttt{foldM}}
@@ -85,7 +128,7 @@
 \newcommand{\spair}[2]{({#1}, {#2})}
 \newcommand{\snil}{\varepsilon}
 \newcommand{\scons}[2]{(#1, #2)}
-\newcommand{\sfoldr}[3]{\text{foldr}(#1, #2, #3)}
+\newcommand{\sfoldr}[3]{\text{foldr}({#1}, {#2}, {#3})}
 \newcommand{\sthunk}[1]{\text{thunk\ \({#1}\)}}
 \newcommand{\sundefined}{\bot}
 
@@ -103,7 +146,7 @@
 % clairvoyance
 \newcommand{\EC}[4]{{{#1} \mathrel{;} {#2}} \Downarrow^\SC_{#3} {#4}}
 % demand
-\newcommand{\ED}[2]{\SD\bbrackets{#1}({#2})}
+\newcommand{\ED}[3]{\SD\bbrackets{#1}({#2}, {#3})}
 % clairvoyance foldr
 \newcommand{\ECF}[8]{{{#1} \mathrel{;} \lambda{#2}{#3}.{#4}, {#5}, {#6}} \Downarrow^{\text{\(\SC\)-\tfoldrZ}}_{#7} {#8}}
 % logic
@@ -112,6 +155,10 @@
 \newcommand{\ELF}[7]{{{#1} \mathrel{;} \lambda{#2}{#3}.{#4}, {#5}, {#6}} \Downarrow^{\text{\(\SL\)-\tfoldrZ}} {#7}}
 % logic foldM
 \newcommand{\ELFM}[7]{{{#1} \mathrel{;} \lambda{#2}{#3}.{#4}, {#5}, {#6}} \Downarrow^{\text{\(\SL\)-\tfoldMZ}} {#7}}
+
+% translations
+\newcommand{\transC}[1]{\SC\floor{#1}}
+\newcommand{\transD}[2]{\SD\floor{#1}({#2})}
 
 % rules font
 \newcommand{\rulename}[1]{\textsc{#1}}
@@ -149,6 +196,8 @@ $t$ ::=
 ;;
 \end{bnf}
 \end{center}
+
+Note that the language does not include functions.  This is due to a technical limitation of demand semantics.
 
 \subsection{Typing}
 
@@ -372,22 +421,19 @@ Clairvoyance semantics has the judgment schema \( \EC{\gamma}{t}{c}{v} \).  Intu
   \end{prooftree}
 \end{center}
 
-Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a value and then iterating over that value.  The iteration is accomplished via the following auxiliary relation.
-
+Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a value and then iterating over that value.  The iteration is expressed in the following auxiliary relation.
 \begin{center}
   \begin{prooftree}
     \hypo{\EC{\gamma}{t_2}{c}{v}}
     \infer1[\rulename{C-Foldr-Nil}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{c}{v}}
   \end{prooftree}
 \end{center}
-
 \begin{center}
   \begin{prooftree}
     \hypo{\EC{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{c}{v}}
     \infer1[\rulename{C-Foldr-Undefined}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{c}{v}}
   \end{prooftree}
 \end{center}
-
 \begin{center}
   \begin{prooftree}
     \hypo{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v_3}}
@@ -407,11 +453,11 @@ Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a 
 \subsection{Demand semantics}
 
 \begin{align*}
-  \ED{x}{\gamma} &= (\braces{x \mapsto \gamma(x)}, 0) \\
-  \ED{\ttrue}{\gamma} &= (\bot, 0) \\
-  \ED{\tfalse}{\gamma} &= (\bot, 0) \\
-  \ED{\tnil}{\gamma} &= (\bot, 0) \\
-  \ED{\tcons{t_1}{t_2}}{\gamma} &= \ED{t_1}{\gamma} \sqcup \ED{t_2}{\gamma}
+  \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\
+  \ED{\ttrue}{\gamma}{a} &= (\bot, 0) \\
+  \ED{\tfalse}{\gamma}{a} &= (\bot, 0) \\
+  \ED{\tnil}{\gamma}{a} &= (\bot, 0) \\
+  \ED{\tcons{t_1}{t_2}}{\gamma}{a} &= \ED{t_1}{\gamma}{a} \sqcup \ED{t_2}{\gamma}{a}
 \end{align*}
 
 \section{The logic language}
@@ -670,11 +716,16 @@ As in clairvoyance semantics, the semantics of \( \tfoldrZ \) is defined in term
   If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
 \end{lemma}
 
-\begin{lemma}
-  If \( \TL{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then \( \EL{\gamma}{t}{\relax} \).
-\end{lemma}
+Note that \( \tfail \) never reduces, so the language is not total.
 
 \subsection{The clairvoyance translation}
+
+We now define some constructs on the terms in \( \LL \).  For each construct \( c \), we provide typing rules and a set of evaluation rules that \emph{completely characterize} \( c \).  By ``completely characterize'', we mean the following.
+
+\begin{itemize}
+\item \emph{Soundness:} Each rule is valid.
+\item \emph{Completeness:} Any derivation of the form \( \EL{\gamma}{c}{v} \) must have the form of one of the elimation rules for that construct.  In particular, there must be some elimination rule whose hypotheses are all true.  This allows us to ``invert'' judgments of the form \( \EL{\gamma}{c}{v} \).
+\end{itemize}
 
 \subsubsection{\texttt{return}}
 
@@ -727,15 +778,15 @@ As in clairvoyance semantics, the semantics of \( \tfoldrZ \) is defined in term
 
 \begin{center}
   \begin{prooftree}
-    \hypo{\TL{\Gamma}{t}{\sundefined}}
-    \infer1{\TL{\Gamma}{\ttranspose{t}}{\spair{\sundefined}{0}}}
+    \hypo{\EL{\gamma}{t}{\sundefined}}
+    \infer1{\EL{\gamma}{\ttranspose{t}}{\spair{\sundefined}{0}}}
   \end{prooftree}
 \end{center}
 
 \begin{center}
   \begin{prooftree}
-    \hypo{\TL{\Gamma}{t}{\sthunk{\spair{v}{c}}}}
-    \infer1{\TL{\Gamma}{\ttranspose{t}}{\spair{\sthunk{v}}{c}}}
+    \hypo{\EL{\gamma}{t}{\sthunk{\spair{v}{c}}}}
+    \infer1{\EL{\gamma}{\ttranspose{t}}{\spair{\sthunk{v}}{c}}}
   \end{prooftree}
 \end{center}
 
@@ -754,36 +805,84 @@ As in clairvoyance semantics, the semantics of \( \tfoldrZ \) is defined in term
   \end{prooftree}
 \end{center}
 
-The reduction behavior of \tfoldMZ\ is given in terms of yet another auxiliary relation.
+To characterize the reduction behavior of \( \rulename{L-FoldM} \), we define yet another auxiliary relation:
+\[
+  \ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v}{u} \equiv \ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}{u} .
+\]
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v}{u}}
-    \infer1{\EL{\gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{v}}{u}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_2}{u}}
-    \infer1{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\varepsilon}{u}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{u}}
-    \infer1{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{u}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{\spair{v_3}{c_1}}}
-    \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sthunk{v_2}}{t_1}{\spair{v_4}{c_2}}}
-    \infer2{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{\spair{v_4}{c_1 + c_2}}}
-  \end{prooftree}
-\end{center}
+\begin{lemma}
+  The following rules completely characterize \( \tfoldMZ \).
+  \begin{center}
+    \begin{prooftree}
+      \hypo{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v}{u}}
+      \infer1[\rulename{L-FoldM}]{\EL{\gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{v}}{u}}
+    \end{prooftree}
+  \end{center}\begin{center}
+    \begin{prooftree}
+      \hypo{\EL{\gamma}{t_2}{u}}
+      \infer1[\rulename{L-FoldM-Nil}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\varepsilon}{u}}
+    \end{prooftree}
+  \end{center}
+  \begin{center}
+    \begin{prooftree}
+      \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{u}}
+      \infer1[\rulename{L-FoldM-Undefined}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{u}}
+    \end{prooftree}
+  \end{center}
+  \begin{center}
+    \begin{prooftree}
+      \hypo{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{\spair{v_3}{c_1}}}
+      \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sthunk{v_2}}{t_1}{\spair{v_4}{c_2}}}
+      \infer2[\rulename{L-FoldM-Thunk}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{\spair{v_4}{c_1 + c_2}}}
+    \end{prooftree}
+  \end{center}
+\end{lemma}
+\begin{proof}
+  We first prove validity.
+  \newpage
+  \newgeometry{margin=1cm}
+  \begin{landscape}
+    \begin{itemize}
+    \item \textbf{\rulename{L-FoldM}.}
+      \begin{center}
+        \begin{prooftree}
+          \hypo{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}{u}}
+          \infer1[\rulename{L-Foldr}]{\EL{\gamma}{\tfoldr{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}}{u}}
+        \end{prooftree}
+      \end{center}
+    \item \textbf{\rulename{L-FoldM-Nil}.}
+      \begin{center}
+        \begin{prooftree}
+          \hypo{\EL{\gamma}{t_2}{u}}
+          \infer1[\rulename{L-Foldr-Nil}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\varepsilon}{u}}
+        \end{prooftree}
+      \end{center}
+    \item \textbf{\rulename{L-FoldM-Undefined}.}
+      \begin{center}
+        \begin{prooftree}
+          \infer0[\rulename{L-Var}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{y_2}{\bot}}
+          \infer1[\rulename{L-Transpose-Undefined}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{\ttranspose{y_2}}{\spair{\bot}{0}}}
+          \hypo{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot, x_2 \mapsto \sundefined}{t_1}{u}}
+          \infer2[\rulename{L-Bind}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{u}}
+          \infer1[\rulename{L-Foldr-Undefined}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\scons{v_1}{\sundefined}}{u}}
+        \end{prooftree}
+      \end{center}
+    \item \textbf{\rulename{L-FoldM-Thunk}.}  By induction, \( \ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v_2}{v_3} \).  Then,
+      \begin{center}
+        \begin{prooftree}
+          \hypo{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v_2}{v_3}}
+          \infer0[\rulename{L-Var}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_1}}}{y_2}{\sthunk{\spair{v_3}{c_1}}}}
+          \infer1[\rulename{L-Transpose-Thunk}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_1}}}{\ttranspose{y_2}}{\spair{\sthunk{v_3}}{c_1}}}
+          \hypo{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_2}}, x_2 \mapsto \sthunk{v_2}}{t_1}{\spair{v_4}{c_2}}}
+          \infer2[\rulename{L-Bind}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_2}}}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{\spair{v_4}{c_1 + c_2}}}
+          \infer2[\rulename{L-Foldr-Thunk}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\scons{v_1}{\sthunk{v_2}}}{\spair{v_4}{c_1 + c_2}}}
+        \end{prooftree}
+      \end{center}
+    \end{itemize}
+    To prove completeness, repeatedly apply inversion principles to find that any derivation of \( \tfoldM{x_1}{x_2}{t_1}{t_2}{v}{u} \) must have the form of one of the preceding derivations.
+  \end{landscape}
+  \restoregeometry
+\end{proof}
 
 \begin{center}
   \begin{align*}
@@ -806,6 +905,7 @@ The reduction behavior of \tfoldMZ\ is given in terms of yet another auxiliary r
 \end{theorem}
 \begin{proof}
   (\(\implies\)) By induction on the derivation of \( \EC{\gamma}{t}{c}{v} \).
+
   \textbf{Case:}
   \begin{center}
     \begin{prooftree}
@@ -844,25 +944,46 @@ The reduction behavior of \tfoldMZ\ is given in terms of yet another auxiliary r
   \end{lemma}
   \begin{proof}
     By induction on the derivation of \( \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c}{v_2} \).
-  \end{proof}
   \begin{itemize}
-  \item \textbf{Case \rulename{L-Foldr-Nil}:}
+  \item \textbf{Case \rulename{C-Foldr-Nil}:}
     \begin{itemize}
-    \item \(v_1 = \varepsilon\)
-    \item \(\EC{\gamma}{t_2}{c}{v_2}\)
+    \item \( v_1 = \varepsilon \)
+    \item \( \EC{\gamma}{t_2}{c}{v_2} \)
     \end{itemize}
+    By mutual induction, we obtain \( \EL{\gamma}{\floor{t_2}}{\spair{v_2}{c}} \), so we can construct
     \begin{center}
       \begin{prooftree}
-        \hypo{\EC{\gamma}{t_2}{c}{v}}
-        \infer1[\rulename{L-Foldr-Nil}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{c}{v}}
+        \hypo{\EL{\gamma}{\floor{t_2}}{\spair{v_2}{c}}}
+        \infer1[\rulename{L-FoldM-Nil}]{\ELF{\gamma}{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{\snil}{\spair{v_2}{c}}}
       \end{prooftree}
     \end{center}
+  \item \textbf{Case \rulename{L-Foldr-Undefined}}:
   \end{itemize}
 
   (\(\impliedby\)) By induction on the derivation of \( \ELFM{\gamma}{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{v_1}{\spair{v_2}{c}} \).
   % \end{proof}
+  \end{proof}
 \end{proof}
 
 \subsubsection{Demand semantics}
+
+\begin{align*}
+  \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x^A_1 \) = \tfree{A_1} in} \\
+                                             &\texttt{assert \tle{x^A_1}{x_1} in} \\
+                                             &\vdots \\
+                                             &\texttt{let \( x^A_n \) = \tfree{A_n} in} \\
+                                             &\texttt{assert \tle{x^A_n}{x_n} in} \\
+                                             &\texttt{let \( c \) = \tfree{\TNat} in} \\
+                                             &\texttt{assert \teq{\transC{t}}{\tpair{y^A}{c}} in} \\
+                                             &\texttt{(\( x^A_1 \), \( \ldots \), \( x^A_n \), \( c \))}
+\end{align*}
+
+\begin{lemma}
+  Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \) and \( \gamma \in \Eval{\Gamma} \), then \( \TL{\Gamma, y^A : B}{\transD{t}{\Gamma}}{\TM{(\texttt{\(A_1\)\ *\ \(\cdots\) *\ \(A_n\)})}} \)
+\end{lemma}
+
+\begin{theorem}
+  If \( \ED{t}{\gamma}{b^A} = (\gamma^A, c) \), then \( \EL{\gamma, y^A \mapsto b^A}{\transD{t}{\Gamma}}{\spair{\verts{\gamma^A}}{c}} \), where \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) \).
+\end{theorem}
 
 \end{document}

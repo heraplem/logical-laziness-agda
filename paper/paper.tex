@@ -165,6 +165,22 @@
 
 \begin{document}
 
+\section{Background}
+
+In the absence of recursion, call-by-need is semantically equivalent to call-by-name.  However, the two semantics have different performance characteristics: in particular, call-by-need is \emph{cost-optimal} in the sense that a call-by-need derivation of \( t \Downarrow v \) will never be larger than a call-by-name derivation of the same, and in fact it may be smaller.  Thus, a natural way to study call-by-name evaluation \emph{in paticular} is to augment the evaluation relation with an additional parameter that tracks the cost of evaluation.
+
+The standard semantics for call-by-name uses a heap of variable bindings that is updated as the expressions to which variables are bound are evaluated.  This is attractive because it reflects the most straightforward implementation of call-by-name evaluation on an actual computer, but it has the problem that it is non-compositional; that is, a derivation is not generally a simple composition of subterm derivations.  Therefore, some have tried to develop semantics that are equivalent but also compositional.
+
+An early example is the \emph{demand semantics} of Bjerner and Holmstr{\"{o}}m.  In this semantics, an open term is represented as a function that takes, in addition to a list of variable bindings, a \emph{demand} on the value to which the term will ultimately reduce; it produces a list of demands on its free variables.  The demand represents, essentially, ``how much'' of the result will end up being used by the rest of the program.  This semantics was originally presented without types; a version with types was published in <<STORY_OF_YOUR_LAZY_FUNCTIONS_LIFE>>.
+
+Another example of compositional semantics is the \emph{clairvoyance semantics} of Hackett and Hutton.  The key idea of this semantics is that, when binding a variable to an expression, rather than deferring computation of the bound expression until it is needed, we instead \emph{immediately} choose nondeterministically to either evaluate it or discard it.  This semantics is equivalent to the standard semantics in the sense that, if \( t \Downarrow v \), then there is \emph{some} derivation of this fact that is cost-equivalent to the derivation of the same in the standard semantics; and, furthermore, this derivation is the minimal such derivation.
+
+In <<STORY_OF_YOUR_LAZY_FUNCTIONS_LIFE>>, the fact that demand semantics is equivalent to the standard semantics was established by proving equivalence to clairvoyance semantics, which had already been proven equivalent to the standard semantics.  However, this led to some difficulties with mechanized proofs.  These proofs required writing demand functions by hand, a tedious and error-prone process.  In fact, it required writing three versions of ``the same term'': a pure version, a clairvoyance version, and a demand version.  Thus, we sought alternate means of expressing demand functions.  In particular, we hoped to be able to write a term \emph{once} and automatically obtain the clairvoyance and demand versions of that term.
+
+Eventually, we hit on the idea of using \emph{functional logic programming}.  Functional logic programming is a paradigm that combines the fundamental computational framework of functional programming with the nondeterminism and free variables found in logic programming.
+
+Our key idea is that, in a functional logic language, we can use nondeterminism to express directly the ``clairvoyance behavior'' of a term, and we can then obtain the corresponding ``demand behavior'' by representing the input demand as a free variable that is constrained to be an approximation of some actual input.  Our main technical contribution is a proof that this approach does result in behavior that is equivalent to clairvoyance and demand semantics, respectively.  This proof has also been formalized in Agda.
+
 \section{The base language}
 
 \subsection{Syntax}
@@ -985,5 +1001,9 @@ To characterize the reduction behavior of \( \rulename{L-FoldM} \), we define ye
 \begin{theorem}
   If \( \ED{t}{\gamma}{b^A} = (\gamma^A, c) \), then \( \EL{\gamma, y^A \mapsto b^A}{\transD{t}{\Gamma}}{\spair{\verts{\gamma^A}}{c}} \), where \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) \).
 \end{theorem}
+
+\section{Performance considerations}
+
+Our reduction rule for \( \tfreeZ \) says that \( \tfree{A} \) imme
 
 \end{document}

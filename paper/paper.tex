@@ -1,18 +1,83 @@
-\documentclass{article}
+%Version 3.1 December 2024
+% See section 11 of the User Manual for version history
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                 %%
+%% Please do not use \input{...} to include other tex files.       %%
+%% Submit your LaTeX manuscript as one .tex document.              %%
+%%                                                                 %%
+%% All additional figures and files should be attached             %%
+%% separately and not embedded in the \TeX\ document itself.       %%
+%%                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%\documentclass[referee,sn-basic]{sn-jnl}% referee option is meant for double line spacing
+
+%%=======================================================%%
+%% to print line numbers in the margin use lineno option %%
+%%=======================================================%%
+
+%%\documentclass[lineno,pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%=========================================================================================%%
+%% the documentclass is set to pdflatex as default. You can delete it if not appropriate.  %%
+%%=========================================================================================%%
+
+%%\documentclass[sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%Note: the following reference styles support Namedate and Numbered referencing. By default the style follows the most common style. To switch between the options you can add or remove Numbered in the optional parenthesis.
+%%The option is available for: sn-basic.bst, sn-chicago.bst%
+
+%%\documentclass[pdflatex,sn-nature]{sn-jnl}% Style for submissions to Nature Portfolio journals
+%%\documentclass[pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}% Math and Physical Sciences Numbered Reference Style
+%%\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}% Math and Physical Sciences Author Year Reference Style
+%%\documentclass[pdflatex,sn-aps]{sn-jnl}% American Physical Society (APS) Reference Style
+%%\documentclass[pdflatex,sn-vancouver-num]{sn-jnl}% Vancouver Numbered Reference Style
+%%\documentclass[pdflatex,sn-vancouver-ay]{sn-jnl}% Vancouver Author Year Reference Style
+%%\documentclass[pdflatex,sn-apa]{sn-jnl}% APA Reference Style
+%%\documentclass[pdflatex,sn-chicago]{sn-jnl}% Chicago-based Humanities Reference Style
+
+%%%% Standard Packages
+%%<additional latex packages if required can be included here>
+
+\usepackage{graphicx}%
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}%
+\usepackage{amsthm}%
+\usepackage{mathrsfs}%
+\usepackage[title]{appendix}%
+\usepackage{xcolor}%
+\usepackage{textcomp}%
+\usepackage{manyfoot}%
+\usepackage{booktabs}%
+\usepackage{algorithm}%
+\usepackage{algorithmicx}%
+\usepackage{algpseudocode}%
+\usepackage{listings}%
 
 % these two are probably only necessary for the draft
 \usepackage{geometry}
 \usepackage{pdflscape}
-
 % these are needed for substantive stuff
-\usepackage{amsfonts}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsthm}
 \usepackage{stmaryrd}
 \usepackage{ebproof}
 \usepackage{mathtools}
 \usepackage{simplebnf}
+%%%%
+
+%%%%%=============================================================================%%%%
+%%%%  Remarks: This template is provided to aid authors with the preparation
+%%%%  of original research articles intended for submission to journals published
+%%%%  by Springer Nature. The guidance has been prepared in partnership with
+%%%%  production teams to conform to Springer Nature technical requirements.
+%%%%  Editorial and presentation requirements differ among journal portfolios and
+%%%%  research disciplines. You may find sections in this template are irrelevant
+%%%%  to your work and are empowered to omit any such section if allowed by the
+%%%%  journal you intend to submit to. The submission guidelines and policies
+%%%%  of the journal take precedence. A detailed User Manual is available in the
+%%%%  template package for technical guidance.
+%%%%%=============================================================================%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % GUIDE TO LATEX MACROS %
@@ -89,7 +154,8 @@
 \newcommand{\TM}[1]{\texttt{M\ \(#1\)}}
 
 % terms
-\newcommand{\tlet}[3]{\texttt{let\ \({#1}\)\ =\ \({#2}\)\ in\ \({#3}\)}}
+\newcommand{\tletZ}{\texttt{let}}
+\newcommand{\tlet}[3]{\texttt{\tletZ\ \({#1}\)\ =\ \({#2}\)\ in\ \({#3}\)}}
 \newcommand{\ttrue}{\texttt{true}}
 \newcommand{\tfalse}{\texttt{false}}
 \newcommand{\teq}[2]{\texttt{\(#1\)\ ==\ \(#2\)}}
@@ -101,15 +167,19 @@
 \newcommand{\tcons}[2]{\texttt{\(#1\)\ ::\ \(#2\)}}
 \newcommand{\tfoldrZ}{\texttt{foldr}}
 \newcommand{\tfoldr}[5]{\tfoldrZ\texttt{(\(\lambda{#1}{#2}\).\(#3\),\ \(#4\),\ \(#5\))}}
-\newcommand{\tthunk}[1]{\texttt{thunk\ \({#1}\)}}
+\newcommand{\tthunkZ}{\texttt{thunk}}
+\newcommand{\tthunk}[1]{\texttt{\tthunkZ\ \({#1}\)}}
 \newcommand{\tundefined}{\texttt{undefined}}
 \newcommand{\tlazyZ}{\texttt{lazy}}
 \newcommand{\tlazy}[1]{\texttt{\tlazyZ\ \(#1\)}}
-\newcommand{\tforce}[1]{\texttt{force\ \({#1}\)}}
+\newcommand{\tforceZ}{\texttt{force}}
+\newcommand{\tforce}[1]{\texttt{\tforceZ\ \({#1}\)}}
 \newcommand{\tcase}[4]{\texttt{case \(#1\) of thunk \(#2\) => \(#3\); undefined => \(#4\)}}
-\newcommand{\ttick}[1]{\texttt{tick\ \({#1}\)}}
+\newcommand{\ttickZ}{\texttt{tick}}
+\newcommand{\ttick}[1]{\texttt{\ttickZ\ \({#1}\)}}
 \newcommand{\tchoose}[2]{\texttt{\(#1\)\ ?\ \(#2\)}}
-\newcommand{\tfree}[1]{\texttt{free\ \(#1\)}}
+\newcommand{\tfreeZ}{\texttt{free}}
+\newcommand{\tfree}[1]{\texttt{\tfreeZ\ \(#1\)}}
 \newcommand{\tfail}{\texttt{fail}}
 \newcommand{\tassert}[1]{\texttt{assert\ \(#1\)}}
 \newcommand{\treturn}[1]{\texttt{return\ \(#1\)}}
@@ -129,7 +199,8 @@
 \newcommand{\snil}{\varepsilon}
 \newcommand{\scons}[2]{(#1, #2)}
 \newcommand{\sfoldr}[3]{\text{foldr}({#1}, {#2}, {#3})}
-\newcommand{\sthunk}[1]{\text{thunk\ \({#1}\)}}
+\newcommand{\sthunkZ}{\text{thunk}}
+\newcommand{\sthunk}[1]{\text{sthunkZ\ \({#1}\)}}
 \newcommand{\sundefined}{\bot}
 
 % typing rules
@@ -163,7 +234,61 @@
 % rules font
 \newcommand{\rulename}[1]{\textsc{#1}}
 
+\raggedbottom
+%%\unnumbered% uncomment this for unnumbered level heads
+
 \begin{document}
+
+\title[Article Title]{Article Title}
+
+%%=============================================================%%
+%% GivenName	-> \fnm{Joergen W.}
+%% Particle	-> \spfx{van der} -> surname prefix
+%% FamilyName	-> \sur{Ploeg}
+%% Suffix	-> \sfx{IV}
+%% \author*[1,2]{\fnm{Joergen W.} \spfx{van der} \sur{Ploeg}
+%%  \sfx{IV}}\email{iauthor@gmail.com}
+%%=============================================================%%
+
+\author*[1,2]{\fnm{First} \sur{Author}}\email{iauthor@gmail.com}
+
+\author[2,3]{\fnm{Second} \sur{Author}}\email{iiauthor@gmail.com}
+\equalcont{These authors contributed equally to this work.}
+
+\author[1,2]{\fnm{Third} \sur{Author}}\email{iiiauthor@gmail.com}
+\equalcont{These authors contributed equally to this work.}
+
+\affil*[1]{\orgdiv{Department}, \orgname{Organization}, \orgaddress{\street{Street}, \city{City}, \postcode{100190}, \state{State}, \country{Country}}}
+
+\affil[2]{\orgdiv{Department}, \orgname{Organization}, \orgaddress{\street{Street}, \city{City}, \postcode{10587}, \state{State}, \country{Country}}}
+
+\affil[3]{\orgdiv{Department}, \orgname{Organization}, \orgaddress{\street{Street}, \city{City}, \postcode{610101}, \state{State}, \country{Country}}}
+
+%%==================================%%
+%% Sample for unstructured abstract %%
+%%==================================%%
+
+\abstract{The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. Authors are advised to check the author instructions for the journal they are submitting to for word limits and if structural elements like subheadings, citations, or equations are permitted.}
+
+%%================================%%
+%% Sample for structured abstract %%
+%%================================%%
+
+% \abstract{\textbf{Purpose:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+%
+% \textbf{Methods:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+%
+% \textbf{Results:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+%
+% \textbf{Conclusion:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.}
+
+\keywords{keyword1, Keyword2, Keyword3, Keyword4}
+
+%%\pacs[JEL Classification]{D8, H51}
+
+%%\pacs[MSC Classification]{35A01, 65L10, 65L12, 65L20, 65L70}
+
+\maketitle
 
 \section{Background}
 
@@ -171,11 +296,11 @@ In the absence of recursion, call-by-need is semantically equivalent to call-by-
 
 The standard semantics for call-by-name uses a heap that binds variables to expressions; evaluating a variable amounts to evaluating the expression to which it is bound and then updating the heap to bind the variable to the resulting value.  This is attractive because it reflects a straightforward implementation of call-by-name evaluation on an actual computer, but it has the drawback that it is non-compositional; that is, a derivation is not generally a simple composition of subterm derivations.  Therefore, some have tried to develop semantics that are equivalent but also compositional.
 
-An early example is the \emph{demand semantics} of Bjerner and Holmstr{\"{o}}m.  In this semantics, an open term is represented as a function that takes, in addition to a list of variable bindings, a \emph{demand} on the value to which the term will ultimately reduce; it produces a list of demands on its free variables.  The demand represents, essentially, ``how much'' of the result will end up being used by the rest of the program.  This semantics was originally presented without types; a version with types was published in <<STORY_OF_YOUR_LAZY_FUNCTIONS_LIFE>>.
+An early example is the \emph{demand semantics} of Bjerner and Holmstr{\"{o}}m.  In this semantics, an open term is represented as a function that takes, in addition to a list of variable bindings, a \emph{demand} on the value to which the term will ultimately reduce; it produces a list of demands on its free variables.  The demand represents, essentially, ``how much'' of the result will end up being used by the rest of the program.  This semantics was originally presented without types; a version with types was published in STORYOFYOURLAZYFUNCTIONSLIFE.
 
 Another example of compositional semantics is the \emph{clairvoyance semantics} of Hackett and Hutton.  The key idea of this semantics is that, when binding a variable to an expression, rather than deferring computation of the bound expression until it is needed, we \emph{immediately} choose nondeterministically to either evaluate the expression or discard the binding entirely.  This semantics is equivalent to the standard semantics in the sense that, if \( t \Downarrow v \), then there is some derivation of this fact that is cost-equivalent to the derivation of the same in the standard semantics; and, furthermore, this derivation is the minimal such derivation.
 
-In <<STORY_OF_YOUR_LAZY_FUNCTIONS_LIFE>>, the fact that demand semantics is equivalent to the standard semantics was established by proving equivalence to clairvoyance semantics, which had already been proven equivalent to the standard semantics.  However, this led to some difficulties with mechanized proofs.  These proofs required writing demand functions by hand, a tedious and error-prone process.  In fact, it required writing three versions of ``the same term'': a pure version, a clairvoyance version, and a demand version.  Thus, we sought alternate means of expressing demand functions.  In particular, we hoped to be able to write a term \emph{once} and automatically obtain the clairvoyance and demand versions of that term.
+In STORYOFYOURLAZYFUNCTIONSLIFE, the fact that demand semantics is equivalent to the standard semantics was established by proving equivalence to clairvoyance semantics, which had already been proven equivalent to the standard semantics.  However, this led to some difficulties with mechanized proofs.  These proofs required writing demand functions by hand, a tedious and error-prone process.  In fact, it required writing three versions of ``the same term'': a pure version, a clairvoyance version, and a demand version.  Thus, we sought alternate means of expressing demand functions.  In particular, we hoped to be able to write a term \emph{once} and automatically obtain the clairvoyance and demand versions of that term.
 
 Eventually, we hit on the idea of using \emph{functional logic programming}.  Functional logic programming is a paradigm that combines the fundamental computational framework of functional programming with the nondeterminism and free variables found in logic programming.
 
@@ -213,7 +338,9 @@ $t$ ::=
 \end{bnf}
 \end{center}
 
-Note that the language does not include functions.  This is due to a technical limitation of demand semantics.
+The base language is a simple calculus with just enough types to make things interesting.  The explicit \( \tlazyZ \) \( \tforceZ \) terms decouple our analysis from any particular evaluation model, and the explicit \( \ttickZ \) terms decouple it from any particular cost model.
+
+Note that the language does not have functions.  This is due to a technical limitation of demand semantics.
 
 \subsection{Typing}
 
@@ -299,6 +426,8 @@ Note that the language does not include functions.  This is due to a technical l
 
 \subsection{Exact values and approximations}
 
+Each type \( A \) comes equipped with a set \( \Eval{A} \) of \emph{exact values} and a set \( \Approx{A} \) of \emph{approximation values}.
+
 \begin{center}
   \begin{align*}
     \Eval{\TBool} &= \SBool \\
@@ -314,6 +443,8 @@ Note that the language does not include functions.  This is due to a technical l
 \end{center}
 
 \subsection{Evaluation semantics}
+
+Evaluation semantics 
 
 \begin{align*}
   \EE{x}{\gamma} &= \gamma(x) \\
@@ -412,21 +543,21 @@ Clairvoyance semantics has the judgment schema \( \EC{\gamma}{t}{c}{v} \).  Intu
 
 \begin{center}
   \begin{prooftree}
-    \infer0{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}
+    \hypo{\EC{\gamma}{t}{c}{v}}
+    \infer1[\rulename{L-Lazy-Thunk}]{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}
   \end{prooftree}
 \end{center}
 
 \begin{center}
   \begin{prooftree}
-    \hypo{\EC{\gamma}{t}{c}{v}}
-    \infer1{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}
+    \infer0[\rulename{L-Lazy-Undefined}]{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}
   \end{prooftree}
 \end{center}
 
 \begin{center}
   \begin{prooftree}
     \hypo{\EC{\gamma}{t}{c}{\sthunk{v}}}
-    \infer1{\EC{\gamma}{\tforce{t}}{c}{v}}
+    \infer1[\rulename{L-Force}]{\EC{\gamma}{\tforce{t}}{c}{v}}
   \end{prooftree}
 \end{center}
 
@@ -436,6 +567,10 @@ Clairvoyance semantics has the judgment schema \( \EC{\gamma}{t}{c}{v} \).  Intu
     \infer1{\EC{\gamma}{\ttick{t}}{c + 1}{v}}
   \end{prooftree}
 \end{center}
+
+The crucial rules are \rulename{L-Lazy-Thunk}, \rulename{L-Lazy-Undefined}, \rulename{L-Force}.  \rulename{L-Lazy-Thunk} and \rulename{L-Lazy-Undefined} say that, to evaluate a \( \tlazyZ \) term, we nondeterministically either evaluate its subterm and wrap it in a \( \sthunkZ \) or substitute an ``empty'' value \( \sundefined \).  \rulename{L-Force} says that we can only evaluate a value of \( \TThunkZ \) type if it is in fact a \( \sthunkZ \); in other words, if we need the result of a \( \tlazyZ \) term, then we must have actually evaluated it via \rulename{L-Lazy-Thunk}.
+
+In the original formulation of clairvoyance semantics, nondeterminism was introduced at \( \tletZ \) bindings: when evaluating \( \tlet{x}{t_1}{t_2} \), either \( x \) was immediately bound to the result of evaluting \( t_1 \), or else \( x \) was not bound at all.  But our base language explicitly marks laziness points with \( \tthunkZ \) terms, so we must introduce nondeterminism there.
 
 Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a value and then iterating over that value.  The iteration is expressed in the following auxiliary relation.
 \begin{center}

@@ -12,7 +12,7 @@ data Ty : Type where
 
 private
   variable
-    α α₁ α₂ : Ty
+    α β : Ty
 
 Ctx : Type
 Ctx = List Ty
@@ -35,9 +35,9 @@ data _⊢_ : Ctx → Ty → Type where
   `_               : α ∈ᴸ Γ
                    → Γ ⊢ α
 
-  `let_`in_        : Γ ⊢ α₁
-                   → Γ ⸴ α₁ ⊢ α₂
-                   → Γ ⊢ α₂
+  `let_`in_        : Γ ⊢ α
+                   → Γ ⸴ α ⊢ β
+                   → Γ ⊢ β
 
   `false           : Γ ⊢ `Bool
   `true            : Γ ⊢ `Bool
@@ -47,22 +47,22 @@ data _⊢_ : Ctx → Ty → Type where
                    → Γ ⊢ α
                    → Γ ⊢ α
 
-  `[]              : Γ ⊢ `List α₁
+  `[]              : Γ ⊢ `List α
 
-  _`∷_             : Γ ⊢ `T α₁
-                   → Γ ⊢ `T (`List α₁)
-                   → Γ ⊢ `List α₁
+  _`∷_             : Γ ⊢ α
+                   → Γ ⊢ `T (`List α)
+                   → Γ ⊢ `List α
 
-  `foldr           : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂
-                   → Γ ⊢ α₂
-                   → Γ ⊢ `List α₁
-                   → Γ ⊢ α₂
+  `foldr           : Γ ⸴ α ⸴ `T β ⊢ β
+                   → Γ ⊢ β
+                   → Γ ⊢ `List α
+                   → Γ ⊢ β
 
   `tick            : Γ ⊢ α
                    → Γ ⊢ α
 
-  `lazy            : Γ ⊢ α₁
-                   → Γ ⊢ `T α₁
+  `lazy            : Γ ⊢ α
+                   → Γ ⊢ `T α
 
   `force           : Γ ⊢ `T α
                    → Γ ⊢ α

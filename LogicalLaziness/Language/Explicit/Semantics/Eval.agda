@@ -11,7 +11,7 @@ open import LogicalLaziness.Language.Explicit
 private
   variable
     Γ : Ctx
-    α α₁ α₂ : Ty
+    α β : Ty
 
 ⟦_⟧ᵗ : Ty → Type
 ⟦ `Bool    ⟧ᵗ = Bool
@@ -34,8 +34,8 @@ private
   → ⟦ Γ ⟧ᶜ → Bool → ⟦ α ⟧ᵗ
 
 ⟦foldr_,_⟧ᵉ
-  : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂ → Γ ⊢ α₂
-  → ⟦ Γ ⟧ᶜ → List ⟦ α₁ ⟧ᵗ → ⟦ α₂ ⟧ᵗ
+  : Γ ⸴ α ⸴ `T β ⊢ β → Γ ⊢ β
+  → ⟦ Γ ⟧ᶜ → List ⟦ α ⟧ᵗ → ⟦ β ⟧ᵗ
 
 ⟦ ` x                      ⟧ᵉ γ = All.lookup γ x
 ⟦ `let t₁ `in t₂           ⟧ᵉ γ = let v = ⟦ t₁ ⟧ᵉ γ in ⟦ t₂ ⟧ᵉ (γ ⸴ v)

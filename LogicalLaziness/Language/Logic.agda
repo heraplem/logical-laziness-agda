@@ -17,13 +17,15 @@ open import Data.Bool
   as Bool
   using (Bool; false; true)
 open import Data.Bool.Instances
-open import Data.Nat
-  as ℕ
-  using (ℕ; suc; _+_)
 open import Data.Product
   as Σ
 open import Data.Product.Properties
   as Σ
+open import Data.Sum
+open import Data.Nat
+  as ℕ
+  using (ℕ; suc; _+_)
+open import Data.Nat.Properties
 open import Data.List
   as List
 open import Data.List.Relation.Unary.Any
@@ -87,7 +89,7 @@ Ctx : Type
 Ctx = List Ty
 
 variable
-  Γ Δ : Ctx
+  Γ Γ₁ Γ₂ Δ : Ctx
 
 infix  1.59  `_ ⇓_ #_
 infixl 1.56  _`+_ _⇓+_
@@ -151,11 +153,11 @@ data _⊢_ : Ctx → Ty → Type where
 
   `[]              : Γ ⊢ `ListA τ
 
-  _`∷_             : Γ ⊢ `T τ
+  _`∷_             : Γ ⊢ τ
                    → Γ ⊢ `T (`ListA τ)
                    → Γ ⊢ `ListA τ
 
-  `foldrA          : Γ ⸴ `T α ⸴ `T β ⊢ β
+  `foldrA          : Γ ⸴ α ⸴ `T β ⊢ β
                    → Γ ⊢ β
                    → Γ ⊢ `ListA α
                    → Γ ⊢ β
@@ -194,15 +196,11 @@ instance
 ⟦_⟧ᶜ : Ctx → Type
 ⟦_⟧ᶜ = All ⟦_⟧ᵗ
 
--- Ty-≡-dec : DecidableEquality ⟦ τ ⟧ᵗ
--- Ty-≡-dec {`Bool}    = Bool._≟_
--- Ty-≡-dec {α `× β}   = Σ.≡-dec Ty-≡-dec Ty-≡-dec
--- Ty-≡-dec {`T τ}     = T.≡-dec Ty-≡-dec
--- Ty-≡-dec {`ℕ}       = ℕ._≟_
--- Ty-≡-dec {`ListA τ} = ListA.≡-dec Ty-≡-dec
-
 variable
-  g γ : ⟦ Γ ⟧ᶜ
+  γ  : ⟦ Γ ⟧ᶜ
+  γ₁ : ⟦ Γ₁ ⟧ᶜ
+  γ₂ : ⟦ Γ₂ ⟧ᶜ
+  δ  : ⟦ Δ ⟧ᶜ
 
 ---------------
 -- Renamings --
@@ -213,9 +211,9 @@ _→ʳ_ : Ctx → Ctx → Type
 Γ →ʳ Δ = ∀ {α} → α ∈ᴸ Γ → α ∈ᴸ Δ
 
 variable
-  ρ : Γ →ʳ Δ
+  ρ ρ₁ ρ₂ : Γ →ʳ Δ
 
-↑ʳ_ : (Γ →ʳ Δ) → ((Γ ⸴ τ) →ʳ (Δ ⸴ τ))
+↑ʳ_ : Γ →ʳ Δ → Γ ⸴ τ →ʳ Δ ⸴ τ
 ↑ʳ_ ρ zeroᵛ    = zeroᵛ
 ↑ʳ_ ρ (sucᵛ x) = sucᵛ (ρ x)
 
@@ -248,19 +246,25 @@ _$ʳ_ : Γ →ʳ Δ → Γ ⊢ α → Δ ⊢ α
 ↑ᵗ_ = (sucᵛ $ʳ_)
 
 exchange : Γ ⸴ τ₁ ⸴ τ₂ ⊢ α → Γ ⸴ τ₂ ⸴ τ₁ ⊢ α
-exchange t = ρ′ $ʳ t
+exchange t = rename-exchange $ʳ t
   where
-    ρ′ : α ∈ᴸ Γ ⸴ τ₁ ⸴ τ₂ → α ∈ᴸ Γ ⸴ τ₂ ⸴ τ₁
-    ρ′ (here px)        = sucᵛ (here px)
-    ρ′ (sucᵛ (here px)) = here px
-    ρ′ (sucᵛ (sucᵛ p))  = sucᵛ (sucᵛ p)
+    rename-exchange : α ∈ᴸ Γ ⸴ τ₁ ⸴ τ₂ → α ∈ᴸ Γ ⸴ τ₂ ⸴ τ₁
+    rename-exchange (here px)        = sucᵛ (here px)
+    rename-exchange (sucᵛ (here px)) = here px
+    rename-exchange (sucᵛ (sucᵛ p))  = sucᵛ (sucᵛ p)
 
--- A common special-case context manipulation.
+-- A common special-case context manipulation
 subsume1 : Γ ⸴ τ₁ ⊢ α → Γ ⸴ τ₂ ⸴ τ₁ ⊢ α
 subsume1 t = exchange (↑ᵗ t)
 
+-- An uncommon special-case context manipulation
 subsume2 : Γ ⸴ τ₁ ⸴ τ₂ ⊢ α → Γ ⸴ τ₃ ⸴ τ₁ ⸴ τ₂ ⊢ α
-subsume2 t = `free
+subsume2 t = rename-subsume2 $ʳ t
+  where
+    rename-subsume2 : α ∈ᴸ Γ ⸴ τ₁ ⸴ τ₂ → α ∈ᴸ Γ ⸴ τ₃ ⸴ τ₁ ⸴ τ₂
+    rename-subsume2 (here px) = here px
+    rename-subsume2 (sucᵛ (here px)) = there (here px)
+    rename-subsume2 (sucᵛ (sucᵛ x)) = there (there (there x))
 
 -------------------
 -- Substitutions --
@@ -287,8 +291,8 @@ _$ˢ_ : Γ →ˢ Δ → Γ ⊢ τ → Δ ⊢ τ
 σ $ˢ t₁ `≟ t₂                 = (σ $ˢ t₁) `≟ (σ $ˢ t₂)
 σ $ˢ t₁ `≲ t₂                 = (σ $ˢ t₁) `≲ (σ $ˢ t₂)
 σ $ˢ t₁ `, t₂                 = (σ $ˢ t₁) `, (σ $ˢ t₂)
-σ $ˢ `proj₁ t₁                  = `proj₁ (σ $ˢ t₁)
-σ $ˢ `proj₂ t₁                  = `proj₂ (σ $ˢ t₁)
+σ $ˢ `proj₁ t₁                = `proj₁ (σ $ˢ t₁)
+σ $ˢ `proj₂ t₁                = `proj₂ (σ $ˢ t₁)
 σ $ˢ `undefined               = `undefined
 σ $ˢ `thunk t₁                = `thunk (σ $ˢ t₁)
 σ $ˢ `T-case t₁ t₂ t₃         = `T-case (σ $ˢ t₁) (↑ˢ σ $ˢ t₂) (σ $ˢ t₃)
@@ -311,7 +315,7 @@ data Ty⟦_⟧[_≲_] : ∀ α → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type wher
   undefined : ∀ {v} → Ty⟦ `T α ⟧[ undefined ≲ v ]
   thunk : ∀ {v₁ v₂} → Ty⟦ α ⟧[ v₁ ≲ v₂ ] → Ty⟦ `T α ⟧[ thunk v₁ ≲ thunk v₂ ]
   [] : Ty⟦ `ListA α ⟧[ [] ≲ [] ]
-  _∷_ : ∀ {v₁ vs₁ v₂ vs₂} → Ty⟦ `T α ⟧[ v₁ ≲ v₂ ] → Ty⟦ `T (`ListA α) ⟧[ vs₁ ≲ vs₂ ] →
+  _∷_ : ∀ {v₁ vs₁ v₂ vs₂} → Ty⟦ α ⟧[ v₁ ≲ v₂ ] → Ty⟦ `T (`ListA α) ⟧[ vs₁ ≲ vs₂ ] →
     Ty⟦ `ListA α ⟧[ v₁ ∷ vs₁ ≲ v₂ ∷ vs₂ ]
 
 Ty⟦_⟧[_≴_] : ∀ α → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
@@ -324,78 +328,78 @@ Ty⟦ α ⟧[ v₁ ≴ v₂ ] = ¬ Ty⟦ α ⟧[ v₁ ≲ v₂ ]
 mutual
 
   data ⟦_⟧ᵉ : ∀ {Γ τ} → Γ ⊢ τ → ⟦ Γ ⟧ᶜ → ⟦ τ ⟧ᵗ → Type where
-    ⇓_                : (x : τ ∈ᴸ Γ) → ⟦ ` x ⟧ᵉ g (All.lookup g x)
+    ⇓_                : (x : τ ∈ᴸ Γ) → ⟦ ` x ⟧ᵉ γ (All.lookup γ x)
     ⇓let_⇓in_         : ∀ {v₁ v₂} →
-      ⟦ t₁ ⟧ᵉ g ∋ v₁ →
-      ⟦ t₂ ⟧ᵉ (g ⸴ v₁) ∋ v₂ →
-      ⟦ `let t₁ `in t₂ ⟧ᵉ g ∋ v₂
-    ⇓false            : ⟦ `false ⟧ᵉ g ∋ false
-    ⇓true             : ⟦ `true ⟧ᵉ g ∋ true
+      ⟦ t₁ ⟧ᵉ γ ∋ v₁ →
+      ⟦ t₂ ⟧ᵉ (γ ⸴ v₁) ∋ v₂ →
+      ⟦ `let t₁ `in t₂ ⟧ᵉ γ ∋ v₂
+    ⇓false            : ⟦ `false ⟧ᵉ γ ∋ false
+    ⇓true             : ⟦ `true ⟧ᵉ γ ∋ true
     ⇓if_⇓else_ : ∀ {v} →
-      ⟦ t₁ ⟧ᵉ g ∋ false →
-      ⟦ t₃ ⟧ᵉ g ∋ v →
-      ⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ g ∋ v
+      ⟦ t₁ ⟧ᵉ γ ∋ false →
+      ⟦ t₃ ⟧ᵉ γ ∋ v →
+      ⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ γ ∋ v
     ⇓if_⇓then_ : ∀ {v} →
-      ⟦ t₁ ⟧ᵉ g ∋ true →
-      ⟦ t₂ ⟧ᵉ g ∋ v →
-      ⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ g ∋ v
+      ⟦ t₁ ⟧ᵉ γ ∋ true →
+      ⟦ t₂ ⟧ᵉ γ ∋ v →
+      ⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ γ ∋ v
     ⇓≟-true : {v : ⟦ τ ⟧ᵗ} →
-      ⟦ t₁ ⟧ᵉ g ∋ v →
-      ⟦ t₂ ⟧ᵉ g ∋ v →
-      ⟦ t₁ `≟ t₂ ⟧ᵉ g ∋ true
+      ⟦ t₁ ⟧ᵉ γ ∋ v →
+      ⟦ t₂ ⟧ᵉ γ ∋ v →
+      ⟦ t₁ `≟ t₂ ⟧ᵉ γ ∋ true
     ⇓≟-false : {v₁ v₂ : ⟦ τ ⟧ᵗ}
-             → ⟦ t₁ ⟧ᵉ g ∋ v₁
-             → ⟦ t₂ ⟧ᵉ g ∋ v₂
+             → ⟦ t₁ ⟧ᵉ γ ∋ v₁
+             → ⟦ t₂ ⟧ᵉ γ ∋ v₂
              → v₁ ≢ v₂
-             → ⟦ t₁ `≟ t₂ ⟧ᵉ g ∋ false
+             → ⟦ t₁ `≟ t₂ ⟧ᵉ γ ∋ false
     ⇓≲-true : {v₁ v₂ : ⟦ τ ⟧ᵗ} →
-      ⟦ t₁ ⟧ᵉ g ∋ v₁ →
-      ⟦ t₂ ⟧ᵉ g ∋ v₂ →
+      ⟦ t₁ ⟧ᵉ γ ∋ v₁ →
+      ⟦ t₂ ⟧ᵉ γ ∋ v₂ →
       Ty⟦ τ ⟧[ v₁ ≲ v₂ ] →
-      ⟦ t₁ `≲ t₂ ⟧ᵉ g ∋ true
+      ⟦ t₁ `≲ t₂ ⟧ᵉ γ ∋ true
     ⇓≲-false : {v₁ v₂ : ⟦ τ ⟧ᵗ}
-             → ⟦ t₁ ⟧ᵉ g ∋ v₁
-             → ⟦ t₂ ⟧ᵉ g ∋ v₂
+             → ⟦ t₁ ⟧ᵉ γ ∋ v₁
+             → ⟦ t₂ ⟧ᵉ γ ∋ v₂
              → Ty⟦ τ ⟧[ v₁ ≴ v₂ ]
-             → ⟦ t₁ `≲ t₂ ⟧ᵉ g ∋ false
+             → ⟦ t₁ `≲ t₂ ⟧ᵉ γ ∋ false
     _⇓,_              : ∀ {v₁ v₂} →
-      ⟦ t₁ ⟧ᵉ g ∋ v₁ →
-      ⟦ t₂ ⟧ᵉ g ∋ v₂ →
-      ⟦ t₁ `, t₂ ⟧ᵉ g ∋ (v₁ , v₂)
+      ⟦ t₁ ⟧ᵉ γ ∋ v₁ →
+      ⟦ t₂ ⟧ᵉ γ ∋ v₂ →
+      ⟦ t₁ `, t₂ ⟧ᵉ γ ∋ (v₁ , v₂)
     ⇓proj₁ : ∀ {v} →
-      ⟦ t ⟧ᵉ g ∋ v →
-      ⟦ `proj₁ t ⟧ᵉ g ∋ proj₁ v
+      ⟦ t ⟧ᵉ γ ∋ v →
+      ⟦ `proj₁ t ⟧ᵉ γ ∋ proj₁ v
     ⇓proj₂ : ∀ {v}
-      → ⟦ t ⟧ᵉ g v
-      → ⟦ `proj₂ t ⟧ᵉ g ∋ proj₂ v
-    ⇓undefined : ⟦ `undefined {τ = τ} ⟧ᵉ g ∋ undefined
+      → ⟦ t ⟧ᵉ γ v
+      → ⟦ `proj₂ t ⟧ᵉ γ ∋ proj₂ v
+    ⇓undefined : ⟦ `undefined {τ = τ} ⟧ᵉ γ ∋ undefined
     ⇓thunk : ∀ {v} →
-      ⟦ t₁ ⟧ᵉ g ∋ v →
-      ⟦ `thunk t₁ ⟧ᵉ g ∋ thunk v
+      ⟦ t₁ ⟧ᵉ γ ∋ v →
+      ⟦ `thunk t₁ ⟧ᵉ γ ∋ thunk v
     ⇓T-case-undefined : ∀ {v} →
-      ⟦ t₁ ⟧ᵉ g ∋ undefined →
-      ⟦ t₃ ⟧ᵉ g ∋ v →
-      ⟦ `T-case t₁ t₂ t₃ ⟧ᵉ g ∋ v
+      ⟦ t₁ ⟧ᵉ γ ∋ undefined →
+      ⟦ t₃ ⟧ᵉ γ ∋ v →
+      ⟦ `T-case t₁ t₂ t₃ ⟧ᵉ γ ∋ v
     ⇓T-case-thunk     : ∀ {v₁ v₂} →
-      ⟦ t₁ ⟧ᵉ g ∋ thunk v₁ →
-      ⟦ t₂ ⟧ᵉ (g ⸴ v₁) ∋ v₂ →
-      ⟦ `T-case t₁ t₂ t₃ ⟧ᵉ g ∋ v₂
-    #_                : ∀ n → ⟦ # n ⟧ᵉ g n
+      ⟦ t₁ ⟧ᵉ γ ∋ thunk v₁ →
+      ⟦ t₂ ⟧ᵉ (γ ⸴ v₁) ∋ v₂ →
+      ⟦ `T-case t₁ t₂ t₃ ⟧ᵉ γ ∋ v₂
+    #_                : ∀ n → ⟦ # n ⟧ᵉ γ n
     _⇓+_              : ∀ {n₁ n₂} →
-      ⟦ t₁ ⟧ᵉ g ∋ n₁ →
-      ⟦ t₂ ⟧ᵉ g ∋ n₂ →
-      ⟦ t₁ `+ t₂ ⟧ᵉ g ∋ (n₁ + n₂)
-    ⇓[]               : ∀ {τ} → ⟦_⟧ᵉ {τ = `ListA τ} `[] g []
-    _⇓∷_              : ∀ {x xs} → ⟦ t₁ ⟧ᵉ g x → ⟦ t₂ ⟧ᵉ g xs → ⟦ t₁ `∷ t₂ ⟧ᵉ g (x ∷ xs)
+      ⟦ t₁ ⟧ᵉ γ ∋ n₁ →
+      ⟦ t₂ ⟧ᵉ γ ∋ n₂ →
+      ⟦ t₁ `+ t₂ ⟧ᵉ γ ∋ (n₁ + n₂)
+    ⇓[]               : ∀ {τ} → ⟦_⟧ᵉ {τ = `ListA τ} `[] γ []
+    _⇓∷_              : ∀ {x xs} → ⟦ t₁ ⟧ᵉ γ x → ⟦ t₂ ⟧ᵉ γ xs → ⟦ t₁ `∷ t₂ ⟧ᵉ γ (x ∷ xs)
     ⇓foldrA           : ∀ {xs v}
                       → ⟦ t₃ ⟧ᵉ γ xs
                       → ⟦foldrA t₁ , t₂ ⟧ᵉ γ xs ∋ v
                       → ⟦ `foldrA t₁ t₂ t₃ ⟧ᵉ γ v
-    ⇓free             : ∀ {v : ⟦ α ⟧ᵗ} → ⟦ `free ⟧ᵉ g v
-    ?l                : ∀ {x} → ⟦ t₁ ⟧ᵉ g x → ⟦ t₁ `? t₂ ⟧ᵉ g x
-    ?r                : ∀ {x} → ⟦ t₂ ⟧ᵉ g x → ⟦ t₁ `? t₂ ⟧ᵉ g x
+    ⇓free             : ∀ {v : ⟦ α ⟧ᵗ} → ⟦ `free ⟧ᵉ γ v
+    ?l                : ∀ {x} → ⟦ t₁ ⟧ᵉ γ x → ⟦ t₁ `? t₂ ⟧ᵉ γ x
+    ?r                : ∀ {x} → ⟦ t₂ ⟧ᵉ γ x → ⟦ t₁ `? t₂ ⟧ᵉ γ x
 
-  data ⟦foldrA_,_⟧ᵉ (t₁ : Γ ⸴ `T α ⸴ `T β ⊢ β)
+  data ⟦foldrA_,_⟧ᵉ (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
                     (t₂ : Γ ⊢ β)
                     (γ : ⟦ Γ ⟧ᶜ) :
                     ListA ⟦ α ⟧ᵗ → ⟦ β ⟧ᵗ → Type where
@@ -407,7 +411,7 @@ mutual
               → ⟦ t₁ ⟧ᵉ (γ ⸴ xT ⸴ v) ∋ v′
               → ⟦foldrA t₁ , t₂ ⟧ᵉ γ (xT ∷ xsT) ∋ v′
 
-  data ⟦foldrA′_,_⟧ᵉ (t₁ : Γ ⸴ `T α ⸴ `T β ⊢ β)
+  data ⟦foldrA′_,_⟧ᵉ (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
                      (t₂ : Γ ⊢ β)
                      (γ : ⟦ Γ ⟧ᶜ) :
                      T (ListA ⟦ α ⟧ᵗ) → T ⟦ β ⟧ᵗ → Type where
@@ -416,179 +420,192 @@ mutual
                   → ⟦foldrA t₁ , t₂ ⟧ᵉ γ xs ∋ v
                   → ⟦foldrA′ t₁ , t₂ ⟧ᵉ γ (thunk xs) ∋ thunk v
 
-weaken-lemma : (t : Γ ⸴ α ⊢ τ) → ((↑ʳ there) $ʳ t) ≡ (↑ᵗ t)
-weaken-lemma (` x) = {!!}
-weaken-lemma (`let t₁ `in t₂) = {!!}
-weaken-lemma `false = refl
-weaken-lemma `true = refl
-weaken-lemma (`if t `then t₁ `else t₂) = {!!}
-weaken-lemma (t₁ `≟ t₂) = cong₂ _`≟_ (weaken-lemma t₁) (weaken-lemma t₂)
-weaken-lemma (t `≲ t₁) = {!!}
-weaken-lemma (t `, t₁) = {!!}
-weaken-lemma (`proj₁ t) = {!!}
-weaken-lemma (`proj₂ t) = {!!}
-weaken-lemma `undefined = {!!}
-weaken-lemma (`thunk t) = {!!}
-weaken-lemma (`T-case t t₁ t₂) = {!!}
-weaken-lemma (# x) = {!!}
-weaken-lemma (t `+ t₁) = {!!}
-weaken-lemma `[] = {!!}
-weaken-lemma (t `∷ t₁) = {!!}
-weaken-lemma (`foldrA t t₁ t₂) = {!!}
-weaken-lemma `free = {!!}
-weaken-lemma (t `? t₁) = {!!}
-weaken-lemma `fail = {!!}
+--------------------------
+-- Some term constructs --
+--------------------------
 
--- t               : Γ , α ⊢ τ
--- ↑ᵗ t            : Γ , α , β ⊢ τ
--- (↑ʳ there) $ʳ t : Γ ⸴ β , α ⊢ τ
+`assert_`in_ : Γ ⊢ `Bool → Γ ⊢ α → Γ ⊢ α
+`assert t₁ `in t₂ = `if t₁ `then t₂ `else `fail
 
--- subsumeⁿ : Γ ⸴ α ⊢ τ → (Γ ++ Δ) ⸴ α ⊢ τ
--- subsume-n-lemma :
+⇓assert_⇓in_ : ∀ {v}
+             → ⟦ t₁ ⟧ᵉ γ ∋ true
+             → ⟦ t₂ ⟧ᵉ γ ∋ v
+             → ⟦ `assert t₁ `in t₂ ⟧ᵉ γ ∋ v
+⇓assert_⇓in_ φ₁ φ₂ = ⇓if φ₁ ⇓then φ₂
 
-open import Data.List.Relation.Unary.Any.Properties
+⇑assert : ∀ {v}
+        → ⟦ `assert t₁ `in t₂ ⟧ᵉ γ ∋ v
+        → ⟦ t₁ ⟧ᵉ γ ∋ true × ⟦ t₂ ⟧ᵉ γ ∋ v
+⇑assert (⇓if φ₁ ⇓then φ₂) = φ₁ , φ₂
 
--- ↑ʳ-lemma : {ρ : Γ →ʳ Δ}
---            {v₁ : ⟦ α ⟧ᵗ} {v₂ : ⟦ τ ⟧ᵗ}
---          → ⟦ ρ $ʳ t ⟧ᵉ γ ∋ v₁
---          → ⟦ ↑ʳ ρ $ʳ t ⟧ᵉ (γ ⸴ v₂) ∋ v₁
--- ↑ʳ-lemma φ = ?
+---------------------------------
+-- Context manipulation lemmas --
+---------------------------------
 
-subsumeⁿ : ∀ Δ → (Γ ⸴ α) →ʳ ((Δ ++ Γ) ⸴ α)
-subsumeⁿ Δ = ↑ʳ (++⁺ʳ Δ)
+↑ʳ-∈ᴸ : (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x)
+      → ∀ {β} {v : ⟦ β ⟧ᵗ} {α} (x : α ∈ᴸ Γ ⸴ β) → All.lookup (δ ⸴ v) ((↑ʳ ρ) x) ≡ All.lookup (γ ⸴ v) x
+↑ʳ-∈ᴸ η zeroᵛ = refl
+↑ʳ-∈ᴸ η (sucᵛ x) = η x
 
--- ((Δ ++ (Γ ⸴ τ₁)) ⸴ τ₂) =  τ₂ ∷ (Δ ++ (τ₁ ∷ Γ))
+mutual
 
--- ((Δ ++ (Γ ⸴ τ₁ ⸴ τ₂))
+  ⇓⇒$ʳ-⇓ : (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x)
+         → ∀ {v} {t : Γ ⊢ α}
+         → ⟦ t ⟧ᵉ γ ∋ v
+         → ⟦ ρ $ʳ t ⟧ᵉ δ ∋ v
+  ⇓⇒$ʳ-⇓ {δ = δ} {ρ = ρ} η (⇓ x) = subst (⟦ ` ρ x ⟧ᵉ δ ∋_) (η x) (⇓ ρ x)
+  ⇓⇒$ʳ-⇓ η (⇓let φ₁ ⇓in φ₂) = ⇓let ⇓⇒$ʳ-⇓ η φ₁ ⇓in ⇓⇒$ʳ-⇓ (↑ʳ-∈ᴸ η) φ₂
+  ⇓⇒$ʳ-⇓ η ⇓false = ⇓false
+  ⇓⇒$ʳ-⇓ η ⇓true = ⇓true
+  ⇓⇒$ʳ-⇓ η (⇓if φ₁ ⇓else φ₂) = ⇓if ⇓⇒$ʳ-⇓ η φ₁ ⇓else ⇓⇒$ʳ-⇓ η φ₂
+  ⇓⇒$ʳ-⇓ η (⇓if φ₁ ⇓then φ₂) = ⇓if ⇓⇒$ʳ-⇓ η φ₁ ⇓then ⇓⇒$ʳ-⇓ η φ₂
+  ⇓⇒$ʳ-⇓ η (⇓≟-true φ₁ φ₂) = ⇓≟-true (⇓⇒$ʳ-⇓ η φ₁) (⇓⇒$ʳ-⇓ η φ₂)
+  ⇓⇒$ʳ-⇓ η (⇓≟-false φ₁ φ₂ ψ) = ⇓≟-false (⇓⇒$ʳ-⇓ η φ₁) (⇓⇒$ʳ-⇓ η φ₂) ψ
+  ⇓⇒$ʳ-⇓ η (⇓≲-true φ₁ φ₂ ψ) = ⇓≲-true (⇓⇒$ʳ-⇓ η φ₁) (⇓⇒$ʳ-⇓ η φ₂) ψ
+  ⇓⇒$ʳ-⇓ η (⇓≲-false φ₁ φ₂ ψ) = ⇓≲-false (⇓⇒$ʳ-⇓ η φ₁) (⇓⇒$ʳ-⇓ η φ₂) ψ
+  ⇓⇒$ʳ-⇓ η (φ₁ ⇓, φ₂) = ⇓⇒$ʳ-⇓ η φ₁ ⇓, ⇓⇒$ʳ-⇓ η φ₂
+  ⇓⇒$ʳ-⇓ η (⇓proj₁ φ) = ⇓proj₁ (⇓⇒$ʳ-⇓ η φ)
+  ⇓⇒$ʳ-⇓ η (⇓proj₂ φ) = ⇓proj₂ (⇓⇒$ʳ-⇓ η φ)
+  ⇓⇒$ʳ-⇓ η ⇓undefined = ⇓undefined
+  ⇓⇒$ʳ-⇓ η (⇓thunk φ) = ⇓thunk (⇓⇒$ʳ-⇓ η φ)
+  ⇓⇒$ʳ-⇓ η (⇓T-case-undefined φ₁ φ₂) = ⇓T-case-undefined (⇓⇒$ʳ-⇓ η φ₁) (⇓⇒$ʳ-⇓ η φ₂)
+  ⇓⇒$ʳ-⇓ η (⇓T-case-thunk φ₁ φ₂) = ⇓T-case-thunk (⇓⇒$ʳ-⇓ η φ₁) (⇓⇒$ʳ-⇓ (↑ʳ-∈ᴸ η) φ₂)
+  ⇓⇒$ʳ-⇓ η (# n) = # n
+  ⇓⇒$ʳ-⇓ η (φ₁ ⇓+ φ₂) = ⇓⇒$ʳ-⇓ η φ₁ ⇓+ ⇓⇒$ʳ-⇓ η φ₂
+  ⇓⇒$ʳ-⇓ η ⇓[] = ⇓[]
+  ⇓⇒$ʳ-⇓ η (φ₁ ⇓∷ φ₂) = ⇓⇒$ʳ-⇓ η φ₁ ⇓∷ ⇓⇒$ʳ-⇓ η φ₂
+  ⇓⇒$ʳ-⇓ η (⇓foldrA φ₁ φ₂) = ⇓foldrA (⇓⇒$ʳ-⇓ η φ₁) (⇓foldrA⇒$ʳ-⇓foldrA η φ₂)
+  ⇓⇒$ʳ-⇓ η ⇓free = ⇓free
+  ⇓⇒$ʳ-⇓ η (?l φ) = ?l (⇓⇒$ʳ-⇓ η φ)
+  ⇓⇒$ʳ-⇓ η (?r φ) = ?r (⇓⇒$ʳ-⇓ η φ)
 
--- WANT
--- ((Δ ++ Γ) ⸴ τ₁ ⸴ τ₂)
--- =
--- τ₂ ∷ τ₁ ∷ Δ ++ Γ
+  ⇓foldrA⇒$ʳ-⇓foldrA : (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x)
+                     → ∀ {v xs}
+                     → ⟦foldrA t₁ , t₂ ⟧ᵉ γ xs ∋ v
+                     → ⟦foldrA (↑ʳ ↑ʳ ρ) $ʳ t₁ , ρ $ʳ t₂ ⟧ᵉ δ xs ∋ v
+  ⇓foldrA⇒$ʳ-⇓foldrA η (⇓foldrA-[] φ)    = ⇓foldrA-[] (⇓⇒$ʳ-⇓ η φ)
+  ⇓foldrA⇒$ʳ-⇓foldrA η (⇓foldrA-∷ φ₁ φ₂) =
+    ⇓foldrA-∷
+      (⇓foldrA⇒$ʳ-⇓foldrA′ η φ₁)
+      (⇓⇒$ʳ-⇓ (λ{ zeroᵛ → refl ; (sucᵛ zeroᵛ) → refl ; (sucᵛ (sucᵛ zeroᵛ)) → η zeroᵛ ; (sucᵛ (sucᵛ (sucᵛ x))) → η (sucᵛ x) }) φ₂)
 
--- ((Δ ++ (Γ ⸴ τ₁)) ⸴ τ₂)
--- =
--- τ₂ ∷ Δ ++ τ₁ ∷ Γ
+  ⇓foldrA⇒$ʳ-⇓foldrA′ : (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x)
+                      → ∀ {v xsT}
+                      → ⟦foldrA′ t₁ , t₂ ⟧ᵉ γ xsT ∋ v
+                      → ⟦foldrA′ (↑ʳ ↑ʳ ρ) $ʳ t₁ , ρ $ʳ t₂ ⟧ᵉ δ xsT ∋ v
+  ⇓foldrA⇒$ʳ-⇓foldrA′ η ⇓foldrA-undefined = ⇓foldrA-undefined
+  ⇓foldrA⇒$ʳ-⇓foldrA′ η (⇓foldrA-thunk φ) = ⇓foldrA-thunk (⇓foldrA⇒$ʳ-⇓foldrA η φ)
 
--- subsumeⁿ-var-lemma : ∀ {α} (x : α ∈ᴸ Γ ⸴ τ₁)
---                        {β : Ty} {Δ : Ctx}
---                    → (↑ʳ subsumeⁿ Δ) x ≡ {!subsumeⁿ Δ x!}
--- subsumeⁿ-var-lemma x = {!!}
+mutual
 
--- subsumeⁿ-lemma : (Δ : Ctx)
---                  {γ : ⟦ Γ ⟧ᶜ} {δ : ⟦ Δ ⟧ᶜ}
---                  {v₁ : ⟦ α ⟧ᵗ}
---                  {v₂ : ⟦ β ⟧ᵗ}
---                → ⟦ t ⟧ᵉ (γ ⸴ v₁) ∋ v₂
---                → ⟦ subsumeⁿ Δ $ʳ t ⟧ᵉ (++⁺ δ γ ⸴ v₁) ∋ v₂
--- subsumeⁿ-lemma Δ (⇓ x) = {!!}
--- subsumeⁿ-lemma Δ (⇓let_⇓in_ {t₁ = t₁} {t₂ = t₂} φ₁ φ₂) = ⇓let {!!} ⇓in {! (↑ʳ subsumeⁿ Δ) $ʳ t₂!}
--- subsumeⁿ-lemma Δ ⇓false = {!!}
--- subsumeⁿ-lemma Δ ⇓true = {!!}
--- subsumeⁿ-lemma Δ (⇓if x ⇓else x₁) = {!!}
--- subsumeⁿ-lemma Δ (⇓if x ⇓then x₁) = {!!}
--- subsumeⁿ-lemma Δ (⇓≟-true x x₁) = {!!}
--- subsumeⁿ-lemma Δ (⇓≟-false x x₁ x₂) = {!!}
--- subsumeⁿ-lemma Δ (⇓≲-true x x₁ x₂) = {!!}
--- subsumeⁿ-lemma Δ (⇓≲-false x x₁ x₂) = {!!}
--- subsumeⁿ-lemma Δ (x ⇓, x₁) = {!!}
--- subsumeⁿ-lemma Δ (⇓proj₁ x) = {!!}
--- subsumeⁿ-lemma Δ (⇓proj₂ φ) = {!!}
--- subsumeⁿ-lemma Δ ⇓undefined = {!!}
--- subsumeⁿ-lemma Δ (⇓thunk x) = {!!}
--- subsumeⁿ-lemma Δ (⇓T-case-undefined x x₁) = {!!}
--- subsumeⁿ-lemma Δ (⇓T-case-thunk x x₁) = {!!}
--- subsumeⁿ-lemma Δ (# n) = {!!}
--- subsumeⁿ-lemma Δ (x ⇓+ x₁) = {!!}
--- subsumeⁿ-lemma Δ ⇓[] = {!!}
--- subsumeⁿ-lemma Δ (φ ⇓∷ φ₁) = {!!}
--- subsumeⁿ-lemma Δ (⇓foldrA φ x) = {!!}
--- subsumeⁿ-lemma Δ ⇓free = {!!}
--- subsumeⁿ-lemma Δ (?l φ) = {!!}
--- subsumeⁿ-lemma Δ (?r φ) = {!!}
+  $ʳ-⇓⇒⇓ : (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x)
+         → ∀ {v} {t : Γ ⊢ α}
+         → ⟦ ρ $ʳ t ⟧ᵉ δ ∋ v
+         → ⟦ t ⟧ᵉ γ ∋ v
+  $ʳ-⇓⇒⇓ {δ = δ} {ρ = ρ} {γ = γ} η {t = ` x} (⇓ _) = subst (⟦ ` x ⟧ᵉ γ ∋_) (sym (η x)) (⇓ x)
+  $ʳ-⇓⇒⇓ η {t = `let t₁ `in t₂} (⇓let φ₁ ⇓in φ₂) = ⇓let ($ʳ-⇓⇒⇓ η φ₁) ⇓in ($ʳ-⇓⇒⇓ (↑ʳ-∈ᴸ η) φ₂)
+  $ʳ-⇓⇒⇓ η {t = `false} ⇓false = ⇓false
+  $ʳ-⇓⇒⇓ η {t = `true} ⇓true = ⇓true
+  $ʳ-⇓⇒⇓ η {t = `if t₁ `then t₂ `else t₃} (⇓if φ₁ ⇓else φ₂) = ⇓if $ʳ-⇓⇒⇓ η φ₁ ⇓else $ʳ-⇓⇒⇓ η φ₂
+  $ʳ-⇓⇒⇓ η {t = `if t₁ `then t₂ `else t₃} (⇓if φ₁ ⇓then φ₂) = ⇓if $ʳ-⇓⇒⇓ η φ₁ ⇓then $ʳ-⇓⇒⇓ η φ₂
+  $ʳ-⇓⇒⇓ η {t = t₁ `≟ t₂} (⇓≟-true φ₁ φ₂) = ⇓≟-true ($ʳ-⇓⇒⇓ η φ₁) ($ʳ-⇓⇒⇓ η φ₂)
+  $ʳ-⇓⇒⇓ η {t = t₁ `≟ t₂} (⇓≟-false φ₁ φ₂ ψ) = ⇓≟-false ($ʳ-⇓⇒⇓ η φ₁) ($ʳ-⇓⇒⇓ η φ₂) ψ
+  $ʳ-⇓⇒⇓ η {t = t₁ `≲ t₂} (⇓≲-true φ₁ φ₂ ψ) = ⇓≲-true ($ʳ-⇓⇒⇓ η φ₁) ($ʳ-⇓⇒⇓ η φ₂) ψ
+  $ʳ-⇓⇒⇓ η {t = t₁ `≲ t₂} (⇓≲-false φ₁ φ₂ ψ) = ⇓≲-false ($ʳ-⇓⇒⇓ η φ₁) ($ʳ-⇓⇒⇓ η φ₂) ψ
+  $ʳ-⇓⇒⇓ η {t = t₁ `, t₂} (φ₁ ⇓, φ₂) = $ʳ-⇓⇒⇓ η φ₁ ⇓, $ʳ-⇓⇒⇓ η φ₂
+  $ʳ-⇓⇒⇓ η {t = `proj₁ t} (⇓proj₁ φ) = ⇓proj₁ ($ʳ-⇓⇒⇓ η φ)
+  $ʳ-⇓⇒⇓ η {t = `proj₂ t} (⇓proj₂ φ) = ⇓proj₂ ($ʳ-⇓⇒⇓ η φ)
+  $ʳ-⇓⇒⇓ η {t = `undefined} ⇓undefined = ⇓undefined
+  $ʳ-⇓⇒⇓ η {t = `thunk t} (⇓thunk φ) = ⇓thunk ($ʳ-⇓⇒⇓ η φ)
+  $ʳ-⇓⇒⇓ η {t = `T-case t t₁ t₂} (⇓T-case-undefined φ₁ φ₂) = ⇓T-case-undefined ($ʳ-⇓⇒⇓ η φ₁) ($ʳ-⇓⇒⇓ η φ₂)
+  $ʳ-⇓⇒⇓ η {t = `T-case t t₁ t₂} (⇓T-case-thunk φ₁ φ₂) = ⇓T-case-thunk ($ʳ-⇓⇒⇓ η φ₁) ($ʳ-⇓⇒⇓ (λ{ zeroᵛ → refl ; (sucᵛ x) → η x }) φ₂)
+  $ʳ-⇓⇒⇓ η {t = # x} (# n) = # x
+  $ʳ-⇓⇒⇓ η {t = t₁ `+ t₂} (φ₁ ⇓+ φ₂) = $ʳ-⇓⇒⇓ η φ₁ ⇓+ $ʳ-⇓⇒⇓ η φ₂
+  $ʳ-⇓⇒⇓ η {t = `[]} ⇓[] = ⇓[]
+  $ʳ-⇓⇒⇓ η {t = t₁ `∷ t₂} (φ₁ ⇓∷ φ₂) = $ʳ-⇓⇒⇓ η φ₁ ⇓∷ $ʳ-⇓⇒⇓ η φ₂
+  $ʳ-⇓⇒⇓ η {t = `foldrA t₁ t₂ t₃} (⇓foldrA φ₁ φ₂) = ⇓foldrA ($ʳ-⇓⇒⇓ η φ₁) ($ʳ-⇓foldrA⇒⇓foldrA η φ₂)
+  $ʳ-⇓⇒⇓ η {t = `free} ⇓free = ⇓free
+  $ʳ-⇓⇒⇓ η {t = t₁ `? t₂} (?l φ) = ?l ($ʳ-⇓⇒⇓ η φ)
+  $ʳ-⇓⇒⇓ η {t = t₁ `? t₂} (?r φ) = ?r ($ʳ-⇓⇒⇓ η φ)
 
--- ↑ʳ-lemma : (ρ₁ ρ₂ : Γ →ʳ Δ)
---            {v : ⟦ α ⟧ᵗ}
---          → (⟦ ρ₁ $ʳ t ⟧ᵉ γ ∋ v → ⟦ ρ₂ $ʳ t ⟧ᵉ γ ∋ v)
---          → (⟦ ↑ʳ ρ₁ $ʳ t ⟧ᵉ γ ∋ v → ⟦ ↑ʳ ρ₂ $ʳ t ⟧ᵉ γ ∋ v)
--- ↑ʳ-lemma ρ₁ ρ₂ η = ?
+  $ʳ-⇓foldrA⇒⇓foldrA : (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x)
+                     → ∀ {v xs}
+                     → ⟦foldrA (↑ʳ ↑ʳ ρ) $ʳ t₁ , ρ $ʳ t₂ ⟧ᵉ δ xs ∋ v
+                     → ⟦foldrA t₁ , t₂ ⟧ᵉ γ xs ∋ v
+  $ʳ-⇓foldrA⇒⇓foldrA η (⇓foldrA-[] φ) = ⇓foldrA-[] ($ʳ-⇓⇒⇓ η φ)
+  $ʳ-⇓foldrA⇒⇓foldrA η (⇓foldrA-∷ φ₁ φ₂) =
+    ⇓foldrA-∷
+      ($ʳ-⇓foldrA⇒⇓foldrA′ η φ₁)
+      ($ʳ-⇓⇒⇓ (λ{ zeroᵛ → refl ; (sucᵛ zeroᵛ) → refl ; (sucᵛ (sucᵛ zeroᵛ)) → η zeroᵛ ; (sucᵛ (sucᵛ (sucᵛ x))) → η (sucᵛ x) }) φ₂)
 
-
--- ⟦ ρ₁ $ʳ t ⟧ γ ≡ ⟦ ρ₂ $ʳ t ⟧ γ
--- ⟦ ↑ʳ ρ₁ $ʳ t ⟧ (γ , x) ≡ ⟦ ↑ʳ ρ₂ $ʳ t ⟧ (γ , x)
+  $ʳ-⇓foldrA⇒⇓foldrA′ : (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x)
+                      → ∀ {v xsT}
+                      → ⟦foldrA′ (↑ʳ ↑ʳ ρ) $ʳ t₁ , ρ $ʳ t₂ ⟧ᵉ δ xsT ∋ v
+                      → ⟦foldrA′ t₁ , t₂ ⟧ᵉ γ xsT ∋ v
+  $ʳ-⇓foldrA⇒⇓foldrA′ η ⇓foldrA-undefined = ⇓foldrA-undefined
+  $ʳ-⇓foldrA⇒⇓foldrA′ η (⇓foldrA-thunk φ) = ⇓foldrA-thunk ($ʳ-⇓foldrA⇒⇓foldrA η φ)
 
 ⇓weaken :
-  ∀ {Γ α τ} {t : Γ ⊢ τ} {g : ⟦ Γ ⟧ᶜ} {a : ⟦ α ⟧ᵗ}
+  ∀ {Γ α τ} {t : Γ ⊢ τ} {γ : ⟦ Γ ⟧ᶜ} {a : ⟦ α ⟧ᵗ} 
     {v : ⟦ τ ⟧ᵗ}
-  → ⟦ t ⟧ᵉ g ∋ v
-  → ⟦ ↑ᵗ t ⟧ᵉ (g ⸴ a) ∋ v
-⇓weaken (⇓ x) = ⇓ sucᵛ x
-⇓weaken (⇓let_⇓in_ {t₁ = t₁} {t₂ = t₂} φ₁ φ₂) = ⇓let ⇓weaken φ₁ ⇓in {!⇓weaken φ₂!}
-⇓weaken ⇓false = ⇓false
-⇓weaken ⇓true = ⇓true
-⇓weaken (⇓if φ₁ ⇓else φ₂) = ⇓if ⇓weaken φ₁ ⇓else ⇓weaken φ₂
-⇓weaken (⇓if φ₁ ⇓then φ₂) = ⇓if ⇓weaken φ₁ ⇓then ⇓weaken φ₂
-⇓weaken (⇓≟-true φ₁ φ₂) = ⇓≟-true (⇓weaken φ₁) (⇓weaken φ₂)
-⇓weaken (⇓≟-false φ₁ φ₂ ψ) = ⇓≟-false (⇓weaken φ₁) (⇓weaken φ₂) ψ
-⇓weaken (⇓≲-true φ₁ φ₂ ψ) = ⇓≲-true (⇓weaken φ₁) (⇓weaken φ₂) ψ
-⇓weaken (⇓≲-false φ₁ φ₂ ψ) = ⇓≲-false (⇓weaken φ₁) (⇓weaken φ₂) ψ
-⇓weaken (φ₁ ⇓, φ₂) = ⇓weaken φ₁ ⇓, ⇓weaken φ₂
-⇓weaken (⇓proj₁ φ₁) = ⇓proj₁ (⇓weaken φ₁)
-⇓weaken (⇓proj₂ φ₁) = ⇓proj₂ (⇓weaken φ₁)
-⇓weaken ⇓undefined = ⇓undefined
-⇓weaken (⇓thunk φ₁) = ⇓thunk (⇓weaken φ₁)
-⇓weaken (⇓T-case-thunk φ₁ φ₂) = ⇓T-case-thunk (⇓weaken φ₁) {!⇓weaken φ₂!}
-⇓weaken (⇓T-case-undefined φ₁ φ₂) = ⇓T-case-undefined (⇓weaken φ₁) (⇓weaken φ₂)
-⇓weaken (# n) = # n
-⇓weaken (φ₁ ⇓+ φ₂) = ⇓weaken φ₁ ⇓+ ⇓weaken φ₂
-⇓weaken ⇓[] = ⇓[]
-⇓weaken (φ₁ ⇓∷ φ₂) = ⇓weaken φ₁ ⇓∷ ⇓weaken φ₂
-⇓weaken (⇓foldrA φ₁ φ₂) = ⇓foldrA {!!} {!!}
-⇓weaken ⇓free = ⇓free
-⇓weaken (?l φ₁) = ?l (⇓weaken φ₁)
-⇓weaken (?r φ₁) = ?r (⇓weaken φ₁)
+  → ⟦ t ⟧ᵉ γ ∋ v
+  → ⟦ ↑ᵗ t ⟧ᵉ (γ ⸴ a) ∋ v
+⇓weaken φ = ⇓⇒$ʳ-⇓ (λ _ → refl) φ
+
+⇑weaken :
+  ∀ {Γ α τ} {t : Γ ⊢ τ} {γ : ⟦ Γ ⟧ᶜ} {a : ⟦ α ⟧ᵗ}
+    {v : ⟦ τ ⟧ᵗ}
+  → ⟦ ↑ᵗ t ⟧ᵉ (γ ⸴ a) ∋ v
+  → ⟦ t ⟧ᵉ γ ∋ v
+⇑weaken φ = $ʳ-⇓⇒⇓ (λ _ → refl) φ
 
 ⇓exchange :
   ∀ {a : ⟦ α ⟧ᵗ}
     {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ}
-  → ⟦ t ⟧ᵉ (g ⸴ v₁ ⸴ v₂) ∋ a
-  → ⟦ exchange t ⟧ᵉ (g ⸴ v₂ ⸴ v₁) ∋ a
-⇓exchange φ = {!!}
+  → ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ v₂) ∋ a
+  → ⟦ exchange t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ a
+⇓exchange φ = ⇓⇒$ʳ-⇓ (λ{ zeroᵛ → refl ; (sucᵛ zeroᵛ) → refl ; (sucᵛ (sucᵛ x)) → refl }) φ
+
+⇑exchange :
+  ∀ {a : ⟦ α ⟧ᵗ}
+    {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ}
+  → ⟦ exchange t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ a
+  → ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ v₂) ∋ a
+⇑exchange φ = $ʳ-⇓⇒⇓ (λ{ zeroᵛ → refl ; (sucᵛ zeroᵛ) → refl ; (sucᵛ (sucᵛ x)) → refl }) φ
 
 ⇓subsume1 : {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
-          → ⟦ t ⟧ᵉ (g ⸴ v₁) ∋ v
-          → ⟦ subsume1 t ⟧ᵉ (g ⸴ v₂ ⸴ v₁) ∋ v
-⇓subsume1 (⇓ x)                     = {!!}
-⇓subsume1 (⇓let φ₁ ⇓in φ₂)          = ⇓let (⇓subsume1 φ₁) ⇓in {!!}
-⇓subsume1 ⇓false                    = ⇓false
-⇓subsume1 ⇓true                     = ⇓true
-⇓subsume1 (⇓if φ₁ ⇓else φ₂)         = ⇓if ⇓subsume1 φ₁ ⇓else ⇓subsume1 φ₂
-⇓subsume1 (⇓if φ₁ ⇓then φ₂)         = ⇓if ⇓subsume1 φ₁ ⇓then ⇓subsume1 φ₂
-⇓subsume1 (⇓≟-true φ₁ φ₂)           = ⇓≟-true (⇓subsume1 φ₁) (⇓subsume1 φ₂)
-⇓subsume1 (⇓≟-false φ₁ φ₂ ψ)        = ⇓≟-false (⇓subsume1 φ₁) (⇓subsume1 φ₂) ψ
-⇓subsume1 (⇓≲-true φ₁ φ₂ ψ)         = ⇓≲-true (⇓subsume1 φ₁) (⇓subsume1 φ₂) ψ
-⇓subsume1 (⇓≲-false φ₁ φ₂ ψ)        = ⇓≲-false (⇓subsume1 φ₁) (⇓subsume1 φ₂) ψ
-⇓subsume1 (φ₁ ⇓, φ₂)                = ⇓subsume1 φ₁ ⇓, ⇓subsume1 φ₂
-⇓subsume1 (⇓proj₁ φ)                = ⇓proj₁ (⇓subsume1 φ)
-⇓subsume1 (⇓proj₂ φ)                = ⇓proj₂ (⇓subsume1 φ)
-⇓subsume1 ⇓undefined                = ⇓undefined
-⇓subsume1 (⇓thunk φ)                = ⇓thunk (⇓subsume1 φ)
-⇓subsume1 (⇓T-case-undefined φ₁ φ₂) = ⇓T-case-undefined (⇓subsume1 φ₁) (⇓subsume1 φ₂)
-⇓subsume1 (⇓T-case-thunk φ₁ φ₂)     = ⇓T-case-thunk (⇓subsume1 φ₁) {!!}
-⇓subsume1 (# n)                     = # n
-⇓subsume1 (φ₁ ⇓+ φ₂)                = ⇓subsume1 φ₁ ⇓+ ⇓subsume1 φ₂
-⇓subsume1 ⇓[]                       = ⇓[]
-⇓subsume1 (φ₁ ⇓∷ φ₂)                = ⇓subsume1 φ₁ ⇓∷ ⇓subsume1 φ₂
-⇓subsume1 (⇓foldrA φ₁ φ₂)           = {!!}
-⇓subsume1 ⇓free                     = ⇓free
-⇓subsume1 (?l φ)                    = ?l (⇓subsume1 φ)
-⇓subsume1 (?r φ)                    = ?r (⇓subsume1 φ)
+          → ⟦ t ⟧ᵉ (γ ⸴ v₁) ∋ v
+          → ⟦ subsume1 t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v
+⇓subsume1 φ = ⇓exchange (⇓weaken φ)
 
--- Inversion of the above
 ⇑subsume1 : {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
-          → ⟦ subsume1 t ⟧ᵉ (g ⸴ v₂ ⸴ v₁) ∋ v
-          → ⟦ t ⟧ᵉ (g ⸴ v₁) ∋ v
-⇑subsume1 = {!!}
+          → ⟦ subsume1 t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v
+          → ⟦ t ⟧ᵉ (γ ⸴ v₁) ∋ v
+⇑subsume1 φ = ⇑weaken (⇑exchange φ)
+
+⇓subsume2 : ∀ {v₁ v₂} {v₃ : ⟦ τ₃ ⟧ᵗ} {v}
+          → ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ v₂) ∋ v
+          → ⟦ subsume2 t ⟧ᵉ (γ ⸴ v₃ ⸴ v₁ ⸴ v₂) ∋ v
+⇓subsume2 = ⇓⇒$ʳ-⇓ λ{ zeroᵛ → refl ; (sucᵛ zeroᵛ) → refl ; (sucᵛ (sucᵛ x)) → refl }
+
+⇑subsume2 : ∀ {v₁ v₂} {v₃ : ⟦ τ₃ ⟧ᵗ} {v}
+          → ⟦ subsume2 t ⟧ᵉ (γ ⸴ v₃ ⸴ v₁ ⸴ v₂) ∋ v
+          → ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ v₂) ∋ v
+⇑subsume2 = $ʳ-⇓⇒⇓ λ{ zeroᵛ → refl ; (sucᵛ zeroᵛ) → refl ; (sucᵛ (sucᵛ x)) → refl }
+
+---------------------------------------------------------
+-- A few special cases of substitution for evaluation. --
+---------------------------------------------------------
+
+private
+  variable
+    c c₁ c₂ : ℕ
+
+⇓≡ : ∀ {v₁ v₂} → v₁ ≡ v₂ → ⟦ t ⟧ᵉ γ ∋ v₁ → ⟦ t ⟧ᵉ γ ∋ v₂
+⇓≡ refl φ = φ
+
+⇓cost≡ : ∀ {v} → c₁ ≡ c₂ → ⟦ t ⟧ᵉ γ ∋ (v , c₁) → ⟦ t ⟧ᵉ γ ∋ (v , c₂)
+⇓cost≡ {t = t} {γ = γ} {v = v} refl φ = φ
 
 -------------------------------
 -- Object-language writer monad
@@ -597,47 +614,35 @@ subsumeⁿ Δ = ↑ʳ (++⁺ʳ Δ)
 `M : Ty → Ty
 `M α = α `× `ℕ
 
-private
-  variable
-    c c₁ c₂ : ℕ
-
 _`>>=_ : Γ ⊢ `M α → Γ ⸴ α ⊢ `M β → Γ ⊢ `M β
 t₁ `>>= t₂ =
   `let t₁ `in
   `let (`let `proj₁ (` zeroᵛ) `in subsume1 t₂) `in
   (`proj₁ (` zeroᵛ) `, (`proj₂ (` (sucᵛ zeroᵛ)) `+ `proj₂ (` zeroᵛ)))
 
-_⇓>>=_ : ∀ {v₁ v₂}
-         → ⟦ t₁ ⟧ᵉ g ∋ (v₁ , c₁)
-         → ⟦ t₂ ⟧ᵉ (g ⸴ v₁) ∋ (v₂ , c₂)
-         → ⟦ t₁ `>>= t₂ ⟧ᵉ g ∋ (v₂ , c₁ + c₂)
-φ₁ ⇓>>= φ₂ =
+data ⟦>>=_,_⟧ᵉ : Γ ⊢ `M α → Γ ⸴ α ⊢ `M β → ⟦ Γ ⟧ᶜ → ⟦ β ⟧ᵗ × ℕ → Type where
+  ⇓>>=-intro : ∀ {a b c₁ c₂}
+               → ⟦ t₁ ⟧ᵉ γ ∋ (a , c₁)
+               → ⟦ t₂ ⟧ᵉ (γ ⸴ a) ∋ (b , c₂)
+               → ⟦>>= t₁ , t₂ ⟧ᵉ γ ∋ (b , c₁ + c₂)
+
+⇓>>= : ∀ {u} → ⟦>>= t₁ , t₂ ⟧ᵉ γ u → ⟦ t₁ `>>= t₂ ⟧ᵉ γ u
+⇓>>= (⇓>>=-intro φ₁ φ₂) =
   ⇓let φ₁ ⇓in
   ⇓let (⇓let ⇓proj₁ (⇓ zeroᵛ) ⇓in ⇓subsume1 φ₂) ⇓in
   ⇓proj₁ (⇓ zeroᵛ) ⇓, ⇓proj₂ (⇓ sucᵛ zeroᵛ) ⇓+ ⇓proj₂ (⇓ zeroᵛ)
 
--- Inversion of the above
-⇑>>= : ∀ {t₁ : Γ ⊢ `M α₁} {t₂ : Γ ⸴ α₁ ⊢ `M α₂} c₂ {v₂}
-       → ⟦ t₁ `>>= t₂ ⟧ᵉ γ ∋ (v₂ , c)
-       → Σ[ v₁ ∈ ⟦ α₁ ⟧ᵗ ]
-         Σ[ c₁ ∈ ℕ ]
-         (⟦ t₁ ⟧ᵉ γ ∋ (v₁ , c₁)) × (⟦ t₂ ⟧ᵉ (γ ⸴ v₁) ∋ (v₂ , c₂)) × (c ≡ c₁ + c₂)
-⇑>>= c₂ (⇓let φ₁ ⇓in (⇓let (⇓let ⇓proj₁ (⇓ φ₂) ⇓in φ₃) ⇓in φ₄)) with ⇑subsume1 φ₃
-... | φ₃′ = {!!} , {!!} , φ₁ , {!φ₃′!} , {!!}
+⇑>>= : ∀ {u} → ⟦ t₁ `>>= t₂ ⟧ᵉ γ u → ⟦>>= t₁ , t₂ ⟧ᵉ γ u
+⇑>>= (⇓let φ₁ ⇓in
+      ⇓let (⇓let ⇓proj₁ (⇓ _) ⇓in φ₂) ⇓in
+      ⇓proj₁ (⇓ .zeroᵛ) ⇓, (⇓proj₂ (⇓ sucᵛ zeroᵛ) ⇓+ ⇓proj₂ (⇓ zeroᵛ))) =
+  ⇓>>=-intro φ₁ (⇑subsume1 φ₂)
 
 `return : Γ ⊢ α → Γ ⊢ `M α
 `return t = t `, 0
 
+-- `return is purely structural, so we don't need to prove an inversion lemma
 pattern ⇓return φ = φ ⇓, # 0
-
-`transposeM : Γ ⊢ `T (`M α) → Γ ⊢ `M (`T α)
-`transposeM t = `T-case t (` zeroᵛ `>>= `return (`thunk (` zeroᵛ))) (`return `undefined)
-
-`foldrM : Γ ⸴ `T α ⸴ `T β ⊢ `M β
-        → Γ ⊢ `M β
-        → Γ ⊢ `ListA α
-        → Γ ⊢ `M β
-`foldrM t₁ t₂ t₃ = `foldrA (`transposeM (` zeroᵛ) `>>= subsume1 t₁) t₂ t₃
 
 `tick : Γ ⊢ `M α → Γ ⊢ `M α
 `tick t = `let t `in `proj₁ (` zeroᵛ) `, 1 `+ `proj₂ (` zeroᵛ)
@@ -665,13 +670,121 @@ pattern ⇓tick φ = ⇓let φ ⇓in ⇓proj₁ (⇓ zeroᵛ) ⇓, # 1 ⇓+ ⇓p
 ⇑fmap f g η (⇓let φ₁ ⇓in φ₂ ⇓, ⇓proj₂ (⇓ x)) with η φ₂
 ... | ⇓proj₁ (⇓ _) = φ₁
 
--- Now we state and prove a few special cases of substitution for evaluation.
+-- Transpose T and M
 
-⇓≡ : ∀ {v₁ v₂} → v₁ ≡ v₂ → ⟦ t ⟧ᵉ g ∋ v₁ → ⟦ t ⟧ᵉ g ∋ v₂
-⇓≡ refl φ = φ
+`transposeM : Γ ⊢ `T (`M α) → Γ ⊢ `M (`T α)
+`transposeM t = `T-case t (` zeroᵛ `>>= `return (`thunk (` zeroᵛ))) (`return `undefined)
 
-⇓cost≡ : ∀ {v} → c₁ ≡ c₂ → ⟦ t ⟧ᵉ g ∋ (v , c₁) → ⟦ t ⟧ᵉ g ∋ (v , c₂)
-⇓cost≡ {t = t} {g = g} {v = v} refl φ = φ
+data ⟦transposeM_⟧ᵉ : Γ ⊢ `T (`M α) → ⟦ Γ ⟧ᶜ → T ⟦ α ⟧ᵗ × ℕ → Type where
+  transposeM-undefined : ⟦ t ⟧ᵉ γ ∋ undefined
+                       → ⟦transposeM t ⟧ᵉ γ ∋ (undefined , 0)
+  transposeM-thunk : ∀ {v}
+                   → ⟦ t ⟧ᵉ γ ∋ thunk (v , c)
+                   → ⟦transposeM t ⟧ᵉ γ ∋ (thunk v , c)
+
+⇓transposeM : ∀ {u} → ⟦transposeM t ⟧ᵉ γ ∋ u → ⟦ `transposeM t ⟧ᵉ γ ∋ u
+⇓transposeM (transposeM-undefined φ) = ⇓T-case-undefined φ (⇓undefined ⇓, # 0)
+⇓transposeM (transposeM-thunk φ)     =
+  ⇓T-case-thunk φ (⇓cost≡ (+-identityʳ _) (⇓>>= (⇓>>=-intro (⇓ zeroᵛ) (⇓thunk (⇓ zeroᵛ) ⇓, # 0))))
+
+⇑transposeM : ∀ {u} → ⟦ `transposeM t ⟧ᵉ γ ∋ u → ⟦transposeM t ⟧ᵉ γ ∋ u
+⇑transposeM (⇓T-case-undefined φ₁ (⇓return ⇓undefined)) = transposeM-undefined φ₁
+⇑transposeM {t = t} {γ = γ} (⇓T-case-thunk φ₁ φ₂) with ⇑>>= φ₂
+... | ⇓>>=-intro (⇓ _) (⇓return (⇓thunk (⇓ _))) =
+  transposeM-thunk (subst (λ v → ⟦ t ⟧ᵉ γ ∋ thunk v) (×-≡,≡→≡ (refl , sym (+-identityʳ _))) φ₁)
+
+-- ⇓transposeM-undefined : ⟦ t ⟧ᵉ γ ∋ undefined
+--                       → ⟦ `transposeM t ⟧ᵉ γ ∋ (undefined , 0)
+-- ⇓transposeM-undefined φ = ⇓T-case-undefined φ (⇓undefined ⇓, # 0)
+
+-- ⇓transposeM-thunk : ∀ {v}
+--                   → ⟦ t ⟧ᵉ γ ∋ thunk (v , c)
+--                   → ⟦ `transposeM t ⟧ᵉ γ ∋ (thunk v , c)
+-- ⇓transposeM-thunk φ =
+--   ⇓T-case-thunk φ (⇓cost≡ (+-identityʳ _) (⇓>>= (⇓>>=-intro (⇓ zeroᵛ) (⇓thunk (⇓ zeroᵛ) ⇓, # 0))))
+
+-- ⇑transposeM : ∀ {α} {t : Γ ⊢ `T (`M α)} {γ v c}
+--             → ⟦ `transposeM t ⟧ᵉ γ ∋ (v , c)
+--             → (c ≡ 0 × ⟦ t ⟧ᵉ γ ∋ undefined) ⊎ (Σ[ v′ ∈ ⟦ α ⟧ᵗ ] (v ≡ thunk v′ × ⟦ t ⟧ᵉ γ ∋ thunk (v′ , c)))
+-- ⇑transposeM (⇓T-case-undefined φ₁ (⇓return _)) = inj₁ (refl , φ₁)
+-- ⇑transposeM {t = t} {γ = γ} (⇓T-case-thunk φ₁ φ₂) with ⇑>>= φ₂
+-- ... | (v , c) , c₁ , (⇓ _) , ⇓return (⇓thunk (⇓ _)) , refl =
+--   inj₂ (_ , refl , subst (λ v → ⟦ t ⟧ᵉ γ ∋ thunk v) (×-≡,≡→≡ (refl , sym (+-identityʳ _))) φ₁)
+
+-- An additional layer of abstraction that makes foldrM and associated proofs
+-- easier
+
+`transposeF : Γ ⸴ α ⸴ `T β ⊢ `M β
+            → Γ ⸴ α ⸴ `T (`M β) ⊢ `M β
+`transposeF t = `transposeM (` zeroᵛ) `>>= subsume1 t
+
+⇓transposeF-undefined : ∀ {v u} →
+                        ⟦ t ⟧ᵉ (γ ⸴ v ⸴ undefined) ∋ u →
+                        ⟦ `transposeF t ⟧ᵉ (γ ⸴ v ⸴ undefined) ∋ u
+⇓transposeF-undefined φ = {!⇓transposeM-undefined!}
+-- ⇓transposeM-undefined ?
+-- (⇓>>= (⇓>>=-intro (⇓ zeroᵛ) (⇓subsume1 φ)))
+
+⇓transposeF-thunk : ∀ {v₁ : ⟦ α ⟧ᵗ} {v₂ v₃ c₁ c₂} →
+                    ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ thunk v₂) ∋ (v₃ , c₂) →
+                    ⟦ `transposeF t ⟧ᵉ (γ ⸴ v₁ ⸴ thunk (v₂ , c₁)) ∋ (v₃ , c₁ + c₂)
+⇓transposeF-thunk φ = {!!}
+-- ⇓transposeM-thunk (⇓ zeroᵛ) ⇓>>= ⇓subsume1 φ
+
+-- Monadic foldr
+
+`foldrM : Γ ⸴ α ⸴ `T β ⊢ `M β
+        → Γ ⊢ `M β
+        → Γ ⊢ `ListA α
+        → Γ ⊢ `M β
+`foldrM t₁ t₂ t₃ = `foldrA (`transposeF t₁) t₂ t₃
+
+-- This relation completely characterizes the reduction behavior of foldrM
+-- (needs to be proven)
+
+data ⟦foldrM_,_⟧ᵉ : Γ ⸴ α ⸴ `T β ⊢ `M β
+                  → Γ ⊢ `M β
+                  → ⟦ Γ ⟧ᶜ
+                  → ListA ⟦ α ⟧ᵗ
+                  → ⟦ `M β ⟧ᵗ
+                  → Type where
+  foldrM-[] : ∀ {u} →
+              ⟦ t₂ ⟧ᵉ γ ∋ u →
+              ---------------------------
+              ⟦foldrM t₁ , t₂ ⟧ᵉ γ [] ∋ u
+
+  foldrM-undefined : ∀ {a u} →
+                     ⟦ t₁ ⟧ᵉ (γ ⸴ a ⸴ undefined) ∋ u →
+                     ----------------------------------------
+                     ⟦foldrM t₁ , t₂ ⟧ᵉ γ (a ∷ undefined) ∋ u
+
+  foldrM-thunk : ∀ {v₁} {v₂ : ListA ⟦ β ⟧ᵗ} {v₃ v₄ c₁ c₂} →
+                 ⟦foldrM t₁ , t₂ ⟧ᵉ γ v₂ ∋ (v₃ , c₁) →
+                 ⟦ t₁ ⟧ᵉ (γ ⸴ v₁ ⸴ thunk v₃) ∋ (v₄ , c₂) →
+                 -----------------------------------------------------
+                 ⟦foldrM t₁ , t₂ ⟧ᵉ γ (v₁ ∷ thunk v₂) ∋ (v₄ , c₁ + c₂)
+
+⇓foldrM⇒⇓foldrA : ∀ {v u} →
+                  ⟦foldrM t₁ , t₂ ⟧ᵉ γ v ∋ u →
+                  ⟦foldrA (`transposeF t₁) , t₂ ⟧ᵉ γ v ∋ u
+⇓foldrM⇒⇓foldrA (foldrM-[] φ) = ⇓foldrA-[] φ
+⇓foldrM⇒⇓foldrA (foldrM-undefined φ) =
+  ⇓foldrA-∷ ⇓foldrA-undefined (⇓transposeF-undefined φ)
+⇓foldrM⇒⇓foldrA (foldrM-thunk φ₁ φ₂) =
+  ⇓foldrA-∷ (⇓foldrA-thunk (⇓foldrM⇒⇓foldrA φ₁)) (⇓transposeF-thunk φ₂)
+
+⇓foldrM : ∀ {v₁ v₂ c}
+        → ⟦ t₃ ⟧ᵉ γ ∋ v₁
+        → ⟦foldrM t₁ , t₂ ⟧ᵉ γ v₁ ∋ (v₂ , c)
+        → ⟦ `foldrM t₁ t₂ t₃ ⟧ᵉ γ ∋ (v₂ , c)
+⇓foldrM φ₁ φ₂ = ⇓foldrA φ₁ (⇓foldrM⇒⇓foldrA φ₂)
+
+foldrM-lemma : ∀ {as b} {v : ⟦ τ ⟧ᵗ}
+             → ⟦foldrM t₁ , t₂ ⟧ᵉ γ as ∋ b
+             → ⟦foldrM subsume2 t₁ , ↑ᵗ t₂ ⟧ᵉ (γ ⸴ v) as ∋ b
+foldrM-lemma (foldrM-[] φ)        = foldrM-[] (⇓weaken φ)
+foldrM-lemma (foldrM-undefined φ) = foldrM-undefined (⇓subsume2 φ)
+foldrM-lemma (foldrM-thunk φ₁ φ₂) = foldrM-thunk (foldrM-lemma φ₁) (⇓subsume2 φ₂)
 
 ----------------------
 -- Type translation --
@@ -697,13 +810,18 @@ pattern ⇓tick φ = ⇓let φ ⇓in ⇓proj₁ (⇓ zeroᵛ) ⇓, # 1 ⇓+ ⇓p
 ℂ⟦ `Bool   ⟧⌊ true    ⌋ᵗ = true
 ℂ⟦ `T α    ⟧⌊ v       ⌋ᵗ = ℂ⟦ α ⟧⌊ v ⌋ᵗ′
 ℂ⟦ `List α ⟧⌊ []      ⌋ᵗ = []
-ℂ⟦ `List α ⟧⌊ v₁ ∷ v₂ ⌋ᵗ = ℂ⟦ _ ⟧⌊ v₁ ⌋ᵗ′ ∷ ℂ⟦ _ ⟧⌊ v₂ ⌋ᵗ′
+ℂ⟦ `List α ⟧⌊ v₁ ∷ v₂ ⌋ᵗ = ℂ⟦ _ ⟧⌊ v₁ ⌋ᵗ ∷ ℂ⟦ _ ⟧⌊ v₂ ⌋ᵗ′
 
 ℂ⟦ α ⟧⌊ undefined ⌋ᵗ′ = undefined
 ℂ⟦ α ⟧⌊ thunk v   ⌋ᵗ′ = thunk ℂ⟦ α ⟧⌊ v ⌋ᵗ
 
 ℂ⌊_⌋ᵗ : {α : Explicit.Ty} → ℂ.⟦ α ⟧ᵗ → ⟦ ⌊ α ⌋ᵗ ⟧ᵗ
 ℂ⌊ v ⌋ᵗ = ℂ⟦ _ ⟧⌊ v ⌋ᵗ
+
+ℂ⌊_⌋-map : ∀ {α} (xs : ℂ.⟦ `List α ⟧ᵗ) → ℂ⌊ xs ⌋ᵗ ≡ ListA.map ℂ⌊_⌋ᵗ xs
+ℂ⌊ []            ⌋-map = refl
+ℂ⌊ x ∷ undefined ⌋-map = refl
+ℂ⌊ x ∷ thunk xs  ⌋-map = cong₂ _∷_ refl (cong thunk ℂ⌊ xs ⌋-map)
 
 -- Convert evaluation contexts.
 ℂ⟦_⟧⌊_⌋ᶜ : (Γ : Explicit.Ctx) → ℂ.⟦ Γ ⟧ᶜ → ⟦ ⌊ Γ ⌋ᶜ ⟧ᶜ
@@ -728,71 +846,78 @@ pattern ⇓tick φ = ⇓let φ ⇓in ⇓proj₁ (⇓ zeroᵛ) ⇓, # 1 ⇓+ ⇓p
 ℂ⌊ Explicit.`lazy t                  ⌋ᵉ = `fmap `thunk ℂ⌊ t ⌋ᵉ `? `return `undefined
 ℂ⌊ Explicit.`force t                 ⌋ᵉ = ℂ⌊ t ⌋ᵉ `>>= `T-case (` zeroᵛ) (`return (` zeroᵛ)) `fail
 
-open import Data.Nat.Properties
+mutual
 
-lookup-lemma : ∀ {Γ α} (x : α ∈ᴸ Γ) (γ : ℂ.⟦ Γ ⟧ᶜ)
-  → ℂ⌊ All.lookup γ x ⌋ᵗ ≡ All.lookup ℂ⌊ γ ⌋ᶜ (∈ᴸ⇒∈ᴸ-map ⌊_⌋ᵗ x)
-lookup-lemma zeroᵛ (γ ⸴ px₁) = refl
-lookup-lemma (sucᵛ x) (γ ⸴ px) = lookup-lemma x γ
+  ℂ⌊_⌋ᵈ : ∀ {Γ α γ v c}
+            {t : Explicit.Tm Γ α}
+          → ℂ.⟦ t ⟧ᵉ γ ∋ (v , c)
+          → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ ∋ (ℂ⌊ v ⌋ᵗ , c)
+  ℂ⌊_⌋ᵈ {γ = γ} (ℂ.` x) = ⇓return (⇓≡ (sym (All.app-lookup {Q = ⟦_⟧ᵗ} x γ ⌊_⌋ᵗ ℂ⌊_⌋ᵗ)) (⇓ ∈ᴸ⇒∈ᴸ-map ⌊_⌋ᵗ x))
+  ℂ⌊ ℂ.`let φ₁ `in φ₂  ⌋ᵈ = ⇓>>= (⇓>>=-intro ℂ⌊ φ₁ ⌋ᵈ ℂ⌊ φ₂ ⌋ᵈ)
+  ℂ⌊ ℂ.`false          ⌋ᵈ = ⇓return ⇓false
+  ℂ⌊ ℂ.`true           ⌋ᵈ = ⇓return ⇓true
+  ℂ⌊ ℂ.`if φ₁ `then φ₂ ⌋ᵈ = ⇓>>= (⇓>>=-intro ℂ⌊ φ₁ ⌋ᵈ (⇓if ⇓ zeroᵛ ⇓then ⇓weaken ℂ⌊ φ₂ ⌋ᵈ))
+  ℂ⌊ ℂ.`if φ₁ `else φ₂ ⌋ᵈ = ⇓>>= (⇓>>=-intro ℂ⌊ φ₁ ⌋ᵈ (⇓if ⇓ zeroᵛ ⇓else ⇓weaken ℂ⌊ φ₂ ⌋ᵈ))
+  ℂ⌊ ℂ.`[]             ⌋ᵈ = ⇓return ⇓[]          
+  ℂ⌊_⌋ᵈ (ℂ._`∷_ {c₂ = c₂} φ₁ φ₂) =
+    ⇓>>= (⇓>>=-intro ℂ⌊ φ₁ ⌋ᵈ (⇓cost≡ (+-identityʳ c₂)
+      (⇓>>= (⇓>>=-intro (⇓weaken ℂ⌊ φ₂ ⌋ᵈ) (⇓return (⇓ sucᵛ zeroᵛ ⇓∷ ⇓ zeroᵛ))))))
+  ℂ⌊_⌋ᵈ {γ = γ} {v = v} (ℂ.`foldr {t₁ = t₁} {t₂ = t₂} {as = as} {c₁ = c₁} {c₂ = c₂} φ₁ φ₂) =
+    ⇓>>=
+      (⇓>>=-intro
+        ℂ⌊ φ₁ ⌋ᵈ
+        (⇓foldrM (⇓ zeroᵛ)
+          (foldrM-lemma
+            (subst
+              (λ xs → ⟦foldrM ℂ⌊ t₁ ⌋ᵉ , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ xs ∋ (ℂ⌊ v ⌋ᵗ , c₂))
+              (sym ℂ⌊ as ⌋-map) ℂ⌊foldr φ₂ ⌋ᵈ))))
+  ℂ⌊ ℂ.`tick φ         ⌋ᵈ = ⇓tick ℂ⌊ φ ⌋ᵈ
+  ℂ⌊ ℂ.`lazy-undefined ⌋ᵈ = ?r (⇓return ⇓undefined)
+  ℂ⌊ ℂ.`lazy-thunk φ   ⌋ᵈ = ?l (⇓fmap `thunk thunk ⇓thunk ℂ⌊ φ ⌋ᵈ)
+  ℂ⌊_⌋ᵈ {c = c} (ℂ.`force φ) =
+    ⇓cost≡ (+-identityʳ c) (⇓>>= (⇓>>=-intro ℂ⌊ φ ⌋ᵈ (⇓T-case-thunk (⇓ zeroᵛ) (⇓return (⇓ zeroᵛ)))))
 
-ℂ⌊_⌋ᵈ : ∀ {Γ α g v c}
-          {t : Explicit.Tm Γ α}
-        → ℂ.⟦ t ⟧ᵉ g ∋ (v , c)
-        → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ g ⌋ᶜ ∋ (ℂ⌊ v ⌋ᵗ , c)
-ℂ⌊foldr_⌋ᵈ : ∀ {Γ α β}
-               {t₁ : Explicit.Tm (Γ ⸴ `T α ⸴ `T β) β}
-               {t₂ : Explicit.Tm Γ β}
-               {γ xs v c}
-             → ℂ.⟦foldr t₁ , t₂ ⟧ᵉ γ xs ∋ (v , c)
-             → ⟦foldrA {!ℂ⌊ t₁ ⌋ᵉ!} , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ {!!} ∋ (ℂ⌊ v ⌋ᵗ , c)
-ℂ⌊foldr_⌋ᵈ = {!!}
-
-ℂ⌊_⌋ᵈ {α = α} {g = g} (ℂ.` x) = ⇓return (⇓≡ (sym (All.app-lookup {Q = ⟦_⟧ᵗ} x g ⌊_⌋ᵗ ℂ⌊_⌋ᵗ)) (⇓ ∈ᴸ⇒∈ᴸ-map ⌊_⌋ᵗ x))
-ℂ⌊ ℂ.`let φ₁ `in φ₂  ⌋ᵈ = ℂ⌊ φ₁ ⌋ᵈ ⇓>>= ℂ⌊ φ₂ ⌋ᵈ
-ℂ⌊ ℂ.`false          ⌋ᵈ = ⇓return ⇓false
-ℂ⌊ ℂ.`true           ⌋ᵈ = ⇓return ⇓true
-ℂ⌊ ℂ.`if φ₁ `then φ₂ ⌋ᵈ = ℂ⌊ φ₁ ⌋ᵈ ⇓>>= (⇓if ⇓ zeroᵛ ⇓then ⇓weaken ℂ⌊ φ₂ ⌋ᵈ)
-ℂ⌊ ℂ.`if φ₁ `else φ₂ ⌋ᵈ = ℂ⌊ φ₁ ⌋ᵈ ⇓>>= (⇓if ⇓ zeroᵛ ⇓else ⇓weaken ℂ⌊ φ₂ ⌋ᵈ)
-ℂ⌊ ℂ.`[]             ⌋ᵈ = ⇓return ⇓[]
-ℂ⌊_⌋ᵈ (ℂ._`∷_ {a₁ = v₁} {a₂ = v₂} {c₂ = c₂} φ₁ φ₂) =
-  ℂ⌊ φ₁ ⌋ᵈ ⇓>>= ⇓cost≡ (+-identityʳ c₂) (⇓weaken ℂ⌊ φ₂ ⌋ᵈ ⇓>>= ⇓return (⇓ sucᵛ zeroᵛ ⇓∷ ⇓ zeroᵛ))
-ℂ⌊ ℂ.`foldr φ₁ φ₂    ⌋ᵈ = ℂ⌊ φ₂ ⌋ᵈ ⇓>>= {!!}
-ℂ⌊ ℂ.`tick φ         ⌋ᵈ = ⇓tick ℂ⌊ φ ⌋ᵈ
-ℂ⌊ ℂ.`lazy-undefined ⌋ᵈ = ?r (⇓return ⇓undefined)
-ℂ⌊ ℂ.`lazy-thunk φ   ⌋ᵈ = ?l (⇓fmap `thunk thunk ⇓thunk ℂ⌊ φ ⌋ᵈ)
-ℂ⌊_⌋ᵈ {c = c} (ℂ.`force φ) = ⇓cost≡ (+-identityʳ c) (ℂ⌊ φ ⌋ᵈ ⇓>>= ⇓T-case-thunk (⇓ zeroᵛ) (⇓return (⇓ zeroᵛ)))
+  ℂ⌊foldr_⌋ᵈ : ∀ {Γ α β}
+                 {t₁ : Explicit.Tm (Γ ⸴ α ⸴ `T β) β}
+                 {t₂ : Explicit.Tm Γ β}
+                 {γ xs v c}
+               → ℂ.⟦foldr t₁ , t₂ ⟧ᵉ γ xs ∋ (v , c)
+               → ⟦foldrM ℂ⌊ t₁ ⌋ᵉ , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ (ListA.map ℂ⌊_⌋ᵗ xs) ∋ (ℂ⌊ v ⌋ᵗ , c)
+  ℂ⌊foldr ℂ.`foldr-[] φ        ⌋ᵈ = foldrM-[] ℂ⌊ φ ⌋ᵈ
+  ℂ⌊foldr ℂ.`foldr-undefined φ ⌋ᵈ = foldrM-undefined ℂ⌊ φ ⌋ᵈ
+  ℂ⌊foldr ℂ.`foldr-thunk φ₁ φ₂ ⌋ᵈ = foldrM-thunk ℂ⌊foldr φ₁ ⌋ᵈ ℂ⌊ φ₂ ⌋ᵈ
 
 var-inv : ∀ {x : α ∈ᴸ Γ} {v} → ⟦ ` x ⟧ᵉ γ ∋ v → v ≡ All.lookup γ x
 var-inv (⇓ x) = refl
 
-ℂ⟦_⟧⌈_⌉ᵈ : ∀ {Γ α} (t : Explicit.Tm Γ α) {g v c} → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ g ⌋ᶜ ∋ (ℂ⌊ v ⌋ᵗ , c) → ℂ.⟦ t ⟧ᵉ g ∋ (v , c)
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.` x) {g = g} {v = v} (⇓return φ) rewrite var-inv φ = {!subst (⟦ ` ∈ᴸ⇒∈ᴸ-map ⌊_⌋ᵗ x ⟧ᵉ ℂ⌊ g ⌋ᶜ ∋_) (var-inv φ) φ!}
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`let t₁ `in t₂) {c = c} φ with ⇑>>= c φ
-... | (v₁ , c₁ , φ₁ , φ₂ , φ₃) = ℂ.`let ℂ⟦ _ ⟧⌈ {!!} ⌉ᵈ `in {!!}
-ℂ⟦_⟧⌈_⌉ᵈ Explicit.`false {v = false} (⇓return ⇓false) = ℂ.`false
-ℂ⟦_⟧⌈_⌉ᵈ Explicit.`true  {v = true } (⇓return ⇓true ) = ℂ.`true
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`if t₁ `then t₂ `else t₃) {c = c₂} φ with ⇑>>= c₂ φ
-... | (v₁ , c₁ , φ₁ , φ₂ , φ₃) = {!!}
--- ... | false | ⇓if φ₂₁ ⇓else φ₂₂ = ℂ.`if {!φ₂₁!} `else {!!}
--- ... | true  | ⇓if φ₂₁ ⇓then φ₂₂ = {!!}
-ℂ⟦_⟧⌈_⌉ᵈ Explicit.`[] {v = []} (⇓return ⇓[]) = ℂ.`[]
-ℂ⟦_⟧⌈_⌉ᵈ (t₁ Explicit.`∷ t₂) φ = {!⇑>>= _ φ!}
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`foldr t t₁ t₂) φ = {!!}
-ℂ⟦ Explicit.`tick t ⟧⌈ ⇓let φ₁ ⇓in ⇓proj₁ (⇓ _) ⇓, # 1 ⇓+ ⇓proj₂ (⇓ _) ⌉ᵈ = ℂ.`tick ℂ⟦ t ⟧⌈ φ₁ ⌉ᵈ
-ℂ⟦ Explicit.`lazy t ⟧⌈ ?l φ ⌉ᵈ = let ψ = ⇑fmap `thunk {!thunk!} {!!} φ in {!!}
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`lazy t) {v = undefined} (?r (⇓return ⇓undefined)) = ℂ.`lazy-undefined
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`force t) φ = {!!}
--- ℂ⟦ Explicit.` x                     ⟧⌈ φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`let t₁ `in t₂          ⟧⌈ φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`false                  ⟧⌈ ⇓return φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`true                   ⟧⌈ ⇓return φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`if t `then t₁ `else t₂ ⟧⌈ φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`[]                     ⟧⌈ φ ⌉ᵈ = {!!}
--- ℂ⟦ t Explicit.`∷ t₁                 ⟧⌈ φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`foldr t t₁ t₂          ⟧⌈ φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`tick t                 ⟧⌈ φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`lazy t                 ⟧⌈ φ ⌉ᵈ = {!!}
--- ℂ⟦ Explicit.`force t                ⟧⌈ φ ⌉ᵈ = {!!}
+-- ℂ⟦_⟧⌈_⌉ᵈ : ∀ {Γ α} (t : Explicit.Tm Γ α) {g v c} → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ g ⌋ᶜ ∋ (ℂ⌊ v ⌋ᵗ , c) → ℂ.⟦ t ⟧ᵉ g ∋ (v , c)
+-- ℂ⟦_⟧⌈_⌉ᵈ (Explicit.` x) {g = g} {v = v} (⇓return φ) rewrite var-inv φ = {!subst (⟦ ` ∈ᴸ⇒∈ᴸ-map ⌊_⌋ᵗ x ⟧ᵉ ℂ⌊ g ⌋ᶜ ∋_) (var-inv φ) φ!}
+-- ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`let t₁ `in t₂) {c = c} φ with ⇑>>= c φ
+-- ... | (v₁ , c₁ , φ₁ , φ₂ , φ₃) = ℂ.`let ℂ⟦ _ ⟧⌈ {!!} ⌉ᵈ `in {!!}
+-- ℂ⟦_⟧⌈_⌉ᵈ Explicit.`false {v = false} (⇓return ⇓false) = ℂ.`false
+-- ℂ⟦_⟧⌈_⌉ᵈ Explicit.`true  {v = true } (⇓return ⇓true ) = ℂ.`true
+-- ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`if t₁ `then t₂ `else t₃) {c = c₂} φ with ⇑>>= c₂ φ
+-- ... | (v₁ , c₁ , φ₁ , φ₂ , φ₃) = {!!}
+-- -- ... | false | ⇓if φ₂₁ ⇓else φ₂₂ = ℂ.`if {!φ₂₁!} `else {!!}
+-- -- ... | true  | ⇓if φ₂₁ ⇓then φ₂₂ = {!!}
+-- ℂ⟦_⟧⌈_⌉ᵈ Explicit.`[] {v = []} (⇓return ⇓[]) = ℂ.`[]
+-- ℂ⟦_⟧⌈_⌉ᵈ (t₁ Explicit.`∷ t₂) φ = {!⇑>>= _ φ!}
+-- ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`foldr t t₁ t₂) φ = {!!}
+-- ℂ⟦ Explicit.`tick t ⟧⌈ ⇓let φ₁ ⇓in ⇓proj₁ (⇓ _) ⇓, # 1 ⇓+ ⇓proj₂ (⇓ _) ⌉ᵈ = ℂ.`tick ℂ⟦ t ⟧⌈ φ₁ ⌉ᵈ
+-- ℂ⟦ Explicit.`lazy t ⟧⌈ ?l φ ⌉ᵈ = let ψ = ⇑fmap `thunk {!thunk!} {!!} φ in {!!}
+-- ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`lazy t) {v = undefined} (?r (⇓return ⇓undefined)) = ℂ.`lazy-undefined
+-- ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`force t) φ = {!!}
+-- -- ℂ⟦ Explicit.` x                     ⟧⌈ φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`let t₁ `in t₂          ⟧⌈ φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`false                  ⟧⌈ ⇓return φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`true                   ⟧⌈ ⇓return φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`if t `then t₁ `else t₂ ⟧⌈ φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`[]                     ⟧⌈ φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ t Explicit.`∷ t₁                 ⟧⌈ φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`foldr t t₁ t₂          ⟧⌈ φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`tick t                 ⟧⌈ φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`lazy t                 ⟧⌈ φ ⌉ᵈ = {!!}
+-- -- ℂ⟦ Explicit.`force t                ⟧⌈ φ ⌉ᵈ = {!!}
 
 -- ℂ⌊_⌋ᵈ : {Γ : ℂ.⟦ Γ ⟧ᶜ} {A : Explicit.Ty} ( {v : ℂ.⟦ A ⟧ᵗ} → ℂ.⟦ 
 

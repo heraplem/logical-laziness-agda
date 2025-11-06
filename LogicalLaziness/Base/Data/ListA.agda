@@ -6,22 +6,27 @@ open import Relation.Binary
 open import Relation.Binary.TypeClasses
 open import Relation.Binary.PropositionalEquality
 open import Data.Product
+  hiding ( map
+         )
 open import Data.List
+  hiding ( map
+         )
 
 open import LogicalLaziness.Base.Core
 open import LogicalLaziness.Base.Data.T
   as T
   hiding ( rec
+         ; map
          ; ≡-dec
          )
 
 private
   variable
-    xT yT : T A
+    x y : A
 
 data ListA (A : Type a) : Type a where
-  []  :                     ListA A
-  _∷_ : T A → T (ListA A) → ListA A
+  []  :                   ListA A
+  _∷_ : A → T (ListA A) → ListA A
 
 -- NOTE Inductions/recursions over `ListA` are often very annoying to define.
 -- Your instinct will be to use higher-order combinators over `T`, but this will
@@ -37,33 +42,39 @@ private
 -- Basic operations --
 ----------------------
 
-module _ (P : ListA A → Type p) (n : P []) (c : (xT : T A) (xsT : T (ListA A)) → T.All P xsT → P (xT ∷ xsT)) where
+module _ (P : ListA A → Type p) (n : P []) (c : (x : A) (xsT : T (ListA A)) → T.All P xsT → P (x ∷ xsT)) where
   ind : (xs : ListA A) → P xs
   ind []               = n
   ind (xT ∷ undefined) = c xT undefined undefined
   ind (xT ∷ thunk x  ) = c xT (thunk x) (thunk (ind x))
 
-rec : B → (T A → T B → B) → ListA A → B
-rec n c = ind _ n (λ aT _ bT → c aT (T.All-const bT))
+rec : B → (A → T B → B) → ListA A → B
+rec n c = ind _ n (λ a _ bT → c a (T.All-const bT))
 
-foldrA : (T A → T B → B) → B → ListA A → B
+foldrA : (A → T B → B) → B → ListA A → B
 foldrA f e = rec e f
+
+module _ (f : A → B) where
+  map : ListA A → ListA B
+  map []              = []
+  map (x ∷ undefined) = f x ∷ undefined
+  map (x ∷ thunk xs)  = f x ∷ thunk (map xs)
 
 ----------------------------
 -- Properties of equality --
 ----------------------------
 
-∷-injective : xT ∷ xsT ≡ yT ∷ ysT → xT ≡ yT × xsT ≡ ysT
+∷-injective : x ∷ xsT ≡ y ∷ ysT → x ≡ y × xsT ≡ ysT
 ∷-injective refl = refl , refl
 
 module _ (_≟_ : DecidableEquality A) where
 
   ≡-dec : DecidableEquality (ListA A)
-  ≡-dec []         []         = yes refl
-  ≡-dec []         (yT ∷ ysT) = no (λ ())
-  ≡-dec (xT ∷ xsT) []         = no (λ ())
-  ≡-dec (xT ∷ xsT) (yT ∷ ysT)
-   with T.≡-dec _≟_ xT yT
+  ≡-dec []        []        = yes refl
+  ≡-dec []        (y ∷ ysT) = no (λ ())
+  ≡-dec (x ∷ xsT) []        = no (λ ())
+  ≡-dec (x ∷ xsT) (y ∷ ysT)
+   with x ≟ y
   ... | no xT≢yT = no (contraposition (λ xsA≡ysA → ∷-injective xsA≡ysA .proj₁) xT≢yT)
   ... | yes refl
    with xsT        | ysT
@@ -85,6 +96,6 @@ instance
 
 data Pointwise {A : Type a} {B : Type b} (_≤_ : REL A B ℓ) : REL (ListA A) (ListA B) (a ⊔ℓ b ⊔ℓ ℓ) where
   []  : Pointwise _≤_ [] []
-  _∷_ : Lex _≤_ xT yT
+  _∷_ : x ≤ y
       → Lex (Pointwise _≤_) xsT ysT
-      → Pointwise _≤_ (xT ∷ xsT) (yT ∷ ysT)
+      → Pointwise _≤_ (x ∷ xsT) (y ∷ ysT)

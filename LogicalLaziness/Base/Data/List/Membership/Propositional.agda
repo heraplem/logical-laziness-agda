@@ -13,6 +13,9 @@ open import Data.List.Membership.Propositional
   public
   renaming (_∈_ to _∈ᴸ_)
 
+_⊑ᴸ_ : {A : Type a} → List A → List A → Type a
+xs₁ ⊑ᴸ xs₂ = ∀ {x} → x ∈ᴸ xs₁ → x ∈ᴸ xs₂
+
 module _ (f : A → B) where
 
   ∈ᴸ⇒∈ᴸ-map : {x : A} {xs : List A} → x ∈ᴸ xs → f x ∈ᴸ List.map f xs

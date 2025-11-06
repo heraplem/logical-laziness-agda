@@ -48,7 +48,7 @@ open import LogicalLaziness.Language.Explicit.Semantics.Eval
 private
   variable
     Γ Γ₁ Γ₂ : Ctx
-    α α₁ α₂ : Ty
+    α α₁ α₂ β : Ty
     γ : 𝔼.⟦ Γ ⟧ᶜ
     γ₁ : 𝔼.⟦ Γ₁ ⟧ᶜ
     γ₂ : 𝔼.⟦ Γ₂ ⟧ᶜ
@@ -63,16 +63,16 @@ infix 4 ⟦_⟧≺ᵉ_
 data ⟦_⟧≺ᵉ_ : (α : Ty) → 𝔼.⟦ α ⟧ᵗ → Type where
   false     : ⟦ `Bool ⟧≺ᵉ false
   true      : ⟦ `Bool ⟧≺ᵉ true
-  thunk     : {v : 𝔼.⟦ α₁ ⟧ᵗ}
-            → ⟦ α₁ ⟧≺ᵉ v
-            → ⟦ `T α₁ ⟧≺ᵉ v
-  undefined : {v : 𝔼.⟦ α₁ ⟧ᵗ}
-            → ⟦ `T α₁ ⟧≺ᵉ v
-  []        : ⟦ `List α₁ ⟧≺ᵉ []
-  _∷_       : {v : 𝔼.⟦ α₁ ⟧ᵗ} {vs : List 𝔼.⟦ α₁ ⟧ᵗ}
-            → ⟦ `T α₁ ⟧≺ᵉ v
-            → ⟦ `T (`List α₁) ⟧≺ᵉ vs
-            → ⟦ `List α₁ ⟧≺ᵉ v ∷ vs
+  thunk     : {v : 𝔼.⟦ α ⟧ᵗ}
+            → ⟦ α ⟧≺ᵉ v
+            → ⟦ `T α ⟧≺ᵉ v
+  undefined : {v : 𝔼.⟦ α ⟧ᵗ}
+            → ⟦ `T α ⟧≺ᵉ v
+  []        : ⟦ `List α ⟧≺ᵉ []
+  _∷_       : {v : 𝔼.⟦ α ⟧ᵗ} {vs : List 𝔼.⟦ α ⟧ᵗ}
+            → ⟦ α ⟧≺ᵉ v
+            → ⟦ `T (`List α) ⟧≺ᵉ vs
+            → ⟦ `List α ⟧≺ᵉ v ∷ vs
 
 -- Now we introduce a join-semilattice (≤, ⊔, ⊥) of demands (on a fixed value).
 -- We do not prove any properties yet.
@@ -82,15 +82,15 @@ data ⟦_⟧[_≻_≤ᵉ_] : (α : Ty) (v : 𝔼.⟦ α ⟧ᵗ) → ⟦ α ⟧�
   false     : ⟦ `Bool ⟧[ false ≻ false ≤ᵉ false ]
   true      : ⟦ `Bool ⟧[ true  ≻ true  ≤ᵉ true  ]
   undefined : ∀ {v d}
-            → ⟦ `T α₁ ⟧[ v ≻ undefined ≤ᵉ d ]
+            → ⟦ `T α ⟧[ v ≻ undefined ≤ᵉ d ]
   thunk     : ∀ {v d₁ d₂}
-            → ⟦ α₁ ⟧[ v ≻ d₁ ≤ᵉ d₂ ]
-            → ⟦ `T α₁ ⟧[ v ≻ thunk d₁ ≤ᵉ thunk d₂ ]
-  []        : ⟦ `List α₁ ⟧[ [] ≻ [] ≤ᵉ [] ]
+            → ⟦ α ⟧[ v ≻ d₁ ≤ᵉ d₂ ]
+            → ⟦ `T α ⟧[ v ≻ thunk d₁ ≤ᵉ thunk d₂ ]
+  []        : ⟦ `List α ⟧[ [] ≻ [] ≤ᵉ [] ]
   _∷_       : ∀ {v₁ v₂ d₁₁ d₁₂ d₂₁ d₂₂}
-            → ⟦ `T α₁ ⟧[ v₁ ≻ d₁₁ ≤ᵉ d₁₂ ]
-            → ⟦ `T (`List α₁) ⟧[ v₂ ≻ d₂₁ ≤ᵉ d₂₂ ]
-            → ⟦ `List α₁ ⟧[ v₁ ∷ v₂ ≻ d₁₁ ∷ d₂₁ ≤ᵉ d₁₂ ∷ d₂₂ ]
+            → ⟦ α ⟧[ v₁ ≻ d₁₁ ≤ᵉ d₁₂ ]
+            → ⟦ `T (`List α) ⟧[ v₂ ≻ d₂₁ ≤ᵉ d₂₂ ]
+            → ⟦ `List α ⟧[ v₁ ∷ v₂ ≻ d₁₁ ∷ d₂₁ ≤ᵉ d₁₂ ∷ d₂₂ ]
 
 infix 4 _≤ᵉ_
 _≤ᵉ_ : {α : Ty} {v : 𝔼.⟦ α ⟧ᵗ} → ⟦ α ⟧≺ᵉ v → ⟦ α ⟧≺ᵉ v → Type
@@ -112,10 +112,10 @@ undefined   ⊔ᵉ undefined   = undefined
 infix 4 ⊥⟦_⟧≺ᵉ_
 ⊥⟦_⟧≺ᵉ_ : ∀ α (v : 𝔼.⟦ α ⟧ᵗ) → ⟦ α ⟧≺ᵉ v
 ⊥⟦ `Bool   ⟧≺ᵉ false   = false
-⊥⟦ `Bool   ⟧≺ᵉ true    = true
-⊥⟦ `T _    ⟧≺ᵉ _       = undefined
-⊥⟦ `List _ ⟧≺ᵉ []      = []
-⊥⟦ `List _ ⟧≺ᵉ (_ ∷ _) = undefined ∷ undefined
+⊥⟦ `Bool   ⟧≺ᵉ true     = true
+⊥⟦ `T α    ⟧≺ᵉ v        = undefined
+⊥⟦ `List α ⟧≺ᵉ []       = []
+⊥⟦ `List α ⟧≺ᵉ (v ∷ vs) = (⊥⟦ α ⟧≺ᵉ v) ∷ undefined
 
 ⊥ᵉ : ∀ {α} {v : 𝔼.⟦ α ⟧ᵗ} → ⟦ α ⟧≺ᵉ v
 ⊥ᵉ = ⊥⟦ _ ⟧≺ᵉ _
@@ -205,31 +205,31 @@ infix 4 ⊥⟦_⟧≺ᵐ_
   ⟦ Γ ⟧≺ᵐ γ
 
 ⟦foldr_,_⟧ᵉ :
-  (t₁ : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂) →
-  (t₂ : Γ ⊢ α₂) →
+  (t₁ : Γ ⸴ α ⸴ `T β ⊢ β) →
+  (t₂ : Γ ⊢ β) →
   (γ : 𝔼.⟦ Γ ⟧ᶜ) →
-  (vs : List 𝔼.⟦ α₁ ⟧ᵗ) →
-  ⟦ α₂ ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs →
-  ⟦ Γ ⸴ `List α₁ ⟧≺ᵐ (γ ⸴ vs)
+  (vs : List 𝔼.⟦ α ⟧ᵗ) →
+  ⟦ β ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs →
+  ⟦ Γ ⸴ `List α ⟧≺ᵐ (γ ⸴ vs)
 
-⟦let-step₁_,_⟧ᵉ : (t₁ : Γ ⊢ α₁)
-             (t₂ : Γ ⸴ α₁ ⊢ α₂)
-             (γ : 𝔼.⟦ Γ ⟧ᶜ)
-           → ⟦ α₂ ⟧≺ᵉ 𝔼.⟦ `let t₁ `in t₂ ⟧ᵉ γ
-           → ⟦ Γ ⟧≺ᵐ γ
+⟦let-step₁_,_⟧ᵉ : (t₁ : Γ ⊢ α)
+                  (t₂ : Γ ⸴ α ⊢ β)
+                  (γ : 𝔼.⟦ Γ ⟧ᶜ)
+                → ⟦ β ⟧≺ᵉ 𝔼.⟦ `let t₁ `in t₂ ⟧ᵉ γ
+                → ⟦ Γ ⟧≺ᵐ γ
 
 ⟦if-step₁_,_,_⟧ᵉ : (t₁ : Γ ⊢ `Bool)
-              (t₂ t₃ : Γ ⊢ α)
-              (γ : 𝔼.⟦ Γ ⟧ᶜ)
-            → ⟦ α ⟧≺ᵉ 𝔼.⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ γ
-            → ⟦ Γ ⟧≺ᵐ γ
+                   (t₂ t₃ : Γ ⊢ α)
+                   (γ : 𝔼.⟦ Γ ⟧ᶜ)
+                 → ⟦ α ⟧≺ᵉ 𝔼.⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ γ
+                 → ⟦ Γ ⟧≺ᵐ γ
 
-⟦foldr-step₁_,_,_⟧ᵉ : (t₁ : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂)
-                 (t₂ : Γ ⊢ α₂)
-                 (t₃ : Γ ⊢ `List α₁)
-                 (γ : 𝔼.⟦ Γ ⟧ᶜ)
-               → ⟦ α₂ ⟧≺ᵉ 𝔼.⟦ `foldr t₁ t₂ t₃ ⟧ᵉ γ
-               → ⟦ Γ ⟧≺ᵐ γ
+⟦foldr-step₁_,_,_⟧ᵉ : (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
+                      (t₂ : Γ ⊢ β)
+                      (t₃ : Γ ⊢ `List α)
+                      (γ : 𝔼.⟦ Γ ⟧ᶜ)
+                    → ⟦ β ⟧≺ᵉ 𝔼.⟦ `foldr t₁ t₂ t₃ ⟧ᵉ γ
+                    → ⟦ Γ ⟧≺ᵐ γ
 
 ⟦ ` x                      ⟧ᵉ γ d         = return (⊥ᶜ [ ∈ᴸ⇒lookup∈ᴸtoList x ]≔ d)
 ⟦ `let t₁ `in t₂           ⟧ᵉ γ d₂        =
@@ -299,27 +299,27 @@ infix 4 ⊥⟦_⟧≺ᵐ_
   δ ← ⟦ t₂ ⟧ᵉ γ d
   return (δ ⸴ true)
 
-⟦foldr₂₂_,_⟧ᵉ : (t₁ : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂)
-                (t₂ : Γ ⊢ α₂)
+⟦foldr₂₂_,_⟧ᵉ : (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
+                (t₂ : Γ ⊢ β)
                 (γ : 𝔼.⟦ Γ ⟧ᶜ)
-                (v : 𝔼.⟦ α₁ ⟧ᵗ)
-                (vs : 𝔼.⟦ `List α₁ ⟧ᵗ)
-              → ⟦ Γ ⸴ `T α₁ ⸴ `T α₂ ⟧≺ᶜ (γ ⸴ v ⸴ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs)
-              → ⟦ Γ ⸴ `List α₁ ⟧≺ᵐ (γ ⸴ (v ∷ vs))
+                (v : 𝔼.⟦ α ⟧ᵗ)
+                (vs : 𝔼.⟦ `List α ⟧ᵗ)
+              → ⟦ Γ ⸴ α ⸴ `T β ⟧≺ᶜ (γ ⸴ v ⸴ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs)
+              → ⟦ Γ ⸴ `List α ⟧≺ᵐ (γ ⸴ (v ∷ vs))
 ⟦foldr₂₃⟧ᵉ : (γ : 𝔼.⟦ Γ ⟧ᶜ)
-             (v : 𝔼.⟦ α₁ ⟧ᵗ)
-             (vs : List 𝔼.⟦ α₁ ⟧ᵗ)
+             (v : 𝔼.⟦ α ⟧ᵗ)
+             (vs : List 𝔼.⟦ α ⟧ᵗ)
            → ⟦ Γ ⟧≺ᶜ γ
-           → ⟦ `T α₁ ⟧≺ᵉ v
-           → ⟦ Γ ⸴ `T (`List α₁) ⟧≺ᶜ (γ ⸴ vs)
-           → ⟦ Γ ⸴ `List α₁ ⟧≺ᵐ (γ ⸴ (v ∷ vs))
+           → ⟦ α ⟧≺ᵉ v
+           → ⟦ Γ ⸴ `T (`List α) ⟧≺ᶜ (γ ⸴ vs)
+           → ⟦ Γ ⸴ `List α ⟧≺ᵐ (γ ⸴ (v ∷ vs))
 
-⟦foldr′_,_⟧ᵉ : (t₁ : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂)
-               (t₂ : Γ ⊢ α₂)
+⟦foldr′_,_⟧ᵉ : (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
+               (t₂ : Γ ⊢ β)
                (γ : 𝔼.⟦ Γ ⟧ᶜ)
-               (vs : List 𝔼.⟦ α₁ ⟧ᵗ)
-             → ⟦ `T α₂ ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs
-             → ⟦ Γ ⸴ `T (`List α₁) ⟧≺ᵐ (γ ⸴ vs)
+               (vs : List 𝔼.⟦ α ⟧ᵗ)
+             → ⟦ `T β ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs
+             → ⟦ Γ ⸴ `T (`List α) ⟧≺ᵐ (γ ⸴ vs)
 
 ⟦foldr t₁ , t₂ ⟧ᵉ γ []       d₁ = do
   δ ← ⟦ t₂ ⟧ᵉ γ d₁
@@ -334,9 +334,9 @@ infix 4 ⊥⟦_⟧≺ᵐ_
   return (δ₁ ⊔ᶜ δ₂ ⸴ (d₂ ∷ d₄))
 
 ⟦foldr′₂₂⟧ : (γ : 𝔼.⟦ Γ ⟧ᶜ)
-             (vs : List 𝔼.⟦ α₁ ⟧ᵗ)
-           → ⟦ Γ ⸴ `List α₁ ⟧≺ᶜ (γ ⸴ vs)
-           → ⟦ Γ ⸴ `T (`List α₁) ⟧≺ᵐ (γ ⸴ vs)
+             (vs : List 𝔼.⟦ α ⟧ᵗ)
+           → ⟦ Γ ⸴ `List α ⟧≺ᶜ (γ ⸴ vs)
+           → ⟦ Γ ⸴ `T (`List α) ⟧≺ᵐ (γ ⸴ vs)
 
 ⟦foldr′ t₁ , t₂ ⟧ᵉ γ vs undefined  = ⊥ᵐ
 ⟦foldr′ t₁ , t₂ ⟧ᵉ γ vs (thunk d₁) = do
@@ -435,7 +435,7 @@ d₂≤ᵉd₁⊔ᵉd₂ (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = d₂≤�
 ⊥ᵉ-minimum (thunk d₁) = undefined
 ⊥ᵉ-minimum undefined  = undefined
 ⊥ᵉ-minimum []         = []
-⊥ᵉ-minimum (d₁ ∷ d₂)  = undefined ∷ undefined
+⊥ᵉ-minimum (d₁ ∷ d₂)  = ⊥ᵉ-minimum d₁ ∷ undefined
 
 ≤ᵉ-⊔ᵉ-⊥ᵉ-isBoundedJoinSemilattice : ∀ {v} → IsBoundedJoinSemilattice _≡_ ⟦ α ⟧[ v ≻_≤ᵉ_] _⊔ᵉ_ (⊥⟦ α ⟧≺ᵉ v)
 ≤ᵉ-⊔ᵉ-⊥ᵉ-isBoundedJoinSemilattice = record
@@ -540,11 +540,11 @@ return-mono δ₁≤δ₂ = δ₁≤δ₂ , ≤-refl
               → d₂₃ ≤ᵉ d₂₃′
               → ⟦if t₂ , t₃ ⟧ᵉ γ v d₂₃ ≤ᵐ ⟦if t₂ , t₃ ⟧ᵉ γ v d₂₃′
 
-⟦foldr_,_⟧ᵉ-mono : (t₁ : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂)
-                   (t₂ : Γ ⊢ α₂)
+⟦foldr_,_⟧ᵉ-mono : (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
+                   (t₂ : Γ ⊢ β)
                    (γ : 𝔼.⟦ Γ ⟧ᶜ)
-                   (vs : List 𝔼.⟦ α₁ ⟧ᵗ)
-                   {d₁₂ d₁₂′ : ⟦ α₂ ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs}
+                   (vs : List 𝔼.⟦ α ⟧ᵗ)
+                   {d₁₂ d₁₂′ : ⟦ β ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs}
                  → d₁₂ ≤ᵉ d₁₂′
                  → ⟦foldr t₁ , t₂ ⟧ᵉ γ vs d₁₂ ≤ᵐ ⟦foldr t₁ , t₂ ⟧ᵉ γ vs d₁₂′
 
@@ -595,11 +595,11 @@ return-mono δ₁≤δ₂ = δ₁≤δ₂ , ≤-refl
     (⟦ t₂ ⟧ᵉ-mono γ d₂₃≤d₂₃′)
     (λ δ≤δ′ → return-mono (δ≤δ′ ⸴ true))
 
-⟦foldr′_,_⟧ᵉ-mono : (t₁ : Γ ⸴ `T α₁ ⸴ `T α₂ ⊢ α₂)
-                    (t₂ : Γ ⊢ α₂)
+⟦foldr′_,_⟧ᵉ-mono : (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
+                    (t₂ : Γ ⊢ β)
                     (γ : 𝔼.⟦ Γ ⟧ᶜ)
-                    (vs : List 𝔼.⟦ α₁ ⟧ᵗ)
-                    {d₁ d₁′ : ⟦ `T α₂ ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs}
+                    (vs : List 𝔼.⟦ α ⟧ᵗ)
+                    {d₁ d₁′ : ⟦ `T β ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs}
                   → d₁ ≤ᵉ d₁′
                   → ⟦foldr′ t₁ , t₂ ⟧ᵉ γ vs d₁ ≤ᵐ ⟦foldr′ t₁ , t₂ ⟧ᵉ γ vs d₁′
 ⟦foldr′ t₁ , t₂ ⟧ᵉ-mono γ vs undefined      = ⊥ᵐ-minimum _

@@ -239,7 +239,7 @@
 
 \begin{document}
 
-\title[Article Title]{Article Title}
+\title[Article Title]{Lazy Cost Analysis is Functional Logic Programming}
 
 %%=============================================================%%
 %% GivenName	-> \fnm{Joergen W.}
@@ -290,9 +290,7 @@
 
 \maketitle
 
-\section{Background}
-
-In the absence of recursion, call-by-need is semantically equivalent to call-by-name.  However, the two semantics have different performance characteristics: in particular, call-by-need is \emph{cost-optimal} in the sense that a call-by-need derivation of \( t \Downarrow v \) will never be larger than a call-by-name derivation of the same, and may be smaller.  Thus, a natural way to study call-by-name evaluation \emph{in paticular} is to augment the evaluation relation with an additional parameter that tracks the cost of evaluation.
+\section{Introduction}
 
 The standard semantics for call-by-name uses a heap that binds variables to expressions; evaluating a variable amounts to evaluating the expression to which it is bound and then updating the heap to bind the variable to the resulting value.  This is attractive because it reflects a straightforward implementation of call-by-name evaluation on an actual computer, but it has the drawback that it is non-compositional; that is, a derivation is not generally a simple composition of subterm derivations.  Therefore, some have tried to develop semantics that are equivalent but also compositional.
 
@@ -305,6 +303,12 @@ In STORYOFYOURLAZYFUNCTIONSLIFE, the fact that demand semantics is equivalent to
 Eventually, we hit on the idea of using \emph{functional logic programming}.  Functional logic programming is a paradigm that combines the fundamental computational framework of functional programming with the nondeterminism and free variables found in logic programming.
 
 Our key idea is that, in a functional logic language, we can use nondeterminism to express directly the ``clairvoyance behavior'' of a term, and we can then obtain the corresponding ``demand behavior'' by representing the input demand as a free variable that is constrained to be an approximation of some actual input.  Our main technical contribution is a proof that this approach does result in behavior that is equivalent to clairvoyance and demand semantics, respectively.  This proof has also been formalized in Agda.
+
+\section{Background}
+
+In the absence of recursion, call-by-need is semantically equivalent to call-by-name.  However, the two semantics have different performance characteristics: in particular, call-by-need is \emph{cost-optimal} in the sense that a call-by-need derivation of \( t \Downarrow v \) will never be larger than a call-by-name derivation of the same, and may be smaller.  Thus, a natural way to study call-by-name evaluation \emph{in paticular} is to augment the evaluation relation with an additional parameter that tracks the cost of evaluation.
+
+% worked example
 
 \section{The base language}
 
@@ -1136,6 +1140,8 @@ To characterize the reduction behavior of \( \rulename{L-FoldM} \), we define ye
 \begin{theorem}
   If \( \ED{t}{\gamma}{b^A} = (\gamma^A, c) \), then \( \EL{\gamma, y^A \mapsto b^A}{\transD{t}{\Gamma}}{\spair{\verts{\gamma^A}}{c}} \), where \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) \).
 \end{theorem}
+
+\section{Case studies}
 
 \section{Performance considerations}
 

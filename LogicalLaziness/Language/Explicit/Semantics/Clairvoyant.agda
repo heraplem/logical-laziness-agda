@@ -1,6 +1,7 @@
 module LogicalLaziness.Language.Explicit.Semantics.Clairvoyant where
 
 open import Relation.Binary
+open import Relation.Binary.PropositionalEquality
 open import Data.Bool
   hiding (T)
 open import Data.Product
@@ -38,7 +39,9 @@ private
     Γ : Ctx
     α β τ : Ty
     x : α ∈ᴸ Γ
+    t : Γ ⊢ α
     γ γ₁ γ₂ : ⟦ Γ ⟧ᶜ
+    c₁ c₂ : ℕ
 
 mutual
 
@@ -105,6 +108,9 @@ mutual
       → ⟦foldr t₁ , t₂ ⟧ᵉ g as ∋ (b₁ , c₁)
       → ⟦ t₁ ⟧ᵉ (g ⸴ a ⸴ thunk b₁) ∋ (b₂ , c₂)
       → ⟦foldr t₁ , t₂ ⟧ᵉ g (a ∷ thunk as) ∋ (b₂ , c₁ + c₂)
+
+⇓cost≡ : ∀ {v} → c₁ ≡ c₂ → ⟦ t ⟧ᵉ γ ∋ (v , c₁) → ⟦ t ⟧ᵉ γ ∋ (v , c₂)
+⇓cost≡ refl φ = φ
 
 data ⟦_⟧[_≲ᵉ_] : (α : Ty) → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type where
   undefined : ∀ {v}

@@ -699,10 +699,12 @@ data ⟦transposeF_⟧ᵉ : Γ ⸴ α ⸴ `T β ⊢ `M β → ⟦ Γ ⸴ α ⸴ 
     (⇓exchange (⇓weaken φ)))
 
 ⇑transposeF : ∀ {u} → ⟦ `transposeF t ⟧ᵉ γ ∋ u → ⟦transposeF t ⟧ᵉ γ ∋ u
-⇑transposeF {γ = _ ⸴ _ ⸴ _} φ with ⇑>>= φ
-... | ⇓>>=-intro φ₁ φ₂ with ⇑transposeM φ₁
+⇑transposeF {γ = _ ⸴ _ ⸴ _} φ
+ with ⇑>>= φ
+... | ⇓>>=-intro φ₁ φ₂
+ with ⇑transposeM φ₁
 ... | transposeM-undefined (⇓ _) = transposeF-undefined (⇑weaken (⇑exchange φ₂))
-... | transposeM-thunk (⇓ _) = transposeF-thunk (⇑weaken (⇑exchange φ₂))
+... | transposeM-thunk (⇓ _)     = transposeF-thunk (⇑weaken (⇑exchange φ₂))
 
 -- Monadic foldr
 
@@ -902,16 +904,20 @@ var-inv (⇓ x) = refl
            → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ ∋ (v , c)
            → Σ[ v′ ∈ ℂ.⟦ α ⟧ᵗ ] v ≡ ℂ⌊ v′ ⌋ᵗ
 ℂ⌈⌉ᵈ-lemma (Explicit.` x) {γ = γ} (⇓return (⇓ x₁)) = All.lookup γ x , {!!}
-ℂ⌈⌉ᵈ-lemma (Explicit.`let t₁ `in t₂) φ with ⇑>>= φ
-... | ⇓>>=-intro {a = a} φ₁ φ₂ with ℂ⌈⌉ᵈ-lemma t₁ {v = a} φ₁
+ℂ⌈⌉ᵈ-lemma (Explicit.`let t₁ `in t₂) φ
+ with ⇑>>= φ
+... | ⇓>>=-intro {a = a} φ₁ φ₂
+ with ℂ⌈⌉ᵈ-lemma t₁ {v = a} φ₁
 ... | _ , refl = ℂ⌈⌉ᵈ-lemma t₂ φ₂
 ℂ⌈⌉ᵈ-lemma Explicit.`false (⇓return ⇓false) = false , refl
-ℂ⌈⌉ᵈ-lemma Explicit.`true (⇓return ⇓true) = true , refl
-ℂ⌈⌉ᵈ-lemma (Explicit.`if t₁ `then t₂ `else t₃) φ with ⇑>>= φ
+ℂ⌈⌉ᵈ-lemma Explicit.`true  (⇓return ⇓true) = true , refl
+ℂ⌈⌉ᵈ-lemma (Explicit.`if t₁ `then t₂ `else t₃) φ
+ with ⇑>>= φ
 ... | ⇓>>=-intro {a = true } φ₁ (⇓if φ₂ ⇓then φ₃) = ℂ⌈⌉ᵈ-lemma t₂ (⇑weaken φ₃)
 ... | ⇓>>=-intro {a = false} φ₁ (⇓if φ₂ ⇓else φ₃) = ℂ⌈⌉ᵈ-lemma t₃ (⇑weaken φ₃)
 ℂ⌈⌉ᵈ-lemma Explicit.`[] (⇓return ⇓[]) = [] , refl
-ℂ⌈⌉ᵈ-lemma (t₁ Explicit.`∷ t₂) φ with ⇑>>= φ
+ℂ⌈⌉ᵈ-lemma (t₁ Explicit.`∷ t₂) φ
+ with ⇑>>= φ
 ... | ⇓>>=-intro φ₁ φ₂
  with ℂ⌈⌉ᵈ-lemma t₁ φ₁
 ... | x , refl
@@ -921,15 +927,16 @@ var-inv (⇓ x) = refl
 ... | xs , refl = x ∷ xs , refl
 ℂ⌈⌉ᵈ-lemma (Explicit.`foldr t₁ t₂ t₃) φ = {!!}
 ℂ⌈⌉ᵈ-lemma (Explicit.`tick t) (⇓tick φ) = ℂ⌈⌉ᵈ-lemma t φ
-ℂ⌈⌉ᵈ-lemma (Explicit.`lazy t) φ with ⇑lazily φ
+ℂ⌈⌉ᵈ-lemma (Explicit.`lazy t) φ
+ with ⇑lazily φ
 ... | ⇓lazily-undefined = _ , refl
 ... | ⇓lazily-thunk φ′
  with ℂ⌈⌉ᵈ-lemma _ φ′
 ... | _ , refl = _ , refl
-ℂ⌈⌉ᵈ-lemma (Explicit.`force t) φ with ⇑>>= φ
-... | ⇓>>=-intro φ₁ (⇓T-case-thunk φ₂ (⇓return φ₃)) with ℂ⌈⌉ᵈ-lemma t φ₁
-... | thunk v′ , refl with φ₂ | φ₃
-... | ⇓ _ | ⇓ _ = v′ , refl
+ℂ⌈⌉ᵈ-lemma (Explicit.`force t) φ
+ with ⇑forced φ
+... | ⇓forced-intro φ′ with ℂ⌈⌉ᵈ-lemma t φ′
+... | thunk _ , refl = _ , refl
 
 ℂ⟦_⟧⌈_⌉ᵈ : ∀ {Γ α} (t : Explicit.Tm Γ α) {γ v c} → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ ∋ (ℂ⌊ v ⌋ᵗ , c) → ℂ.⟦ t ⟧ᵉ γ ∋ (v , c)
 ℂ⟦_⟧⌈_⌉ᵈ (Explicit.` zeroᵛ) {γ = γ} {v = v} (φ ⇓, # _) = {!!}

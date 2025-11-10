@@ -1,6 +1,7 @@
 module T where
 
 data T a = Thunk a | Undefined
+  deriving (Eq, Ord, Read, Show)
 
 -- XXX Should probably only need two of these at most.
 -- And need better names.
@@ -11,9 +12,6 @@ fork x = Thunk x ? Undefined
 -- -- In fact, only needs "Pointed", not Applicative.
 thunk :: Applicative f => f a -> f (T a)
 thunk m = fmap Thunk m ? pure Undefined
-
--- thunk'' :: Applicative f => f (T a) -> f (T a)
--- thunk'' m = m ? pure Undefined
 
 forcing :: T a -> (a -> b) -> b
 forcing (Thunk v) f = f v

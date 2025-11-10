@@ -15,9 +15,9 @@ instance Applicative Tick where
 instance Monad Tick where
   return x = Tick (x, 0)
   m >>= k =
-    let (x, n) = runTick m
-        (x', n') = runTick (k x)
-    in Tick (x', n + n')
+    let (x1, c1) = runTick m
+        (x2, c2) = runTick (k x)
+    in Tick (x2, c1 + c2)
 
 tick :: Tick ()
 tick = Tick ((), 1)

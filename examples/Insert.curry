@@ -4,46 +4,28 @@ import T
 import ListA
 import Tick
 
--- -- Look up Steven's and Sergio's papers.
--- -- Look at Andrew's paper and see what it cites.
-
--- -- insertionSort :: Ord a => [a] -> [a]
--- -- insertionSort = foldr insert []
-
-undefined = undefined
-
--- Return value wrapped in T.
-insertA :: Ord a => T a -> T (ListA a) -> Tick (T (ListA a))
-insertA xA xsA = do
+insertA :: Ord a => a -> T (ListA a) -> Tick (ListA a)
+insertA x xsT = do
   tick
-  xs <- force xsA
+  xs <- force xsT
   case xs of
-    NilA -> return (embedListA [xA])
-    _ -> undefined
-    -- xA' :~ xsA' -> do
-    --   x <- force xA
-    --   x' <- force xA'
-    --   if x <= x'
-    --     then do
-    --       xA''' <- thunk (return x')
-    --       xsA'' <- thunk (return (xA''' :~ xsA'))
-    --       xA'''' <- thunk (return x)
-    --       xsA''' <- thunk (return (xA'''' :~ xsA''))
-    --       return xsA'''
-    --     else do
-    --       -- Shortcut: we know that xA = Thunk x, so it doesn't matter what
-    --       -- insertA demands.
-    --       xsA'' <- insertA xA xsA'
-    --       return (fork x' :~ xsA'')
+    NilA -> do
+      xs' <- thunk (return NilA)
+      return (x :~ xs')
+    x' :~ xsT' ->
+      if x <= x' then return (x :~ xsT)
+      else do
+        xsT'' <- thunk (insertA x xsT')
+        return (x' :~ xsT'')
 
-insertionSort :: Ord a => T (ListA a) -> Tick (T (ListA a))
-insertionSort xsA = do
-  xs <- force xsA
-  case xs of
-    NilA -> thunk (return NilA)
-    xA :~ xsA' -> do
-      xsA'' <- insertionSort xsA'
-      insertA xA xsA''
+-- insertionSort :: Ord a => T (ListA a) -> Tick (T (ListA a))
+-- insertionSort xsA = do
+--   xs <- force xsA
+--   case xs of
+--     NilA -> thunk (return NilA)
+--     xA :~ xsA' -> do
+--       xsA'' <- insertionSort xsA'
+--       insertA xA xsA''
 
 
 -- insertA :: Ord a => T a -> T (ListA a) -> Tick (ListA a)
@@ -95,8 +77,17 @@ insertionSort xsA = do
 --               xsA'' <- insert' (cost - 1) xA xsA'
 --               return (thunk' (thunk' x' :~ xsA''))
 
--- -- "Demand translation".
--- insert 1 xs =:= ([1, 2, 3], n) where xs n free
+-- "Demand translation".
+test1 | runTick (insertA 1 xs) =:= (fromList xs, n) = (xs, n)
+  x :: Nat
+  x = 1
+
+  xs :: [Nat]
+  xs = [1, 2, 3]
+  where xs, n free
+
+main = do
+  putStrLn . show $ test1
 
 -- -- "Demand translation" using fuel.
 -- insert' 1 xs n =:= [1, 2, 3] where xs n free

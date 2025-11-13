@@ -3,6 +3,8 @@
 *.log
 tmp/
 
+*.pdf
+
 # TeX
 
 ## Core latex/pdflatex auxiliary files:

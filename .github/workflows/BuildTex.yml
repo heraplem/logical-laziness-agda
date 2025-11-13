@@ -1,0 +1,35 @@
+name: BuildTex
+
+on: [push, pull_request]
+
+jobs:
+  pre_check:
+    runs-on: ubuntu-latest
+    # Minimum permissions required by skip-duplicate-actions
+    permissions:
+        actions: write
+        contents: read
+    outputs:
+      should_skip_paper: ${{ steps.skip_paper_check.outputs.should_skip }}
+    steps:
+      - id: skip_paper_check
+        name: Check if the changes are about paper
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          paths: '["paper/**", ".github/**"]'
+          do_not_skip: '["pull_request"]'
+
+  build_paper:
+    name: Build paper
+    runs-on: ubuntu-latest
+    needs: pre_check
+    if: ${{ needs.pre_check.outputs.should_skip_paper != 'true' }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - name: Compile the draft paper
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: paper
+          root_file: paper.tex
+          args: -bibtex -pdf paper.tex

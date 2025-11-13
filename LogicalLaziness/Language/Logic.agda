@@ -714,49 +714,85 @@ data ⟦transposeF_⟧ᵉ : Γ ⸴ α ⸴ `T β ⊢ `M β → ⟦ Γ ⸴ α ⸴ 
         → Γ ⊢ `M β
 `foldrM t₁ t₂ t₃ = `foldrA (`transposeF t₁) t₂ t₃
 
-data ⟦foldrM_,_⟧ᵉ : Γ ⸴ α ⸴ `T β ⊢ `M β
-                  → Γ ⊢ `M β
-                  → ⟦ Γ ⟧ᶜ
-                  → ListA ⟦ α ⟧ᵗ
-                  → ⟦ `M β ⟧ᵗ
-                  → Type where
-  foldrM-[] : ∀ {u} →
-              ⟦ t₂ ⟧ᵉ γ ∋ u →
-              ---------------------------
-              ⟦foldrM t₁ , t₂ ⟧ᵉ γ [] ∋ u
+data ⟦foldrM*_,_⟧ᵉ : Γ ⸴ α ⸴ `T β ⊢ `M β
+                   → Γ ⊢ `M β
+                   → ⟦ Γ ⟧ᶜ
+                   → ListA ⟦ α ⟧ᵗ
+                   → ⟦ `M β ⟧ᵗ
+                   → Type where
+  foldrM*-[] : ∀ {u} →
+               ⟦ t₂ ⟧ᵉ γ ∋ u →
+               ----------------------------
+               ⟦foldrM* t₁ , t₂ ⟧ᵉ γ [] ∋ u
 
-  foldrM-undefined : ∀ {a u} →
-                     ⟦ t₁ ⟧ᵉ (γ ⸴ a ⸴ undefined) ∋ u →
-                     ----------------------------------------
-                     ⟦foldrM t₁ , t₂ ⟧ᵉ γ (a ∷ undefined) ∋ u
+  foldrM*-undefined : ∀ {a u} →
+                      ⟦ t₁ ⟧ᵉ (γ ⸴ a ⸴ undefined) ∋ u →
+                      -----------------------------------------
+                      ⟦foldrM* t₁ , t₂ ⟧ᵉ γ (a ∷ undefined) ∋ u
 
-  foldrM-thunk : ∀ {v₁} {v₂ : ListA ⟦ β ⟧ᵗ} {v₃ v₄ c₁ c₂} →
-                 ⟦foldrM t₁ , t₂ ⟧ᵉ γ v₂ ∋ (v₃ , c₁) →
-                 ⟦ t₁ ⟧ᵉ (γ ⸴ v₁ ⸴ thunk v₃) ∋ (v₄ , c₂) →
-                 -----------------------------------------------------
-                 ⟦foldrM t₁ , t₂ ⟧ᵉ γ (v₁ ∷ thunk v₂) ∋ (v₄ , c₁ + c₂)
+  foldrM*-thunk : ∀ {v₁} {v₂ : ListA ⟦ β ⟧ᵗ} {v₃ v₄ c₁ c₂} →
+                  ⟦foldrM* t₁ , t₂ ⟧ᵉ γ v₂ ∋ (v₃ , c₁) →
+                  ⟦ t₁ ⟧ᵉ (γ ⸴ v₁ ⸴ thunk v₃) ∋ (v₄ , c₂) →
+                  ------------------------------------------------------
+                  ⟦foldrM* t₁ , t₂ ⟧ᵉ γ (v₁ ∷ thunk v₂) ∋ (v₄ , c₁ + c₂)
 
-⇓foldrM⇒⇓foldrA : ∀ {v u} →
-                  ⟦foldrM t₁ , t₂ ⟧ᵉ γ v ∋ u →
-                  ⟦foldrA (`transposeF t₁) , t₂ ⟧ᵉ γ v ∋ u
-⇓foldrM⇒⇓foldrA (foldrM-[] φ) = ⇓foldrA-[] φ
-⇓foldrM⇒⇓foldrA (foldrM-undefined φ) =
-  ⇓foldrA-∷ ⇓foldrA-undefined (⇓transposeF (transposeF-undefined φ))
-⇓foldrM⇒⇓foldrA (foldrM-thunk φ₁ φ₂) =
-  ⇓foldrA-∷ (⇓foldrA-thunk (⇓foldrM⇒⇓foldrA φ₁)) (⇓transposeF (transposeF-thunk φ₂))
+data ⟦foldrM_,_,_⟧ᵉ : Γ ⸴ α ⸴ `T β ⊢ `M β
+                    → Γ ⊢ `M β
+                    → Γ ⊢ `ListA α
+                    → ⟦ Γ ⟧ᶜ
+                    → ⟦ `M β ⟧ᵗ
+                    → Type where
+  ⇓foldrM-intro : ∀ {as u}
+                → ⟦ t₃ ⟧ᵉ γ ∋ as
+                → ⟦foldrM* t₁ , t₂ ⟧ᵉ γ as ∋ u
+                → ⟦foldrM t₁ , t₂ , t₃ ⟧ᵉ γ ∋ u
 
-⇓foldrM : ∀ {v₁ v₂ c}
-        → ⟦ t₃ ⟧ᵉ γ ∋ v₁
-        → ⟦foldrM t₁ , t₂ ⟧ᵉ γ v₁ ∋ (v₂ , c)
-        → ⟦ `foldrM t₁ t₂ t₃ ⟧ᵉ γ ∋ (v₂ , c)
-⇓foldrM φ₁ φ₂ = ⇓foldrA φ₁ (⇓foldrM⇒⇓foldrA φ₂)
+⇓foldrM*⇒⇓foldrA : ∀ {v u}
+                 → ⟦foldrM* t₁ , t₂ ⟧ᵉ γ v ∋ u
+                 → ⟦foldrA (`transposeF t₁) , t₂ ⟧ᵉ γ v ∋ u
+⇓foldrM*⇒⇓foldrA (foldrM*-[] φ) = ⇓foldrA-[] φ
+⇓foldrM*⇒⇓foldrA (foldrM*-undefined φ) = ⇓foldrA-∷ ⇓foldrA-undefined (⇓transposeF {!!})
+  -- ⇓foldrA-∷ ⇓foldrA-undefined (⇓transposeF (transposeF-undefined φ))
+⇓foldrM*⇒⇓foldrA (foldrM*-thunk φ₁ φ₂) = ⇓foldrA-∷ (⇓foldrA-thunk (⇓foldrM*⇒⇓foldrA φ₁)) (⇓transposeF {!transposeF-thunk!})
+  -- ⇓foldrA-∷ (⇓foldrA-thunk (⇓foldrM*⇒⇓foldrA φ₁)) (⇓transposeF (transposeF-thunk φ₂))
 
-foldrM-lemma : ∀ {as b} {v : ⟦ τ ⟧ᵗ}
-             → ⟦foldrM t₁ , t₂ ⟧ᵉ γ as ∋ b
-             → ⟦foldrM subsume2 t₁ , ↑ᵗ t₂ ⟧ᵉ (γ ⸴ v) as ∋ b
-foldrM-lemma (foldrM-[] φ)        = foldrM-[] (⇓weaken φ)
-foldrM-lemma (foldrM-undefined φ) = foldrM-undefined (⇓subsume2 φ)
-foldrM-lemma (foldrM-thunk φ₁ φ₂) = foldrM-thunk (foldrM-lemma φ₁) (⇓subsume2 φ₂)
+-- NEED
+-- ⟦ t₁ ⟧ᵉ (γ ⸴ a ⸴ bT) ∋ (b , c₂) →
+-- ⟦transposeF t₁ ⟧ᵉ (γ ⸴ a ⸴ thunk (v₃ , c₁)) ∋ (fst , c₁ + c₂)
+
+⇓foldrA⇒⇓foldrM* : ∀ {v u}
+                 → ⟦foldrA (`transposeF t₁) , t₂ ⟧ᵉ γ v ∋ u
+                 → ⟦foldrM* t₁ , t₂ ⟧ᵉ γ v ∋ u
+⇓foldrA⇒⇓foldrM* (⇓foldrA-[] φ) = foldrM*-[] φ
+⇓foldrA⇒⇓foldrM* (⇓foldrA-∷ ⇓foldrA-undefined φ)
+ with ⇑transposeF φ
+... | transposeF-undefined φ′ = foldrM*-undefined φ′
+⇓foldrA⇒⇓foldrM* (⇓foldrA-∷ (⇓foldrA-thunk φ₁) φ₂)
+ with ⇑transposeF φ₂
+... | transposeF-thunk φ₂′ = foldrM*-thunk (⇓foldrA⇒⇓foldrM* φ₁) φ₂′
+
+⇓foldrM* : ∀ {v₁ v₂ c}
+         → ⟦ t₃ ⟧ᵉ γ ∋ v₁
+         → ⟦foldrM* t₁ , t₂ ⟧ᵉ γ v₁ ∋ (v₂ , c)
+         → ⟦ `foldrM t₁ t₂ t₃ ⟧ᵉ γ ∋ (v₂ , c)
+⇓foldrM* φ₁ φ₂ = ⇓foldrA φ₁ (⇓foldrM*⇒⇓foldrA φ₂)
+
+⇓foldrM*-↑ᵗ : ∀ {as b} {v : ⟦ τ ⟧ᵗ}
+            → ⟦foldrM* t₁ , t₂ ⟧ᵉ γ as ∋ b
+            → ⟦foldrM* subsume2 t₁ , ↑ᵗ t₂ ⟧ᵉ (γ ⸴ v) as ∋ b
+⇓foldrM*-↑ᵗ (foldrM*-[] φ)        = foldrM*-[] (⇓weaken φ)
+⇓foldrM*-↑ᵗ (foldrM*-undefined φ) = foldrM*-undefined (⇓subsume2 φ)
+⇓foldrM*-↑ᵗ (foldrM*-thunk φ₁ φ₂) = foldrM*-thunk (⇓foldrM*-↑ᵗ φ₁) (⇓subsume2 φ₂)
+
+⇓foldrM : ∀ {u}
+        → ⟦foldrM t₁ , t₂ , t₃ ⟧ᵉ γ ∋ u
+        → ⟦ `foldrM t₁ t₂ t₃ ⟧ᵉ γ ∋ u
+⇓foldrM (⇓foldrM-intro φ₁ φ₂) = ⇓foldrM* φ₁ φ₂
+
+⇑foldrM : ∀ {u}
+        → ⟦ `foldrM t₁ t₂ t₃ ⟧ᵉ γ ∋ u
+        → ⟦foldrM t₁ , t₂ , t₃ ⟧ᵉ γ ∋ u
+⇑foldrM (⇓foldrA φ₁ φ₂) = ⇓foldrM-intro φ₁ (⇓foldrA⇒⇓foldrM* φ₂)
 
 -- Evaluate a term lazily
 
@@ -787,7 +823,8 @@ data ⟦forced_⟧ᵉ : Γ ⊢ `M (`T α) → ⟦ Γ ⟧ᶜ → ⟦ α ⟧ᵗ ×
   ⇓forced-intro : ∀ {v c} → ⟦ t ⟧ᵉ γ ∋ (thunk v , c) → ⟦forced t ⟧ᵉ γ ∋ (v , c)
 
 ⇓forced : ∀ {u} → ⟦forced t ⟧ᵉ γ ∋ u → ⟦ `forced t ⟧ᵉ γ ∋ u
-⇓forced (⇓forced-intro φ) = ⇓cost≡ (+-identityʳ _) (⇓>>= (⇓>>=-intro φ (⇓T-case-thunk (⇓ zeroᵛ) (⇓return (⇓ zeroᵛ)))))
+⇓forced (⇓forced-intro φ) =
+  ⇓cost≡ (+-identityʳ _) (⇓>>= (⇓>>=-intro φ (⇓T-case-thunk (⇓ zeroᵛ) (⇓return (⇓ zeroᵛ)))))
 
 ⇑forced : ∀ {u} → ⟦ `forced t ⟧ᵉ γ ∋ u → ⟦forced t ⟧ᵉ γ ∋ u
 ⇑forced φ with ⇑>>= φ
@@ -825,14 +862,27 @@ data ⟦forced_⟧ᵉ : Γ ⊢ `M (`T α) → ⟦ Γ ⟧ᶜ → ⟦ α ⟧ᵗ ×
 ℂ⌊_⌋ᵗ : {α : Explicit.Ty} → ℂ.⟦ α ⟧ᵗ → ⟦ ⌊ α ⌋ᵗ ⟧ᵗ
 ℂ⌊ v ⌋ᵗ = ℂ⟦ _ ⟧⌊ v ⌋ᵗ
 
-ℂ⌊_⌋-map : ∀ {α} (xs : ℂ.⟦ `List α ⟧ᵗ) → ℂ⌊ xs ⌋ᵗ ≡ ListA.map ℂ⌊_⌋ᵗ xs
-ℂ⌊ []            ⌋-map = refl
-ℂ⌊ x ∷ undefined ⌋-map = refl
-ℂ⌊ x ∷ thunk xs  ⌋-map = cong₂ _∷_ refl (cong thunk ℂ⌊ xs ⌋-map)
+ℂ⌊_⌋ᵗ-map : ∀ {α} (xs : ℂ.⟦ `List α ⟧ᵗ) → ℂ⌊ xs ⌋ᵗ ≡ ListA.map ℂ⌊_⌋ᵗ xs
+ℂ⌊ []            ⌋ᵗ-map = refl
+ℂ⌊ x ∷ undefined ⌋ᵗ-map = refl
+ℂ⌊ x ∷ thunk xs  ⌋ᵗ-map = cong₂ _∷_ refl (cong thunk ℂ⌊ xs ⌋ᵗ-map)
+
+ℂ⌊_⌋ᵗ-injective : ∀ {α} {v₁ v₂ : ℂ.⟦ α ⟧ᵗ}
+                → ℂ⌊ v₁ ⌋ᵗ ≡ ℂ⌊ v₂ ⌋ᵗ
+                → v₁ ≡ v₂
+ℂ⌊_⌋ᵗ-injective {α = `Bool  } {v₁ = false    } {v₂ = false    } ψ = ψ
+ℂ⌊_⌋ᵗ-injective {α = `Bool  } {v₁ = true     } {v₂ = true     } ψ = ψ
+ℂ⌊_⌋ᵗ-injective {α = `T α   } {v₁ = undefined} {v₂ = undefined} ψ = refl
+ℂ⌊_⌋ᵗ-injective {α = `T α   } {v₁ = thunk _  } {v₂ = thunk _  } ψ =
+  cong thunk ℂ⌊ thunk-injective ψ ⌋ᵗ-injective
+ℂ⌊_⌋ᵗ-injective {α = `List α} {v₁ = []       } {v₂ = []       } ψ = refl
+ℂ⌊_⌋ᵗ-injective {α = `List α} {v₁ = _ ∷ _    } {v₂ = _ ∷ _    } ψ =
+  let ψ₁ , ψ₂ = ∷-injective ψ
+  in cong₂ _∷_ ℂ⌊ ψ₁ ⌋ᵗ-injective ℂ⌊ ψ₂ ⌋ᵗ-injective
 
 -- Convert evaluation contexts.
 ℂ⟦_⟧⌊_⌋ᶜ : (Γ : Explicit.Ctx) → ℂ.⟦ Γ ⟧ᶜ → ⟦ ⌊ Γ ⌋ᶜ ⟧ᶜ
-ℂ⟦ Γ ⟧⌊ γ ⌋ᶜ = All.map⁺ (All.map ℂ⟦ _ ⟧⌊_⌋ᵗ γ)
+ℂ⟦ Γ ⟧⌊ γ ⌋ᶜ = All.gmap⁺ ℂ⟦ _ ⟧⌊_⌋ᵗ γ
 
 ℂ⌊_⌋ᶜ : {Γ : Explicit.Ctx} → ℂ.⟦ Γ ⟧ᶜ → ⟦ ⌊ Γ ⌋ᶜ ⟧ᶜ
 ℂ⌊ γ ⌋ᶜ = ℂ⟦ _ ⟧⌊ γ ⌋ᶜ
@@ -850,7 +900,8 @@ data ⟦forced_⟧ᵉ : Γ ⊢ `M (`T α) → ⟦ Γ ⟧ᶜ → ⟦ α ⟧ᵗ ×
 ℂ⌊ Explicit.`[]                      ⌋ᵉ = `return `[]
 ℂ⌊ t₁ Explicit.`∷ t₂                 ⌋ᵉ =
   ℂ⌊ t₁ ⌋ᵉ `>>= ↑ᵗ ℂ⌊ t₂ ⌋ᵉ `>>= `return (` (sucᵛ zeroᵛ) `∷ ` zeroᵛ)
-ℂ⌊ Explicit.`foldr t₁ t₂ t₃          ⌋ᵉ = ℂ⌊ t₃ ⌋ᵉ `>>= `foldrM (subsume2 ℂ⌊ t₁ ⌋ᵉ) (↑ᵗ ℂ⌊ t₂ ⌋ᵉ) (` zeroᵛ)
+ℂ⌊ Explicit.`foldr t₁ t₂ t₃          ⌋ᵉ =
+  ℂ⌊ t₃ ⌋ᵉ `>>= `foldrM (subsume2 ℂ⌊ t₁ ⌋ᵉ) (↑ᵗ ℂ⌊ t₂ ⌋ᵉ) (` zeroᵛ)
 ℂ⌊ Explicit.`tick t                  ⌋ᵉ = `tick ℂ⌊ t ⌋ᵉ
 ℂ⌊ Explicit.`lazy t                  ⌋ᵉ = `lazily ℂ⌊ t ⌋ᵉ
 ℂ⌊ Explicit.`force t                 ⌋ᵉ = `forced ℂ⌊ t ⌋ᵉ
@@ -867,7 +918,7 @@ mutual
   ℂ⌊ ℂ.`true           ⌋ᵈ = ⇓return ⇓true
   ℂ⌊ ℂ.`if φ₁ `then φ₂ ⌋ᵈ = ⇓>>= (⇓>>=-intro ℂ⌊ φ₁ ⌋ᵈ (⇓if ⇓ zeroᵛ ⇓then ⇓weaken ℂ⌊ φ₂ ⌋ᵈ))
   ℂ⌊ ℂ.`if φ₁ `else φ₂ ⌋ᵈ = ⇓>>= (⇓>>=-intro ℂ⌊ φ₁ ⌋ᵈ (⇓if ⇓ zeroᵛ ⇓else ⇓weaken ℂ⌊ φ₂ ⌋ᵈ))
-  ℂ⌊ ℂ.`[]             ⌋ᵈ = ⇓return ⇓[]          
+  ℂ⌊ ℂ.`[]             ⌋ᵈ = ⇓return ⇓[]
   ℂ⌊_⌋ᵈ (ℂ._`∷_ {c₂ = c₂} φ₁ φ₂) =
     ⇓>>= (⇓>>=-intro ℂ⌊ φ₁ ⌋ᵈ (⇓cost≡ (+-identityʳ c₂)
       (⇓>>= (⇓>>=-intro (⇓weaken ℂ⌊ φ₂ ⌋ᵈ) (⇓return (⇓ sucᵛ zeroᵛ ⇓∷ ⇓ zeroᵛ))))))
@@ -875,11 +926,11 @@ mutual
     ⇓>>=
       (⇓>>=-intro
         ℂ⌊ φ₁ ⌋ᵈ
-        (⇓foldrM (⇓ zeroᵛ)
-          (foldrM-lemma
+        (⇓foldrM* (⇓ zeroᵛ)
+          (⇓foldrM*-↑ᵗ
             (subst
-              (λ xs → ⟦foldrM ℂ⌊ t₁ ⌋ᵉ , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ xs ∋ (ℂ⌊ v ⌋ᵗ , c₂))
-              (sym ℂ⌊ as ⌋-map) ℂ⌊foldr φ₂ ⌋ᵈ))))
+              (λ xs → ⟦foldrM* ℂ⌊ t₁ ⌋ᵉ , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ xs ∋ (ℂ⌊ v ⌋ᵗ , c₂))
+              (sym ℂ⌊ as ⌋ᵗ-map) ℂ⌊foldr φ₂ ⌋ᵈ))))
   ℂ⌊ ℂ.`tick φ         ⌋ᵈ = ⇓tick ℂ⌊ φ ⌋ᵈ
   ℂ⌊ ℂ.`lazy-undefined ⌋ᵈ = ⇓lazily ⇓lazily-undefined
   ℂ⌊ ℂ.`lazy-thunk φ   ⌋ᵈ = ⇓lazily (⇓lazily-thunk ℂ⌊ φ ⌋ᵈ)
@@ -890,88 +941,126 @@ mutual
                  {t₂ : Explicit.Tm Γ β}
                  {γ xs v c}
                → ℂ.⟦foldr t₁ , t₂ ⟧ᵉ γ xs ∋ (v , c)
-               → ⟦foldrM ℂ⌊ t₁ ⌋ᵉ , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ (ListA.map ℂ⌊_⌋ᵗ xs) ∋ (ℂ⌊ v ⌋ᵗ , c)
-  ℂ⌊foldr ℂ.`foldr-[] φ        ⌋ᵈ = foldrM-[] ℂ⌊ φ ⌋ᵈ
-  ℂ⌊foldr ℂ.`foldr-undefined φ ⌋ᵈ = foldrM-undefined ℂ⌊ φ ⌋ᵈ
-  ℂ⌊foldr ℂ.`foldr-thunk φ₁ φ₂ ⌋ᵈ = foldrM-thunk ℂ⌊foldr φ₁ ⌋ᵈ ℂ⌊ φ₂ ⌋ᵈ
+               → ⟦foldrM* ℂ⌊ t₁ ⌋ᵉ , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ (ListA.map ℂ⌊_⌋ᵗ xs) ∋ (ℂ⌊ v ⌋ᵗ , c)
+  ℂ⌊foldr ℂ.`foldr-[] φ        ⌋ᵈ = foldrM*-[] ℂ⌊ φ ⌋ᵈ
+  ℂ⌊foldr ℂ.`foldr-undefined φ ⌋ᵈ = foldrM*-undefined ℂ⌊ φ ⌋ᵈ
+  ℂ⌊foldr ℂ.`foldr-thunk φ₁ φ₂ ⌋ᵈ = foldrM*-thunk ℂ⌊foldr φ₁ ⌋ᵈ ℂ⌊ φ₂ ⌋ᵈ
+
+mutual
+
+  -- If the translation of `t` reduces to `v`, then `v` must be equal to the
+  -- translation of some value in clairvoyance semantics.
+  ℂ⌈⌉ᵈ-lemma : ∀ {Γ α} (t : Explicit.Tm Γ α) {γ v c}
+             → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ ∋ (v , c)
+             → Σ[ v′ ∈ ℂ.⟦ α ⟧ᵗ ] v ≡ ℂ⌊ v′ ⌋ᵗ
+  ℂ⌈⌉ᵈ-lemma (Explicit.` x) {γ = γ} (⇓return (⇓ _)) =
+    All.lookup γ x , sym (All.app-lookup x γ ⌊_⌋ᵗ ℂ⌊_⌋ᵗ)
+  ℂ⌈⌉ᵈ-lemma (Explicit.`let t₁ `in t₂) φ
+   with ⇑>>= φ
+  ... | ⇓>>=-intro {a = a} φ₁ φ₂
+   with ℂ⌈⌉ᵈ-lemma t₁ {v = a} φ₁
+  ... | _ , refl = ℂ⌈⌉ᵈ-lemma t₂ φ₂
+  ℂ⌈⌉ᵈ-lemma Explicit.`false (⇓return ⇓false) = false , refl
+  ℂ⌈⌉ᵈ-lemma Explicit.`true  (⇓return ⇓true) = true , refl
+  ℂ⌈⌉ᵈ-lemma (Explicit.`if t₁ `then t₂ `else t₃) φ
+   with ⇑>>= φ
+  ... | ⇓>>=-intro {a = true } φ₁ (⇓if φ₂ ⇓then φ₃) = ℂ⌈⌉ᵈ-lemma t₂ (⇑weaken φ₃)
+  ... | ⇓>>=-intro {a = false} φ₁ (⇓if φ₂ ⇓else φ₃) = ℂ⌈⌉ᵈ-lemma t₃ (⇑weaken φ₃)
+  ℂ⌈⌉ᵈ-lemma Explicit.`[] (⇓return ⇓[]) = [] , refl
+  ℂ⌈⌉ᵈ-lemma (t₁ Explicit.`∷ t₂) φ
+   with ⇑>>= φ
+  ... | ⇓>>=-intro φ₁ φ₂
+   with ℂ⌈⌉ᵈ-lemma t₁ φ₁
+  ... | x , refl
+   with ⇑>>= {t₁ = ↑ᵗ ℂ⌊ t₂ ⌋ᵉ} {t₂ = `return (` (sucᵛ zeroᵛ) `∷ ` zeroᵛ)} φ₂
+  ... | ⇓>>=-intro φ₂₁ (⇓return (⇓ _ ⇓∷ ⇓ _))
+   with ℂ⌈⌉ᵈ-lemma t₂ (⇑weaken φ₂₁)
+  ... | xs , refl = x ∷ xs , refl
+  ℂ⌈⌉ᵈ-lemma (Explicit.`foldr t₁ t₂ t₃) φ
+   with ⇑>>= φ
+  ... | ⇓>>=-intro φ₁ (⇓foldrA (⇓ _) φ₂) = {!!}
+  ℂ⌈⌉ᵈ-lemma (Explicit.`tick t) (⇓tick φ) = ℂ⌈⌉ᵈ-lemma t φ
+  ℂ⌈⌉ᵈ-lemma (Explicit.`lazy t) φ
+   with ⇑lazily φ
+  ... | ⇓lazily-undefined = _ , refl
+  ... | ⇓lazily-thunk φ′
+   with ℂ⌈⌉ᵈ-lemma _ φ′
+  ... | _ , refl = _ , refl
+  ℂ⌈⌉ᵈ-lemma (Explicit.`force t) φ
+   with ⇑forced φ
+  ... | ⇓forced-intro φ′ with ℂ⌈⌉ᵈ-lemma t φ′
+  ... | thunk _ , refl = _ , refl
+
+  ℂ⌈foldr⌉ᵈ-lemma : ∀ {Γ α β}
+                    {t₁ : Explicit.Tm (Γ ⸴ α ⸴ `T β) β}
+                    {t₂ : Explicit.Tm Γ β}
+                    {γ as b c}
+                  → ⟦foldrM* ℂ⌊ t₁ ⌋ᵉ , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ (ListA.map ℂ⌊_⌋ᵗ as) ∋ (b , c)
+                  → Σ[ b′ ∈ _ ] b ≡ ℂ⌊ b′ ⌋ᵗ
+  ℂ⌈foldr⌉ᵈ-lemma {as = []           } (foldrM*-[] φ)        = ℂ⌈⌉ᵈ-lemma _ φ
+  ℂ⌈foldr⌉ᵈ-lemma {as = _ ∷ undefined} (foldrM*-undefined φ) = ℂ⌈⌉ᵈ-lemma _ φ
+  ℂ⌈foldr⌉ᵈ-lemma {as = _ ∷ thunk _  } (foldrM*-thunk φ₁ φ₂) with ℂ⌈foldr⌉ᵈ-lemma φ₁
+  ... | _ , refl = ℂ⌈⌉ᵈ-lemma _ φ₂
 
 var-inv : ∀ {x : α ∈ᴸ Γ} {v} → ⟦ ` x ⟧ᵉ γ ∋ v → v ≡ All.lookup γ x
 var-inv (⇓ x) = refl
 
--- If the translation of `t` reduces to `v`, then `v` must be equal to the
--- translation of some value in clairvoyance semantics.
-ℂ⌈⌉ᵈ-lemma : ∀ {Γ α} (t : Explicit.Tm Γ α) {γ v c}
-           → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ ∋ (v , c)
-           → Σ[ v′ ∈ ℂ.⟦ α ⟧ᵗ ] v ≡ ℂ⌊ v′ ⌋ᵗ
-ℂ⌈⌉ᵈ-lemma (Explicit.` x) {γ = γ} (⇓return (⇓ x₁)) = All.lookup γ x , {!!}
-ℂ⌈⌉ᵈ-lemma (Explicit.`let t₁ `in t₂) φ
- with ⇑>>= φ
-... | ⇓>>=-intro {a = a} φ₁ φ₂
- with ℂ⌈⌉ᵈ-lemma t₁ {v = a} φ₁
-... | _ , refl = ℂ⌈⌉ᵈ-lemma t₂ φ₂
-ℂ⌈⌉ᵈ-lemma Explicit.`false (⇓return ⇓false) = false , refl
-ℂ⌈⌉ᵈ-lemma Explicit.`true  (⇓return ⇓true) = true , refl
-ℂ⌈⌉ᵈ-lemma (Explicit.`if t₁ `then t₂ `else t₃) φ
- with ⇑>>= φ
-... | ⇓>>=-intro {a = true } φ₁ (⇓if φ₂ ⇓then φ₃) = ℂ⌈⌉ᵈ-lemma t₂ (⇑weaken φ₃)
-... | ⇓>>=-intro {a = false} φ₁ (⇓if φ₂ ⇓else φ₃) = ℂ⌈⌉ᵈ-lemma t₃ (⇑weaken φ₃)
-ℂ⌈⌉ᵈ-lemma Explicit.`[] (⇓return ⇓[]) = [] , refl
-ℂ⌈⌉ᵈ-lemma (t₁ Explicit.`∷ t₂) φ
- with ⇑>>= φ
-... | ⇓>>=-intro φ₁ φ₂
- with ℂ⌈⌉ᵈ-lemma t₁ φ₁
-... | x , refl
- with ⇑>>= {t₁ = ↑ᵗ ℂ⌊ t₂ ⌋ᵉ} {t₂ = `return (` (sucᵛ zeroᵛ) `∷ ` zeroᵛ)} φ₂
-... | ⇓>>=-intro φ₂₁ (⇓return (⇓ _ ⇓∷ ⇓ _))
- with ℂ⌈⌉ᵈ-lemma t₂ (⇑weaken φ₂₁)
-... | xs , refl = x ∷ xs , refl
-ℂ⌈⌉ᵈ-lemma (Explicit.`foldr t₁ t₂ t₃) φ = {!!}
-ℂ⌈⌉ᵈ-lemma (Explicit.`tick t) (⇓tick φ) = ℂ⌈⌉ᵈ-lemma t φ
-ℂ⌈⌉ᵈ-lemma (Explicit.`lazy t) φ
- with ⇑lazily φ
-... | ⇓lazily-undefined = _ , refl
-... | ⇓lazily-thunk φ′
- with ℂ⌈⌉ᵈ-lemma _ φ′
-... | _ , refl = _ , refl
-ℂ⌈⌉ᵈ-lemma (Explicit.`force t) φ
- with ⇑forced φ
-... | ⇓forced-intro φ′ with ℂ⌈⌉ᵈ-lemma t φ′
-... | thunk _ , refl = _ , refl
+mutual
 
-ℂ⟦_⟧⌈_⌉ᵈ : ∀ {Γ α} (t : Explicit.Tm Γ α) {γ v c} → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ ∋ (ℂ⌊ v ⌋ᵗ , c) → ℂ.⟦ t ⟧ᵉ γ ∋ (v , c)
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.` zeroᵛ) {γ = γ} {v = v} (φ ⇓, # _) = {!!}
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.` sucᵛ x) {γ = γ} {v = v} (φ ⇓, # _) = {!!}
---  (var-inv φ)
--- subst (⟦ ` ∈ᴸ⇒∈ᴸ-map ⌊_⌋ᵗ x ⟧ᵉ ℂ⌊ γ ⌋ᶜ ∋_) (var-inv φ) φ
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`let t₁ `in t₂) {c = c} φ
- with ⇑>>= φ
-... | ⇓>>=-intro {a = a} φ₁ φ₂
- with ℂ⌈⌉ᵈ-lemma _ φ₁
-... | _ , refl = ℂ.`let ℂ⟦ _ ⟧⌈ φ₁ ⌉ᵈ `in ℂ⟦ _ ⟧⌈ φ₂ ⌉ᵈ
-ℂ⟦_⟧⌈_⌉ᵈ Explicit.`false {v = false} (⇓return ⇓false) = ℂ.`false
-ℂ⟦_⟧⌈_⌉ᵈ Explicit.`true  {v = true } (⇓return ⇓true ) = ℂ.`true
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`if t₁ `then t₂ `else t₃) {c = c₂} φ
- with ⇑>>= φ
-... | ⇓>>=-intro {a = true } φ₁ (⇓if φ₂ ⇓then φ₃) =
-  ℂ.`if ℂ⟦ _ ⟧⌈ φ₁ ⌉ᵈ `then ℂ⟦ _ ⟧⌈ ⇑weaken φ₃ ⌉ᵈ
-... | ⇓>>=-intro {a = false} φ₁ (⇓if φ₂ ⇓else φ₃) =
-  ℂ.`if ℂ⟦ _ ⟧⌈ φ₁ ⌉ᵈ `else ℂ⟦ _ ⟧⌈ ⇑weaken φ₃ ⌉ᵈ
-ℂ⟦_⟧⌈_⌉ᵈ Explicit.`[] {v = []} (⇓return ⇓[]) = ℂ.`[]
-ℂ⟦_⟧⌈_⌉ᵈ (t₁ Explicit.`∷ t₂) {v = v} φ
- with ⇑>>= φ
-... | ⇓>>=-intro {c₁ = c₁} φ₁ φ₂
- with v     | ⇑>>= {t₁ = ↑ᵗ ℂ⌊ t₂ ⌋ᵉ} {t₂ = `return (` (sucᵛ zeroᵛ) `∷ ` zeroᵛ)} φ₂
-... | _ ∷ _ | ⇓>>=-intro {c₁ = c₂} {c₂ = c₃} φ₂₁ (⇓return (⇓ _ ⇓∷ ⇓ _)) =
-  ℂ.⇓cost≡ (cong (c₁ +_) (sym (+-identityʳ c₂))) (ℂ⟦ _ ⟧⌈ φ₁ ⌉ᵈ ℂ.`∷ ℂ⟦ _ ⟧⌈ ⇑weaken φ₂₁ ⌉ᵈ)
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`foldr t₁ t₂ ₃) φ = {!!}
-ℂ⟦ Explicit.`tick t ⟧⌈ ⇓let φ₁ ⇓in ⇓proj₁ (⇓ _) ⇓, # 1 ⇓+ ⇓proj₂ (⇓ _) ⌉ᵈ = ℂ.`tick ℂ⟦ t ⟧⌈ φ₁ ⌉ᵈ
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`lazy t) {v = v} φ
- with v         | ⇑lazily φ
-... | thunk _   | ⇓lazily-thunk φ′  = ℂ.`lazy-thunk ℂ⟦ _ ⟧⌈ φ′ ⌉ᵈ
-... | undefined | ⇓lazily-undefined = ℂ.`lazy-undefined
-ℂ⟦_⟧⌈_⌉ᵈ (Explicit.`force t) φ
- with ⇑forced φ
-... | ⇓forced-intro φ′ = ℂ.`force ℂ⟦ _ ⟧⌈ φ′ ⌉ᵈ
+  ℂ⌈_⌉ᵈ : ∀ {Γ α} {t : Explicit.Tm Γ α} {γ v c}
+        → ⟦ ℂ⌊ t ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ ∋ (ℂ⌊ v ⌋ᵗ , c)
+        → ℂ.⟦ t ⟧ᵉ γ ∋ (v , c)
+  ℂ⌈_⌉ᵈ {t = Explicit.` x} {γ = γ} {v = v} (⇓return φ)
+    rewrite ℂ⌊ trans (var-inv φ) (sym (All.app-lookup x γ ⌊_⌋ᵗ ℂ⌊_⌋ᵗ)) ⌋ᵗ-injective
+    = ℂ.` x
+  ℂ⌈_⌉ᵈ {t = Explicit.`let t₁ `in t₂} φ
+   with ⇑>>= φ
+  ... | ⇓>>=-intro φ₁ φ₂
+   with ℂ⌈⌉ᵈ-lemma _ φ₁
+  ... | _ , refl = ℂ.`let ℂ⌈ φ₁ ⌉ᵈ `in ℂ⌈ φ₂ ⌉ᵈ
+  ℂ⌈_⌉ᵈ {t = Explicit.`false} {v = false} (⇓return ⇓false) = ℂ.`false
+  ℂ⌈_⌉ᵈ {t = Explicit.`true } {v = true } (⇓return ⇓true ) = ℂ.`true
+  ℂ⌈_⌉ᵈ {t = Explicit.`if t₁ `then t₂ `else t₃} φ
+   with ⇑>>= φ
+  ... | ⇓>>=-intro {a = true} φ₁ (⇓if φ₂ ⇓then φ₃) =
+    ℂ.`if ℂ⌈ φ₁ ⌉ᵈ `then ℂ⌈ ⇑weaken φ₃ ⌉ᵈ
+  ... | ⇓>>=-intro {a = false} φ₁ (⇓if φ₂ ⇓else φ₃) =
+    ℂ.`if ℂ⌈ φ₁ ⌉ᵈ `else ℂ⌈ ⇑weaken φ₃ ⌉ᵈ
+  ℂ⌈_⌉ᵈ {t = Explicit.`[]} {v = []} (⇓return ⇓[]) = ℂ.`[]
+  ℂ⌈_⌉ᵈ {t = t₁ Explicit.`∷ t₂} {v = v} φ
+   with ⇑>>= φ
+  ... | ⇓>>=-intro {c₁ = c₁} φ₁ φ₂
+   with v     | ⇑>>= {t₁ = ↑ᵗ ℂ⌊ t₂ ⌋ᵉ} {t₂ = `return (` (sucᵛ zeroᵛ) `∷ ` zeroᵛ)} φ₂
+  ... | _ ∷ _ | ⇓>>=-intro {c₁ = c₂} {c₂ = c₃} φ₂₁ (⇓return (⇓ _ ⇓∷ ⇓ _)) =
+    ℂ.⇓cost≡ (cong (c₁ +_) (sym (+-identityʳ c₂))) (ℂ⌈ φ₁ ⌉ᵈ ℂ.`∷ ℂ⌈ ⇑weaken φ₂₁ ⌉ᵈ)
+  ℂ⌈_⌉ᵈ {t = Explicit.`foldr t₁ t₂ ₃} φ with ⇑>>= φ
+  ... | ⇓>>=-intro φ₁ (⇓foldrA (⇓ _) φ₂)
+    = ℂ.`foldr ℂ⌈ {!!} ⌉ᵈ ℂ⌈foldr ⇓foldrA⇒⇓foldrM* {!φ₂!} ⌉ᵈ -- ℂ.`foldr ℂ⟦ _ ⟧⌈ φ₁ ⌉ᵈ {!!}
+   -- with ℂ⌈⌉ᵈ-lemma _ φ₁
+  -- ... | _ , refl = ℂ.`foldr ℂ⌈ φ₁ ⌉ᵈ ℂ⌈foldr {!!} ⌉ᵈ -- ℂ.`foldr ℂ⟦ _ ⟧⌈ φ₁ ⌉ᵈ {!!}
+  ℂ⌈_⌉ᵈ
+    {t = Explicit.`tick t}
+    (⇓let φ₁ ⇓in ⇓proj₁ (⇓ _) ⇓, # 1 ⇓+ ⇓proj₂ (⇓ _))
+    = ℂ.`tick ℂ⌈ φ₁ ⌉ᵈ
+  ℂ⌈_⌉ᵈ {t = Explicit.`lazy t} {v = v} φ
+   with v         | ⇑lazily φ
+  ... | thunk _   | ⇓lazily-thunk φ′  = ℂ.`lazy-thunk ℂ⌈ φ′ ⌉ᵈ
+  ... | undefined | ⇓lazily-undefined = ℂ.`lazy-undefined
+  ℂ⌈_⌉ᵈ {t = Explicit.`force t} φ
+   with ⇑forced φ
+  ... | ⇓forced-intro φ′ = ℂ.`force ℂ⌈ φ′ ⌉ᵈ
+
+  ℂ⌈foldr_⌉ᵈ : ∀ {Γ α β}
+                 {t₁ : Explicit.Tm (Γ ⸴ α ⸴ `T β) β}
+                 {t₂ : Explicit.Tm Γ β}
+                 {γ as b c}
+             → ⟦foldrM* ℂ⌊ t₁ ⌋ᵉ , ℂ⌊ t₂ ⌋ᵉ ⟧ᵉ ℂ⌊ γ ⌋ᶜ (ListA.map ℂ⌊_⌋ᵗ as) ∋ (ℂ⌊ b ⌋ᵗ , c)
+             → ℂ.⟦foldr t₁ , t₂ ⟧ᵉ γ as ∋ (b , c)
+  ℂ⌈foldr_⌉ᵈ {as = []           } (foldrM*-[] φ)         = ℂ.`foldr-[] ℂ⌈ φ ⌉ᵈ
+  ℂ⌈foldr_⌉ᵈ {as = _ ∷ undefined} (foldrM*-undefined φ)  = ℂ.`foldr-undefined ℂ⌈ φ ⌉ᵈ
+  ℂ⌈foldr_⌉ᵈ {as = _ ∷ thunk _  } (foldrM*-thunk φ₁ φ₂)
+   with ℂ⌈foldr⌉ᵈ-lemma φ₁
+  ... | _ , refl = ℂ.`foldr-thunk ℂ⌈foldr φ₁ ⌉ᵈ ℂ⌈ φ₂ ⌉ᵈ
 
 -- ⟦_⟧ᵉₐ : ∀ {τ v} → 𝔻.⟦ τ ⟧≺ᵉ v → ⟦ ⌊ τ ⌋ᵗ ⟧ᵗ
 -- ⟦_⟧ᵉₐ {Explicit.`Bool}   (𝔻.⟦_⟧≺ᵉ_.false) = false

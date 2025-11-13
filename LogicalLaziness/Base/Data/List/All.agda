@@ -21,7 +21,7 @@ app-lookup : ∀ {q} {Q : B → Type q}
                {x : A} {xs : List A} (x∈xs : x ∈ᴸ xs)
                (pxs : All P xs)
                (f : A → B)
-               (η : {x : A} → P x → Q (f x))
-           → η (All.lookup pxs x∈xs) ≡ All.lookup {P = Q} (All.map⁺ (All.map η pxs)) (∈ᴸ⇒∈ᴸ-map f x∈xs)
-app-lookup (here refl ) (px ∷ pxs) f η = refl
-app-lookup (there x∈xs) (px ∷ pxs) f η = app-lookup x∈xs pxs f η
+               (h : {x : A} → P x → Q (f x))
+           → h (All.lookup pxs x∈xs) ≡ All.lookup {P = Q} (All.gmap⁺ h pxs) (∈ᴸ⇒∈ᴸ-map f x∈xs)
+app-lookup (here refl ) (px ∷ pxs) f h = refl
+app-lookup (there x∈xs) (px ∷ pxs) f h = app-lookup x∈xs pxs f h

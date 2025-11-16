@@ -1,0 +1,304 @@
+\section{The base language}
+
+\subsection{Syntax}
+
+\begin{center}
+\begin{bnf}
+\( A \) ::=
+| \TBool
+| \TList{A}
+| \TThunk{A}
+;;
+\end{bnf}
+\end{center}
+
+\begin{center}
+\begin{bnf}
+$t$ ::=
+| $x$
+| \tlet{x}{t}{t}
+| \ttrue
+| \tfalse
+| \tif{t}{t}{t}
+| \tnil
+| \tcons{t}{t}
+| \tfoldr{x}{x}{t}{t}{t}
+| \tlazy{t}
+| \tforce{t}
+| \ttick{t}
+;;
+\end{bnf}
+\end{center}
+
+The base language is a simple calculus with just enough types to make things interesting.  The explicit \( \tlazyZ \) \( \tforceZ \) terms decouple our analysis from any particular evaluation model, and the explicit \( \ttickZ \) terms decouple it from any particular cost model.
+
+Note that the language does not have functions.  This is due to a technical limitation of demand semantics.
+
+\subsection{Typing}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma(x) = A}
+  \infer1{\Gamma \vdash^\LB x : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : A}
+  \hypo{\Gamma, x : A \vdash^\LB t_2 : B}
+  \infer2{\Gamma \vdash^\LB \texttt{let $x$ = $t_1$ in $t_2$} : B}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \ttrue : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \tfalse : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : \TBool}
+  \hypo{\Gamma \vdash^\LB t_2 : A}
+  \hypo{\Gamma \vdash^\LB t_3 : A}
+  \infer3{\Gamma \vdash^\LB \tif{t_1}{t_2}{t_3} : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \tnil : \TList{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : A}
+  \hypo{\Gamma \vdash^\LB t_2 : \TThunk{(\TList{A})}}
+  \infer2{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B}
+  \hypo{\Gamma \vdash^\LB t_2 : B}
+  \hypo{\Gamma \vdash^\LB t_3 : \TList{A}}
+  \infer3{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : A}
+  \infer1{\Gamma \vdash^\LB \tlazy{t} : \TThunk{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : \TThunk{A}}
+  \infer1{\Gamma \vdash^\LB \tforce{t} : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : A}
+  \infer1{\Gamma \vdash^\LB \ttick{t} : A}
+\end{prooftree}
+\end{center}
+
+\subsection{Exact values and approximations}
+
+Each type \( A \) comes equipped with a set \( \Eval{A} \) of \emph{exact values} and a set \( \Approx{A} \) of \emph{approximation values}.
+
+\begin{center}
+  \begin{align*}
+    \Eval{\TBool} &= \SBool \\
+    \Eval{\TThunk{A}} &= \Eval{A} \\
+    \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}}
+  \end{align*}
+
+  \begin{align*}
+    \Approx{\TBool} &= \SBool \\
+    \Approx{\TThunk{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
+    \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{(\TList{A})}}}
+  \end{align*}
+\end{center}
+
+\subsection{Evaluation semantics}
+
+Evaluation semantics
+
+\begin{align*}
+  \EE{x}{\gamma} &= \gamma(x) \\
+  \EE{\tlet{x}{t_1}{t_2}}{\gamma} &= \EE{t_2}{\gamma, x \mapsto \EE{t_1}{\gamma}} \\
+  \EE{\ttrue}{\gamma} &= \strue \\
+  \EE{\tfalse}{\gamma} &= \sfalse \\
+  \EE{\tif{t_1}{t_2}{t_3}}{\gamma} &=
+    \begin{cases}
+      \EE{t_2}{\gamma} & \text{if \( \EE{t_{1}}{\gamma} = \strue \)} \\
+      \EE{t_3}{\gamma} & \text{otherwise}
+    \end{cases} \\
+  \EE{\tnil}{\gamma} &= \varepsilon \\
+  \EE{\tcons{t_1}{t_2}}{\gamma} &= \scons{\EE{t_1}{\gamma}}{\EE{t_2}{\gamma}} \\
+  \EE{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma} &= \sfoldr{(v_1, v_2) \mapsto \EE{t_1}{\gamma, x_1 \mapsto v_1, x_2 \mapsto v_2}}{\EE{t_2}{\gamma}}{\EE{t_3}{\gamma}} \\
+  \EE{\tlazy{t}}{\gamma} &= \EE{t}{\gamma} \\
+  \EE{\tforce{t}}{\gamma} &= \EE{t}{\gamma} \\
+  \EE{\ttick{t}}{\gamma} &= \EE{t}{\gamma}
+\end{align*}
+
+\begin{align*}
+  \sfoldr{f}{y}{(x_1, x_2, \ldots, x_n)} = f(x_1, f(x_2, \cdots f(x_n, y) \cdots))
+\end{align*}
+
+\begin{lemma}
+  If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then \( \EE{t}{\gamma} \in \Eval{A} \).
+\end{lemma}
+
+\subsection{Clairvoyance semantics}
+
+Clairvoyance semantics has the judgment schema \( \EC{\gamma}{t}{c}{v} \).  Intuitively, \( c \) is the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to \( v \).
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\gamma(x) = v}
+    \infer1{\EC{\gamma}{x}{0}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_1}{c_1}{v_1}}
+    \hypo{\EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}
+    \infer2{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \infer0{\EC{\gamma}{\ttrue}{0}{\strue}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \infer0{\EC{\gamma}{\tfalse}{0}{\sfalse}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_1}{c_1}{\strue}}
+    \hypo{\EC{\gamma}{t_2}{c_2}{v}}
+    \infer2{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_1}{c_1}{\sfalse}}
+    \hypo{\EC{\gamma}{t_3}{c_3}{v}}
+    \infer2{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \infer0{\EC{\gamma}{\tnil}{0}{\snil}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_1}{c_1}{v_1}}
+    \hypo{\EC{\gamma}{t_2}{c_1}{v_2}}
+    \infer2{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_3}{c_1}{v_1}}
+    \hypo{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}
+    \infer2[\rulename{L-Foldr}]{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t}{c}{v}}
+    \infer1[\rulename{L-Lazy-Thunk}]{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \infer0[\rulename{L-Lazy-Undefined}]{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t}{c}{\sthunk{v}}}
+    \infer1[\rulename{L-Force}]{\EC{\gamma}{\tforce{t}}{c}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t}{c}{v}}
+    \infer1{\EC{\gamma}{\ttick{t}}{c + 1}{v}}
+  \end{prooftree}
+\end{center}
+
+The crucial rules are \rulename{L-Lazy-Thunk}, \rulename{L-Lazy-Undefined}, \rulename{L-Force}.  \rulename{L-Lazy-Thunk} and \rulename{L-Lazy-Undefined} say that, to evaluate a \( \tlazyZ \) term, we nondeterministically either evaluate its subterm and wrap it in a \( \sthunkZ \) or substitute an ``empty'' value \( \sundefined \).  \rulename{L-Force} says that we can only evaluate a value of \( \TThunkZ \) type if it is in fact a \( \sthunkZ \); in other words, if we need the result of a \( \tlazyZ \) term, then we must have actually evaluated it via \rulename{L-Lazy-Thunk}.
+
+In the original formulation of clairvoyance semantics, nondeterminism was introduced at \( \tletZ \) bindings: when evaluating \( \tlet{x}{t_1}{t_2} \), either \( x \) was immediately bound to the result of evaluting \( t_1 \), or else \( x \) was not bound at all.  But our base language explicitly marks laziness points with \( \tthunkZ \) terms, so we must introduce nondeterminism there.
+
+Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a value and then iterating over that value.  The iteration is expressed in the following auxiliary relation.
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_2}{c}{v}}
+    \infer1[\rulename{C-Foldr-Nil}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{c}{v}}
+  \end{prooftree}
+\end{center}
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{c}{v}}
+    \infer1[\rulename{C-Foldr-Undefined}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{c}{v}}
+  \end{prooftree}
+\end{center}
+\begin{center}
+  \begin{prooftree}
+    \hypo{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v_3}}
+    \hypo{\EC{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sthunk{v_3}}{t_1}{c_2}{v}}
+    \infer2[\rulename{C-Foldr-Thunk}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{c_1 + c_2}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{lemma}
+  If \( \TB{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EC{\gamma}{t}{\relax}{v} \), then \( v \in \Approx{A} \).
+\end{lemma}
+
+\begin{lemma}
+  If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then \( \EC{\gamma}{t}{\relax}{\relax} \).
+\end{lemma}
+
+\subsection{Demand semantics}
+
+\begin{align*}
+  \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\
+  \ED{\ttrue}{\gamma}{a} &= (\bot, 0) \\
+  \ED{\tfalse}{\gamma}{a} &= (\bot, 0) \\
+  \ED{\tnil}{\gamma}{a} &= (\bot, 0) \\
+  \ED{\tcons{t_1}{t_2}}{\gamma}{a} &= \ED{t_1}{\gamma}{a} \sqcup \ED{t_2}{\gamma}{a}
+\end{align*}

@@ -1,7 +1,7 @@
 ## Makefile for paper
 
 BIBFILES =yao.bib
-TEXS =paper.tex
+TEXS =paper.tex base-lang.tex logic-lang.tex equiv.tex directives.tex
 
 TOP=paper
 PDFS=paper.pdf 

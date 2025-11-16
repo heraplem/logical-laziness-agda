@@ -1,0 +1,89 @@
+\section{Equivalence}
+
+\subsubsection{Clairvoyance semantics}
+
+\begin{theorem}
+  \( \EC{\gamma}{t}{c}{v} \) if and only if \( \EL{\gamma}{\floor{t}}{(v, c)} \).
+\end{theorem}
+\begin{proof}
+  (\(\implies\)) By induction on the derivation of \( \EC{\gamma}{t}{c}{v} \).
+
+  \textbf{Case:}
+  \begin{center}
+    \begin{prooftree}
+      \hypo{\EC{\gamma}{t_3}{c_1}{v_1}}
+      \hypo{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}
+      \infer2[\rulename{L-Foldr}]{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}
+    \end{prooftree}
+  \end{center}
+  \begin{itemize}
+  \item \( t = \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} \)
+  \item \( \floor{t} = \texttt{do \(y_3\) <- \(\floor{t_3}\); \tfoldM{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{y_3}} \)
+  \end{itemize}
+  We need to construct a derivation of the form
+  \begin{center}
+    \begin{prooftree}
+      \hypo{\EL{\gamma}{\floor{t_3}}{\spair{v_1}{c_1}}}
+      \hypo{\EL{\gamma, y_3 \mapsto v_1}{\tfoldM{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{y_3}}{\spair{v_2}{c_2}}}
+      \infer2[\rulename{L-Bind}]{\EL{\gamma}{\texttt{do \(y_3\) <- \(\floor{t_3}\); \tfoldM{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{y_3}}{\spair{v_2}{c_2}}}{\spair{v_2}{c_1 + c_2}}}
+    \end{prooftree}
+  \end{center}
+  By the inductive hypothesis, we have
+  \[
+    \EL{\gamma}{\floor{t_3}}{(v_1, c_1)} ,
+  \]
+  so we just need to prove
+  \[
+    \EL{\gamma, y_3 \mapsto v_1}{\tfoldM{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{y_3}}{\floor{t_2}}{y_3}{\spair{v_2}{c_2}} .
+  \]
+  For this, it suffices to prove
+  \[
+    \ELF{\gamma}{x_1}{y_2}{\tfoldM{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{y_3}}{\floor{t_2}}{y_3}{\spair{v_2}{c_2}} .
+  \]
+  We must also prove the following lemma by mutual induction.
+  \begin{lemma}
+    \( \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c}{v_2} \) if and only if \( \ELFM{\gamma}{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{v_1}{\spair{v_2}{c}} \).
+  \end{lemma}
+  \begin{proof}
+    By induction on the derivation of \( \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c}{v_2} \).
+  \begin{itemize}
+  \item \textbf{Case \rulename{C-Foldr-Nil}:}
+    \begin{itemize}
+    \item \( v_1 = \varepsilon \)
+    \item \( \EC{\gamma}{t_2}{c}{v_2} \)
+    \end{itemize}
+    By mutual induction, we obtain \( \EL{\gamma}{\floor{t_2}}{\spair{v_2}{c}} \), so we can construct
+    \begin{center}
+      \begin{prooftree}
+        \hypo{\EL{\gamma}{\floor{t_2}}{\spair{v_2}{c}}}
+        \infer1[\rulename{L-FoldM-Nil}]{\ELF{\gamma}{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{\snil}{\spair{v_2}{c}}}
+      \end{prooftree}
+    \end{center}
+  \item \textbf{Case \rulename{L-Foldr-Undefined}}:
+  \end{itemize}
+
+  (\(\impliedby\)) By induction on the derivation of \( \ELFM{\gamma}{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{v_1}{\spair{v_2}{c}} \).
+  % \end{proof}
+  \end{proof}
+\end{proof}
+
+\subsubsection{Demand semantics}
+
+\begin{align*}
+  \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x^A_1 \) = \tfree{A_1} in} \\
+                                             &\texttt{assert \tle{x^A_1}{x_1} in} \\
+                                             &\vdots \\
+                                             &\texttt{let \( x^A_n \) = \tfree{A_n} in} \\
+                                             &\texttt{assert \tle{x^A_n}{x_n} in} \\
+                                             &\texttt{let \( c \) = \tfree{\TNat} in} \\
+                                             &\texttt{assert \teq{\transC{t}}{\tpair{y^A}{c}} in} \\
+                                             &\texttt{(\( x^A_1 \), \( \ldots \), \( x^A_n \), \( c \))}
+\end{align*}
+
+\begin{lemma}
+  Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \) and \( \gamma \in \Eval{\Gamma} \), then \( \TL{\Gamma, y^A : B}{\transD{t}{\Gamma}}{\TM{(\texttt{\(A_1\)\ *\ \(\cdots\) *\ \(A_n\)})}} \)
+\end{lemma}
+
+\begin{theorem}
+  If \( \ED{t}{\gamma}{b^A} = (\gamma^A, c) \), then \( \EL{\gamma, y^A \mapsto b^A}{\transD{t}{\Gamma}}{\spair{\verts{\gamma^A}}{c}} \), where \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) \).
+\end{theorem}

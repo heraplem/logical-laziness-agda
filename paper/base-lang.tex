@@ -35,12 +35,14 @@ features~\cite{bjerner1989,demand-semantics}.\ly{But functional logic
   \begin{center}
     \begin{mathpar}
       \inferrule{\Gamma \vdash^\LB t_1 : A \\ \Gamma \vdash^\LB t_2 :
-        \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}} \\
+        \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}{\textsc{cons}} \\
       \inferrule{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B \\ \Gamma
-        \vdash^\LB t_2 : B \\ \Gamma \vdash^\LB t_3 : \TList{A}}{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B} \\
-      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \tlazy{t} : \TThunk{A}} \qquad
-      \inferrule{\Gamma \vdash^\LB t : \TThunk{A}}{\Gamma \vdash^\LB \tforce{t} : A} \qquad
-      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \ttick{t} : A}
+        \vdash^\LB t_2 : B \\ \Gamma \vdash^\LB t_3 : \TList{A}}{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}{\textsc{foldr}} \\
+      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \tlazy{t} :
+        \TThunk{A}}{\textsc{lazy}} \qquad \inferrule{\Gamma \vdash^\LB t :
+        \TThunk{A}}{\Gamma \vdash^\LB \tforce{t} : A}{\textsc{force}} \qquad
+      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \ttick{t} :
+        A}{\textsc{tick}}
     \end{mathpar}
   \end{center}
   \caption{Typing rules in $B$ that are related to lazy thunks and cost.}\label{fig:typing-base}
@@ -60,21 +62,26 @@ Each type \( A \) comes equipped with a set \( \Eval{A} \) of \emph{exact
 in \cref{fig:exact-approx}. The set of exact values \( \Eval{A} \) represents
 all possible values of $A$ that contain \emph{no} thunk. The set of
 approximation values \( \Approx{A} \), on the other hand, represents\ly{How to
-  explain the set of approximation values?}
+  explain the intuition behind the set of approximation values?}
 
 \begin{figure}[t]
 \begin{center}
   \begin{align*}
+    \Eval{A} &\in \mathcal{P}(A) \\
     \Eval{\TBool} &= \SBool \\
     \Eval{\TThunk{A}} &= \Eval{A} \\
     \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}} \\ \\
+    \Approx{A} &\in \mathcal{P}(A) \\
     \Approx{\TBool} &= \SBool \\
     \Approx{\TThunk{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
     \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{(\TList{A})}}}
   \end{align*}
 \end{center}
-\caption{Exact values and approximation values.\ly{What is the type of
-    \( \Eval{A} \) and \( \Approx{A} \)?}}\label{fig:exact-approx}
+\caption{Exact values and approximation values. We use $\mathcal{P}(A)$ to
+  represent the power set of $A$.\ly{I added some type signatures. Are they
+    correct?}\ly{Is $\snil$ the same as $\tnil$? Why the different
+    notations?}\ly{Why product in lists? Why not
+    $\tcons{v_1}{v_2}$?}}\label{fig:exact-approx}
 \end{figure}
 
 \subsection{Evaluation semantics}

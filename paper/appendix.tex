@@ -1,0 +1,122 @@
+\appendix
+\crefalias{section}{appendix}
+
+\section{The Evaluation Semantics of $B$}\label{apx:eval-semantics}
+
+\begin{align*}
+  \EE{x}{\gamma} &= \gamma(x) \\
+  \EE{\tlet{x}{t_1}{t_2}}{\gamma} &= \EE{t_2}{\gamma, x \mapsto \EE{t_1}{\gamma}} \\
+  \EE{\ttrue}{\gamma} &= \strue \\
+  \EE{\tfalse}{\gamma} &= \sfalse \\
+  \EE{\tif{t_1}{t_2}{t_3}}{\gamma} &=
+    \begin{cases}
+      \EE{t_2}{\gamma} & \text{if \( \EE{t_{1}}{\gamma} = \strue \)} \\
+      \EE{t_3}{\gamma} & \text{otherwise}
+    \end{cases} \\
+  \EE{\tnil}{\gamma} &= \varepsilon \\
+  \EE{\tcons{t_1}{t_2}}{\gamma} &= \scons{\EE{t_1}{\gamma}}{\EE{t_2}{\gamma}} \\
+  \EE{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma} &= \sfoldr{(v_1, v_2) \mapsto \EE{t_1}{\gamma, x_1 \mapsto v_1, x_2 \mapsto v_2}}{\EE{t_2}{\gamma}}{\EE{t_3}{\gamma}} \\
+  \EE{\tlazy{t}}{\gamma} &= \EE{t}{\gamma} \\
+  \EE{\tforce{t}}{\gamma} &= \EE{t}{\gamma} \\
+  \EE{\ttick{t}}{\gamma} &= \EE{t}{\gamma}
+\end{align*}
+
+\begin{align*}
+  \sfoldr{f}{y}{(x_1, x_2, \ldots, x_n)} = f(x_1, f(x_2, \cdots f(x_n, y) \cdots))
+\end{align*}
+
+\iffalse
+\section{The Clairvoyance Semantics of $B$}\label{apx:clairvoyance-semantics}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\gamma(x) = v}
+    \infer1{\EC{\gamma}{x}{0}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_1}{c_1}{v_1}}
+    \hypo{\EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}
+    \infer2{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \infer0{\EC{\gamma}{\ttrue}{0}{\strue}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \infer0{\EC{\gamma}{\tfalse}{0}{\sfalse}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_1}{c_1}{\strue}}
+    \hypo{\EC{\gamma}{t_2}{c_2}{v}}
+    \infer2{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_1}{c_1}{\sfalse}}
+    \hypo{\EC{\gamma}{t_3}{c_3}{v}}
+    \infer2{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \infer0{\EC{\gamma}{\tnil}{0}{\snil}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_1}{c_1}{v_1}}
+    \hypo{\EC{\gamma}{t_2}{c_1}{v_2}}
+    \infer2{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t_3}{c_1}{v_1}}
+    \hypo{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}
+    \infer2[\rulename{L-Foldr}]{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t}{c}{v}}
+    \infer1[\rulename{L-Lazy-Thunk}]{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \infer0[\rulename{L-Lazy-Undefined}]{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t}{c}{\sthunk{v}}}
+    \infer1[\rulename{L-Force}]{\EC{\gamma}{\tforce{t}}{c}{v}}
+  \end{prooftree}
+\end{center}
+
+\begin{center}
+  \begin{prooftree}
+    \hypo{\EC{\gamma}{t}{c}{v}}
+    \infer1{\EC{\gamma}{\ttick{t}}{c + 1}{v}}
+  \end{prooftree}
+\end{center}
+\fi

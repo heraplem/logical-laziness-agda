@@ -62,7 +62,7 @@ Each type \( A \) comes equipped with a set \( \Eval{A} \) of \emph{exact
 in \cref{fig:exact-approx}. The set of exact values \( \Eval{A} \) represents
 all possible values of $A$ that contain \emph{no} thunk. The set of
 approximation values \( \Approx{A} \), on the other hand, represents\ly{How to
-  explain the intuition behind the set of approximation values?}
+  explain the intuition behind the set of approximation values?}  
 
 \begin{figure}[t]
 \begin{center}
@@ -84,157 +84,79 @@ approximation values \( \Approx{A} \), on the other hand, represents\ly{How to
     $\tcons{v_1}{v_2}$?}}\label{fig:exact-approx}
 \end{figure}
 
-\subsection{Evaluation semantics}
+We also extend the $\Eval{\cdot}$ and $\Approx{\cdot}$ to typing contexts. We
+use $\Eval{\Gamma}$ to represent a typing context such that for any
+$\gamma \in \Eval{\Gamma}$, $\gamma$ contains only exact values. The definition
+of $\Approx{\Gamma}$ is similiar.
 
-Evaluation semantics\ly{Why does the evaluation semantics use the same notation
-  as the set of exact values?}
+\paragraph{Evaluation semantics}
+We can give language $B$ an evaluation semantics $\EE{t}{\gamma}$ for any term
+$t$ under an evaluation context $\gamma$ by simply ignoring all the operators of
+lazy evaluation or computation cost. That is:
+$$\EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma}$$
+This gives us a semantics that always return a value in the set \( \Eval{A} \),
+a fact we formalized as \cref{lem:evaluation-exact}. The evaluation semantics is
+standard, so we omit it here. A full description of the evaluation semantics is
+included in the \cref{apx:eval-semantics}.
 
-\begin{align*}
-  \EE{x}{\gamma} &= \gamma(x) \\
-  \EE{\tlet{x}{t_1}{t_2}}{\gamma} &= \EE{t_2}{\gamma, x \mapsto \EE{t_1}{\gamma}} \\
-  \EE{\ttrue}{\gamma} &= \strue \\
-  \EE{\tfalse}{\gamma} &= \sfalse \\
-  \EE{\tif{t_1}{t_2}{t_3}}{\gamma} &=
-    \begin{cases}
-      \EE{t_2}{\gamma} & \text{if \( \EE{t_{1}}{\gamma} = \strue \)} \\
-      \EE{t_3}{\gamma} & \text{otherwise}
-    \end{cases} \\
-  \EE{\tnil}{\gamma} &= \varepsilon \\
-  \EE{\tcons{t_1}{t_2}}{\gamma} &= \scons{\EE{t_1}{\gamma}}{\EE{t_2}{\gamma}} \\
-  \EE{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma} &= \sfoldr{(v_1, v_2) \mapsto \EE{t_1}{\gamma, x_1 \mapsto v_1, x_2 \mapsto v_2}}{\EE{t_2}{\gamma}}{\EE{t_3}{\gamma}} \\
-  \EE{\tlazy{t}}{\gamma} &= \EE{t}{\gamma} \\
-  \EE{\tforce{t}}{\gamma} &= \EE{t}{\gamma} \\
-  \EE{\ttick{t}}{\gamma} &= \EE{t}{\gamma}
-\end{align*}
-
-\begin{align*}
-  \sfoldr{f}{y}{(x_1, x_2, \ldots, x_n)} = f(x_1, f(x_2, \cdots f(x_n, y) \cdots))
-\end{align*}
-
-\begin{lemma}
+\begin{lemma}\label{lem:evaluation-exact}
   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then \( \EE{t}{\gamma} \in \Eval{A} \).
 \end{lemma}
 
 \subsection{Clairvoyance semantics}
 
-Clairvoyance semantics has the judgment schema \( \EC{\gamma}{t}{c}{v} \).  Intuitively, \( c \) is the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to \( v \).
+We define the clairvoyance semantics on $B$ as a big-step operational semantics
+that has the judgment schema \( \EC{\gamma}{t}{c}{v} \). Intuitively, \( c \) is
+the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to
+\( v \).\ly{This is similar to the semantics of Hackett and Hutton, except that
+  we have types, right?} We show the semantics in \cref{fig:clairvoyance-base}.
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\gamma(x) = v}
-    \infer1{\EC{\gamma}{x}{0}{v}}
-  \end{prooftree}
-\end{center}
+\begin{figure}[t]
+  \begin{mathpar}
+    \inferrule{\gamma(x) = v}{\EC{\gamma}{x}{0}{v}} \qquad
+    \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}} \\
+    \inferrule{\\}{\EC{\gamma}{\ttrue}{0}{\strue}} \qquad
+    \inferrule{\\}{\EC{\gamma}{\tfalse}{0}{\sfalse}} \\
+    \inferrule{\EC{\gamma}{t_1}{c_1}{\strue} \\ \EC{\gamma}{t_2}{c_2}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}} \qquad
+    \inferrule{\EC{\gamma}{t_1}{c_1}{\sfalse} \\ \EC{\gamma}{t_3}{c_3}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}} \\
+  \inferrule{\\}{\EC{\gamma}{\tnil}{0}{\snil}} \qquad
+  \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma}{t_2}{c_1}{v_2}}{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}} \\
+  \inferrule{\EC{\gamma}{t_3}{c_1}{v_1} \\ \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}{\textsc{L-Foldr}} \\
+  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}{\textsc{L-Lazy-Thunk}} \qquad
+  \inferrule{\\}{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}{\textsc{L-Lazy-Undefined}} \\
+  \inferrule{\EC{\gamma}{t}{c}{\sthunk{v}}}{\EC{\gamma}{\tforce{t}}{c}{v}}{\textsc{L-Force}} \qquad
+  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\ttick{t}}{c + 1}{v}}{\textsc{L-Tick}} \\
+\end{mathpar}
+\caption{The clairvoyance semantics defined on $B$.}\label{fig:clairvoyance-base}
+\end{figure}
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_1}{c_1}{v_1}}
-    \hypo{\EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}
-    \infer2{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}
-  \end{prooftree}
-\end{center}
+\begin{figure}[t]
+  \begin{mathpar}
+  \inferrule{\EC{\gamma}{t_2}{c}{v}}{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{c}{v}}{\textsc{C-Foldr-Nil}} \\
+  \inferrule{\EC{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{c}{v}}{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{c}{v}}{\textsc{C-Foldr-Undefined}} \\
+  \inferrule{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v_3} \\ \EC{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sthunk{v_3}}{t_1}{c_2}{v}}{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{c_1 + c_2}{v}}{\textsc{C-Foldr-Thunk}}
+\end{mathpar}
+\caption{The clairvoyance semantics defined on $B$.}\label{fig:clairvoyance-foldr}
+\end{figure}
 
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EC{\gamma}{\ttrue}{0}{\strue}}
-  \end{prooftree}
-\end{center}
+The crucial rules are \rulename{L-Lazy-Thunk}, \rulename{L-Lazy-Undefined},
+\rulename{L-Force}.\ly{What does \rulename{L} stand for?}
+\rulename{L-Lazy-Thunk} and \rulename{L-Lazy-Undefined} say that, to evaluate a
+\( \tlazyZ \) term, we nondeterministically either evaluate its subterm and wrap
+it in a \( \sthunkZ \) or substitute an ``empty'' value \( \sundefined \).
+\rulename{L-Force} says that we can only evaluate a value of \( \TThunkZ \) type
+if it is in fact a \( \sthunkZ \); in other words, if we need the result of a
+\( \tlazyZ \) term, then we must have actually evaluated it via
+\rulename{L-Lazy-Thunk}.
 
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EC{\gamma}{\tfalse}{0}{\sfalse}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_1}{c_1}{\strue}}
-    \hypo{\EC{\gamma}{t_2}{c_2}{v}}
-    \infer2{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_1}{c_1}{\sfalse}}
-    \hypo{\EC{\gamma}{t_3}{c_3}{v}}
-    \infer2{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EC{\gamma}{\tnil}{0}{\snil}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_1}{c_1}{v_1}}
-    \hypo{\EC{\gamma}{t_2}{c_1}{v_2}}
-    \infer2{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_3}{c_1}{v_1}}
-    \hypo{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}
-    \infer2[\rulename{L-Foldr}]{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t}{c}{v}}
-    \infer1[\rulename{L-Lazy-Thunk}]{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0[\rulename{L-Lazy-Undefined}]{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t}{c}{\sthunk{v}}}
-    \infer1[\rulename{L-Force}]{\EC{\gamma}{\tforce{t}}{c}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t}{c}{v}}
-    \infer1{\EC{\gamma}{\ttick{t}}{c + 1}{v}}
-  \end{prooftree}
-\end{center}
-
-The crucial rules are \rulename{L-Lazy-Thunk}, \rulename{L-Lazy-Undefined}, \rulename{L-Force}.  \rulename{L-Lazy-Thunk} and \rulename{L-Lazy-Undefined} say that, to evaluate a \( \tlazyZ \) term, we nondeterministically either evaluate its subterm and wrap it in a \( \sthunkZ \) or substitute an ``empty'' value \( \sundefined \).  \rulename{L-Force} says that we can only evaluate a value of \( \TThunkZ \) type if it is in fact a \( \sthunkZ \); in other words, if we need the result of a \( \tlazyZ \) term, then we must have actually evaluated it via \rulename{L-Lazy-Thunk}.
-
-In the original formulation of clairvoyance semantics, nondeterminism was introduced at \( \tletZ \) bindings: when evaluating \( \tlet{x}{t_1}{t_2} \), either \( x \) was immediately bound to the result of evaluting \( t_1 \), or else \( x \) was not bound at all.  But our base language explicitly marks laziness points with \( \tthunkZ \) terms, so we must introduce nondeterminism there.
+In the original formulation of clairvoyance semantics, nondeterminism was
+introduced at \( \tletZ \) bindings: when evaluating \( \tlet{x}{t_1}{t_2} \),
+either \( x \) was immediately bound to the result of evaluting \( t_1 \), or
+else \( x \) was not bound at all. But our base language explicitly marks
+laziness points with \( \tthunkZ \) terms, so we must introduce nondeterminism
+there.\ly{Talk about what we do first; then what other people do.}
 
 Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a value and then iterating over that value.  The iteration is expressed in the following auxiliary relation.
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_2}{c}{v}}
-    \infer1[\rulename{C-Foldr-Nil}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{c}{v}}
-  \end{prooftree}
-\end{center}
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{c}{v}}
-    \infer1[\rulename{C-Foldr-Undefined}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{c}{v}}
-  \end{prooftree}
-\end{center}
-\begin{center}
-  \begin{prooftree}
-    \hypo{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v_3}}
-    \hypo{\EC{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sthunk{v_3}}{t_1}{c_2}{v}}
-    \infer2[\rulename{C-Foldr-Thunk}]{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{c_1 + c_2}{v}}
-  \end{prooftree}
-\end{center}
 
 \begin{lemma}
   If \( \TB{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EC{\gamma}{t}{\relax}{v} \), then \( v \in \Approx{A} \).

@@ -1,0 +1,79 @@
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma(x) = A}
+  \infer1{\Gamma \vdash^\LB x : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : A}
+  \hypo{\Gamma, x : A \vdash^\LB t_2 : B}
+  \infer2{\Gamma \vdash^\LB \texttt{let $x$ = $t_1$ in $t_2$} : B}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \ttrue : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \tfalse : \TBool}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : \TBool}
+  \hypo{\Gamma \vdash^\LB t_2 : A}
+  \hypo{\Gamma \vdash^\LB t_3 : A}
+  \infer3{\Gamma \vdash^\LB \tif{t_1}{t_2}{t_3} : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \infer0{\Gamma \vdash^\LB \tnil : \TList{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t_1 : A}
+  \hypo{\Gamma \vdash^\LB t_2 : \TThunk{(\TList{A})}}
+  \infer2{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B}
+  \hypo{\Gamma \vdash^\LB t_2 : B}
+  \hypo{\Gamma \vdash^\LB t_3 : \TList{A}}
+  \infer3{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : A}
+  \infer1{\Gamma \vdash^\LB \tlazy{t} : \TThunk{A}}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : \TThunk{A}}
+  \infer1{\Gamma \vdash^\LB \tforce{t} : A}
+\end{prooftree}
+\end{center}
+
+\begin{center}
+\begin{prooftree}
+  \hypo{\Gamma \vdash^\LB t : A}
+  \infer1{\Gamma \vdash^\LB \ttick{t} : A}
+\end{prooftree}
+\end{center}

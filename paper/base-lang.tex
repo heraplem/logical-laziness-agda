@@ -1,142 +1,86 @@
 \section{The base language}
 
-\subsection{Syntax}
+To show the relation among the clairvoyance semantics, the demand semantics, and
+functional logic programming, we first define a base language $B$ that can be
+translated into those semantics.
 
+We show the syntax of $B$ in \cref{fig:syntax-base}. The base language is a
+simple calculus with booleans, lists, and lazy thunks. Its term contains
+variables, let-bindings, conditionals, recursions based on $\tfoldrZ$. In
+addition, it contains the explicit \( \tlazyZ \) and \( \tforceZ \) for wrapping
+a computation in a lazy thunk and forcing a computation in a thunk. This
+decouples our analysis from any particular evaluation model. Finally, we have an
+explicit \( \ttickZ \) term to indicate incurring one unit of computation cost.
+
+The language does not have functions or general recursions. This is because the
+demand semantics does not support those
+features~\cite{bjerner1989,demand-semantics}.\ly{But functional logic
+  programming does not support this in general, right? (Perhaps with the
+  exception of Verse.)}
+
+\begin{figure}[t]
 \begin{center}
 \begin{bnf}
-\( A \) ::=
-| \TBool
-| \TList{A}
-| \TThunk{A}
-;;
+  \( A \) ::= \TBool{} // \TList{A} // \TThunk{A} ;;
+
+  $t$ ::= $x$ // \tlet{x}{t}{t} | \ttrue{} // \tfalse{} // \tif{t}{t}{t} |
+  \tnil{} // \tcons{t}{t} // \tfoldr{x}{x}{t}{t}{t} | \tlazy{t} // \tforce{t} //
+  \ttick{t}
 \end{bnf}
 \end{center}
+\caption{The syntax of our base language B.}\label{fig:syntax-base}
+\end{figure}
 
-\begin{center}
-\begin{bnf}
-$t$ ::=
-| $x$
-| \tlet{x}{t}{t}
-| \ttrue
-| \tfalse
-| \tif{t}{t}{t}
-| \tnil
-| \tcons{t}{t}
-| \tfoldr{x}{x}{t}{t}{t}
-| \tlazy{t}
-| \tforce{t}
-| \ttick{t}
-;;
-\end{bnf}
-\end{center}
+\begin{figure}[t]
+  \begin{center}
+    \begin{mathpar}
+      \inferrule{\Gamma \vdash^\LB t_1 : A \\ \Gamma \vdash^\LB t_2 :
+        \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}} \\
+      \inferrule{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B \\ \Gamma
+        \vdash^\LB t_2 : B \\ \Gamma \vdash^\LB t_3 : \TList{A}}{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B} \\
+      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \tlazy{t} : \TThunk{A}} \qquad
+      \inferrule{\Gamma \vdash^\LB t : \TThunk{A}}{\Gamma \vdash^\LB \tforce{t} : A} \qquad
+      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \ttick{t} : A}
+    \end{mathpar}
+  \end{center}
+  \caption{Typing rules in $B$ that are related to lazy thunks and cost.}\label{fig:typing-base}
+\end{figure}
 
-The base language is a simple calculus with just enough types to make things interesting.  The explicit \( \tlazyZ \) \( \tforceZ \) terms decouple our analysis from any particular evaluation model, and the explicit \( \ttickZ \) terms decouple it from any particular cost model.
+Most of the typing rules in $B$ are standard, so we only show the typing rules
+that are related to lazy thunks and the computation cost in
+\cref{fig:typing-base}. Notably, the cons of lists $t_1 :: t_2$ always takes a
+$t_1$ of type $A$ and a $t_2$ of type $\TThunk{(\TList{A})}$, forcing the tail
+of a list to be a lazy thunk.\ly{But why?} Similarly, the function in $\tfoldrZ$
+always assumes that the second paramter is a thunk.\ly{Why?}
 
-Note that the language does not have functions.  This is due to a technical limitation of demand semantics.
+\paragraph{Exact values and approximations.}
 
-\subsection{Typing}
+Each type \( A \) comes equipped with a set \( \Eval{A} \) of \emph{exact
+  values} and a set \( \Approx{A} \) of \emph{approximation values}, as defined
+in \cref{fig:exact-approx}. The set of exact values \( \Eval{A} \) represents
+all possible values of $A$ that contain \emph{no} thunk. The set of
+approximation values \( \Approx{A} \), on the other hand, represents\ly{How to
+  explain the set of approximation values?}
 
-\begin{center}
-\begin{prooftree}
-  \hypo{\Gamma(x) = A}
-  \infer1{\Gamma \vdash^\LB x : A}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \hypo{\Gamma \vdash^\LB t_1 : A}
-  \hypo{\Gamma, x : A \vdash^\LB t_2 : B}
-  \infer2{\Gamma \vdash^\LB \texttt{let $x$ = $t_1$ in $t_2$} : B}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \infer0{\Gamma \vdash^\LB \ttrue : \TBool}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \infer0{\Gamma \vdash^\LB \tfalse : \TBool}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \hypo{\Gamma \vdash^\LB t_1 : \TBool}
-  \hypo{\Gamma \vdash^\LB t_2 : A}
-  \hypo{\Gamma \vdash^\LB t_3 : A}
-  \infer3{\Gamma \vdash^\LB \tif{t_1}{t_2}{t_3} : A}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \infer0{\Gamma \vdash^\LB \tnil : \TList{A}}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \hypo{\Gamma \vdash^\LB t_1 : A}
-  \hypo{\Gamma \vdash^\LB t_2 : \TThunk{(\TList{A})}}
-  \infer2{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \hypo{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B}
-  \hypo{\Gamma \vdash^\LB t_2 : B}
-  \hypo{\Gamma \vdash^\LB t_3 : \TList{A}}
-  \infer3{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \hypo{\Gamma \vdash^\LB t : A}
-  \infer1{\Gamma \vdash^\LB \tlazy{t} : \TThunk{A}}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \hypo{\Gamma \vdash^\LB t : \TThunk{A}}
-  \infer1{\Gamma \vdash^\LB \tforce{t} : A}
-\end{prooftree}
-\end{center}
-
-\begin{center}
-\begin{prooftree}
-  \hypo{\Gamma \vdash^\LB t : A}
-  \infer1{\Gamma \vdash^\LB \ttick{t} : A}
-\end{prooftree}
-\end{center}
-
-\subsection{Exact values and approximations}
-
-Each type \( A \) comes equipped with a set \( \Eval{A} \) of \emph{exact values} and a set \( \Approx{A} \) of \emph{approximation values}.
-
+\begin{figure}[t]
 \begin{center}
   \begin{align*}
     \Eval{\TBool} &= \SBool \\
     \Eval{\TThunk{A}} &= \Eval{A} \\
-    \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}}
-  \end{align*}
-
-  \begin{align*}
+    \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}} \\ \\
     \Approx{\TBool} &= \SBool \\
     \Approx{\TThunk{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
     \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{(\TList{A})}}}
   \end{align*}
 \end{center}
+\caption{Exact values and approximation values.\ly{What is the type of
+    \( \Eval{A} \) and \( \Approx{A} \)?}}\label{fig:exact-approx}
+\end{figure}
 
 \subsection{Evaluation semantics}
 
-Evaluation semantics
+Evaluation semantics\ly{Why does the evaluation semantics use the same notation
+  as the set of exact values?}
 
 \begin{align*}
   \EE{x}{\gamma} &= \gamma(x) \\

@@ -16,7 +16,9 @@
 \usepackage{algorithmicx}%
 \usepackage{algpseudocode}%
 \usepackage{listings}%
+\usepackage[capitalize, nameinlink]{cleveref}
 \usepackage{subfiles}
+\usepackage{mathpartir}
 
 % these two are probably only necessary for the draft
 \usepackage{geometry}
@@ -159,7 +161,7 @@
 \newcommand{\scons}[2]{(#1, #2)}
 \newcommand{\sfoldr}[3]{\text{foldr}({#1}, {#2}, {#3})}
 \newcommand{\sthunkZ}{\text{thunk}}
-\newcommand{\sthunk}[1]{\text{sthunkZ\ \({#1}\)}}
+\newcommand{\sthunk}[1]{\text{\sthunkZ\ \({#1}\)}}
 \newcommand{\sundefined}{\bot}
 
 % typing rules
@@ -214,10 +216,10 @@
 In functional logic programming, one program contains two semantics: a
 ``forward'' nondeterministic semantics, and a ``backward'' demand-driven
 semantics with \emph{free variables}. Past research has shown the usefulness of
-this feature in different contexts. In this paper, we show another useful yet
-distingushing example in lazy cost analysis. In particular, we show that two
-different semantics proposed independently for reasoning about the computation
-cost of lazy functional programs, namely the clairvoyance
+this feature in different contexts.\ly{TODO: Citations.} In this paper, we show
+another useful yet distingushing example in lazy cost analysis. In particular,
+we show that two different semantics proposed independently for reasoning about
+the computation cost of lazy functional programs, namely the clairvoyance
 semantics~\cite{clairvoyant,forking-paths} and the demand
 semantics~\cite{bjerner1989,demand-semantics}, can both be represented by one
 program in functional logic programming.

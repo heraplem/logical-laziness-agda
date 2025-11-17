@@ -1,6 +1,6 @@
 ## Makefile for paper
 
-BIBFILES =yao.bib
+BIBFILES =yao.bib ref.bib
 TEXS =paper.tex base-lang.tex logic-lang.tex equiv.tex directives.tex appendix.tex
 
 TOP=paper

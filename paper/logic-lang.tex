@@ -1,254 +1,64 @@
 \section{The logic language}
 
-\subsection{Syntax}
+To show the correspondence between semantics for lazy cost analysis and
+functional logic programmming, we define a simple functional logic language $L$.
+We show the syntax of $L$ in \cref{fig:syntax-logic}. \ly{TODO: Talk about all
+  the new types we introduced and why we introduced them; talk about all the new
+  terms as well.}
 
+\begin{figure}[t]
 \begin{center}
 \begin{bnf}
 \( A \) ::=
-| \TBool
-| \TProd{A}{A}
-| \TThunk{A}
-| \TNat
-| \TList{A}
+// \TBool
+// \TProd{A}{A}
+// \TThunk{A}
+// \TNat
+// \TList{A}
 ;;
-\end{bnf}
-\end{center}
 
-\begin{center}
-\begin{bnf}
 $t$ ::=
 | $x$
-| \tlet{x}{t}{t}
-| \ttrue
-| \tfalse
-| \teq{t}{t}
-| \tle{t}{t}
-| \tif{t}{t}{t}
+// \tlet{x}{t}{t}
+// \ttrue{}
+// \tfalse{}
+// \teq{t}{t}
+// \tle{t}{t}
+// \tif{t}{t}{t}
 | \tpair{t}{t}
-| \tthunk{t}
-| \tundefined
-| \tcase{t}{x}{t}{t}
+// \tthunk{t}
+// \tundefined{}
+// \tcase{t}{x}{t}{t}
 | $n$
-| \tadd{t}{t}
-| \tif{t}{t}{t}
-| \tnil
-| \tcons{t}{t}
-| \tfoldr{x}{x}{t}{t}{t}
-| \tchoose{t}{t}
-| \tfree{A}
-| \tfail
-;;
+// \tadd{t}{t}
+// \tnil{}
+// \tcons{t}{t}
+// \tfoldr{x}{x}{t}{t}{t}
+// \tchoose{t}{t}
+// \tfree{A}
+// \tfail{}
 \end{bnf}
 \end{center}
+\caption{The syntax of the logic language $L$.}\label{fig:syntax-logic}
+\end{figure}
 
-\subsection{Typing}
+\paragraph{Typing.}
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\TB{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{B}}
-    \hypo{\TB{\Gamma}{t_2}{B}}
-    \hypo{\TB{\Gamma}{t_3}{\TList{A}}}
-    \infer3{\TB{\Gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{B}}
-  \end{prooftree}
-\end{center}
-
-\subsection{Semantics}
+\ly{Why is there only one rule? Are other rules mostly straightforward? Or you
+  haven't got the time to write them down?}
 
 \begin{center}
-  \begin{prooftree}
-    \hypo{\gamma(x) = v}
-    \infer1{\EL{\gamma}{x}{v}}
-  \end{prooftree}
+  \begin{mathpar}
+    \inferrule{\TB{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{B} \\
+      \TB{\Gamma}{t_2}{B} \\
+      \TB{\Gamma}{t_3}{\TList{A}}}
+    {\TB{\Gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{B}}
+  \end{mathpar}
 \end{center}
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{v_1}}
-    \hypo{\EL{\gamma, x \mapsto v_1}{t_2}{v_2}}
-    \infer2{\EL{\gamma}{\tlet{x}{t_1}{t_2}}{v_2}}
-  \end{prooftree}
-\end{center}
+\paragraph{Semantics.}
 
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EL{\gamma}{\ttrue}{\strue}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EL{\gamma}{\tfalse}{\sfalse}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{v}}
-    \hypo{\EL{\gamma}{t_2}{v}}
-    \infer2{\EL{\gamma}{\teq{t_1}{t_2}}{\strue}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{v_1}}
-    \hypo{\EL{\gamma}{t_2}{v_2}}
-    \hypo{v_1 \ne v_2}
-    \infer3{\EL{\gamma}{\teq{t_1}{t_2}}{\sfalse}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{v_1}}
-    \hypo{\EL{\gamma}{t_2}{v_2}}
-    \hypo{\sle{v_1}{v_2}}
-    \infer3{\EL{\gamma}{\tle{t_1}{t_2}}{\strue}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{v_1}}
-    \hypo{\EL{\gamma}{t_2}{v_2}}
-    \hypo{\snle{v_1}{v_2}}
-    \infer3{\EL{\gamma}{\tle{t_1}{t_2}}{\sfalse}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{\strue}}
-    \hypo{\EL{\gamma}{t_2}{v}}
-    \infer2{\EL{\gamma}{\tif{t_1}{t_2}{t_3}}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{\sfalse}}
-    \hypo{\EL{\gamma}{t_3}{v}}
-    \infer2{\EL{\gamma}{\tif{t_1}{t_2}{t_3}}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{v_1}}
-    \hypo{\EL{\gamma}{t_2}{v_2}}
-    \infer2{\EL{\gamma}{\tpair{t_1}{t_2}}{(v_1, v_2)}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t}{v}}
-    \infer1{\EL{\gamma}{\tthunk{t}}{\sthunk{v}}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EL{\gamma}{\tundefined}{\sundefined}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{\sthunk{v_1}}}
-    \hypo{\EL{\gamma, x \mapsto v_1}{t_2}{v_2}}
-    \infer2{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v_2}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{\sundefined}}
-    \hypo{\EL{\gamma}{t_3}{v}}
-    \infer2{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EL{\gamma}{n}{n}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{n_1}}
-    \hypo{\EL{\gamma}{t_2}{n_2}}
-    \infer2{\EL{\gamma}{\tadd{t_1}{t_2}}{n_1 + n_2}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EL{\gamma}{\tnil}{\snil}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{v_1}}
-    \hypo{\EL{\gamma}{t_2}{v_2}}
-    \infer2{\EL{\gamma}{\tcons{t_1}{t_2}}{\scons{v_1}{v_2}}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_3}{v_1}}
-    \hypo{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{v_2}}
-    \infer2{\EL{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{v_2}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{v : A}
-    \infer1{\EL{\gamma}{\tfree{A}}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_1}{v}}
-    \infer1{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_2}{v}}
-    \infer1{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}
-  \end{prooftree}
-\end{center}
-
-As in clairvoyance semantics, the semantics of \( \tfoldrZ \) is defined in terms of an auxiliary relation.
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t_2}{v}}
-    \infer1{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{v}}
-    \infer1{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\sthunk{v_2}}{v_3}}
-    \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sthunk{v_3}}{t_1}{v}}
-    \infer2{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{v_2}}{v}}
-  \end{prooftree}
-\end{center}
+\ly{Did we refer to any papers when we define this semantics? If so, cite them.}
 
 \begin{lemma}
   If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).

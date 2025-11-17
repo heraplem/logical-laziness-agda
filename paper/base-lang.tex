@@ -99,7 +99,7 @@ a fact we formalized as \cref{lem:evaluation-exact}. The evaluation semantics is
 standard, so we omit it here. A full description of the evaluation semantics is
 included in the \cref{apx:eval-semantics}.
 
-\begin{lemma}\label{lem:evaluation-exact}
+\begin{lemma}[Evaluation semantics is exact]\label{lem:evaluation-exact}
   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then \( \EE{t}{\gamma} \in \Eval{A} \).
 \end{lemma}
 
@@ -113,14 +113,14 @@ the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to
 
 \begin{figure}[t]
   \begin{mathpar}
-    \inferrule{\gamma(x) = v}{\EC{\gamma}{x}{0}{v}} \qquad
-    \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}} \\
-    \inferrule{\\}{\EC{\gamma}{\ttrue}{0}{\strue}} \qquad
-    \inferrule{\\}{\EC{\gamma}{\tfalse}{0}{\sfalse}} \\
-    \inferrule{\EC{\gamma}{t_1}{c_1}{\strue} \\ \EC{\gamma}{t_2}{c_2}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}} \qquad
-    \inferrule{\EC{\gamma}{t_1}{c_1}{\sfalse} \\ \EC{\gamma}{t_3}{c_3}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}} \\
-  \inferrule{\\}{\EC{\gamma}{\tnil}{0}{\snil}} \qquad
-  \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma}{t_2}{c_1}{v_2}}{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}} \\
+    \inferrule{\gamma(x) = v}{\EC{\gamma}{x}{0}{v}}{\textsc{L-Var}} \qquad
+    \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}{\textsc{L-Let}} \\
+    \inferrule{\\}{\EC{\gamma}{\ttrue}{0}{\strue}}{\textsc{L-True}} \qquad
+    \inferrule{\\}{\EC{\gamma}{\tfalse}{0}{\sfalse}}{\textsc{L-False}} \\
+    \inferrule{\EC{\gamma}{t_1}{c_1}{\strue} \\ \EC{\gamma}{t_2}{c_2}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}{\textsc{L-If-True}} \qquad
+    \inferrule{\EC{\gamma}{t_1}{c_1}{\sfalse} \\ \EC{\gamma}{t_3}{c_3}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}}{\textsc{L-If-False}} \\
+  \inferrule{\\}{\EC{\gamma}{\tnil}{0}{\snil}}{\textsc{L-Nil}} \qquad
+  \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma}{t_2}{c_1}{v_2}}{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}{\textsc{L-Cons}} \\
   \inferrule{\EC{\gamma}{t_3}{c_1}{v_1} \\ \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}{\textsc{L-Foldr}} \\
   \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}{\textsc{L-Lazy-Thunk}} \qquad
   \inferrule{\\}{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}{\textsc{L-Lazy-Undefined}} \\
@@ -158,15 +158,18 @@ there.\ly{Talk about what we do first; then what other people do.}
 
 Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a value and then iterating over that value.  The iteration is expressed in the following auxiliary relation.
 
-\begin{lemma}
+\begin{lemma}[Clairvoyance semantics approximates]
   If \( \TB{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EC{\gamma}{t}{\relax}{v} \), then \( v \in \Approx{A} \).
 \end{lemma}
 
+\ly{What is Lemma 3?}
 \begin{lemma}
   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then \( \EC{\gamma}{t}{\relax}{\relax} \).
 \end{lemma}
 
 \subsection{Demand semantics}
+
+\ly{Where is the full demand semantics?}
 
 \begin{align*}
   \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\

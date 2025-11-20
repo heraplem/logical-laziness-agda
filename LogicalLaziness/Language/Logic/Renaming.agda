@@ -3,8 +3,11 @@ module LogicalLaziness.Language.Logic.Renaming where
 open import Relation.Binary.PropositionalEquality
 open import Data.List.Relation.Unary.All
   as All
+open import Data.List.Membership.Propositional.Properties
 
 open import LogicalLaziness.Base
+import LogicalLaziness.Base.Data.List.All
+  as All
 open import LogicalLaziness.Base.Data.List.Membership.Propositional
 open import LogicalLaziness.Language.Logic.Base
 
@@ -28,6 +31,7 @@ infixr -1 _$ʳ_
 _$ʳ_ : Γ →ʳ Δ → Γ ⊢ α → Δ ⊢ α
 ρ $ʳ ` x                      = ` ρ x
 ρ $ʳ `let t₁ `in t₂           = `let (ρ $ʳ t₁) `in (↑ʳ ρ $ʳ t₂)
+ρ $ʳ `tt                      = `tt
 ρ $ʳ `false                   = `false
 ρ $ʳ `true                    = `true
 ρ $ʳ `if t₁ `then t₂ `else t₃ = `if (ρ $ʳ t₁) `then ρ $ʳ t₂ `else (ρ $ʳ t₃)
@@ -48,11 +52,39 @@ _$ʳ_ : Γ →ʳ Δ → Γ ⊢ α → Δ ⊢ α
 ρ $ʳ t₁ `? t₂                 = (ρ $ʳ t₁) `? (ρ $ʳ t₂)
 ρ $ʳ `fail                    = `fail
 
+-- Weakening
+
 weakenʳ : Γ →ʳ Γ ⸴ τ
 weakenʳ = sucᵛ
 
 weaken : Γ ⊢ α → Γ ⸴ τ ⊢ α
 weaken t = weakenʳ $ʳ t
+
+-- Generalized weakening on the right
+
+gweakenrʳ : Γ →ʳ Γ …⸴ Δ
+gweakenrʳ = ∈-++⁺ʳ _
+
+gweakenr : Γ ⊢ α → Γ …⸴ Δ ⊢ α
+gweakenr = gweakenrʳ $ʳ_
+
+-- Generalized weakening on the left
+
+gweakenlʳ : Γ →ʳ Δ …⸴ Γ
+gweakenlʳ = ∈-++⁺ˡ
+
+gweakenl : Γ ⊢ α → Δ …⸴ Γ ⊢ α
+gweakenl = gweakenlʳ $ʳ_
+
+-- Exchange
+
+exchangeʳ : Γ ⸴ τ₁ ⸴ τ₂ →ʳ Γ ⸴ τ₂ ⸴ τ₁
+exchangeʳ zeroᵛ           = sucᵛ zeroᵛ
+exchangeʳ (sucᵛ zeroᵛ)    = zeroᵛ
+exchangeʳ (sucᵛ (sucᵛ x)) = sucᵛ (sucᵛ x)
+
+exchange : Γ ⸴ τ₁ ⸴ τ₂ ⊢ α → Γ ⸴ τ₂ ⸴ τ₁ ⊢ α
+exchange = exchangeʳ $ʳ_
 
 -- A common special-case context manipulation
 
@@ -97,8 +129,20 @@ _ʳ_⊑_ {Γ = Γ} ρ γ δ = (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ
 weakenʳ-⊑ : ∀ {v : ⟦ τ ⟧ᵗ} → weakenʳ ʳ γ ⊑ γ ⸴ v
 weakenʳ-⊑ _ = refl
 
+gweakenrʳ-⊑ : {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ) → gweakenrʳ ʳ γ ⊑ (γ …⸴′ δ)
+gweakenrʳ-⊑ {Γ = Γ} {Δ = Δ} {γ = γ} δ = All.lookup-++ʳ {pxs = δ} {pys = γ}
+
+gweakenlʳ-⊑ : (γ : ⟦ Γ ⟧ᶜ) {δ : ⟦ Δ ⟧ᶜ} → gweakenlʳ ʳ γ ⊑ (δ …⸴′ γ)
+gweakenlʳ-⊑ {Γ = Γ} {Δ = Δ} γ {δ} = All.lookup-++ˡ {pxs = γ} {pys = δ}
+
+exchangeʳ-⊑ : ∀ {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ}
+            → exchangeʳ ʳ γ ⸴ v₁ ⸴ v₂ ⊑ γ ⸴ v₂ ⸴ v₁
+exchangeʳ-⊑ zeroᵛ           = refl
+exchangeʳ-⊑ (sucᵛ zeroᵛ)    = refl
+exchangeʳ-⊑ (sucᵛ (sucᵛ x)) = refl
+
 subsumeʳ-⊑ : ∀ {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ}
-            → subsumeʳ ʳ γ ⸴ v₁ ⊑ γ ⸴ v₂ ⸴ v₁
+           → subsumeʳ ʳ γ ⸴ v₁ ⊑ γ ⸴ v₂ ⸴ v₁
 subsumeʳ-⊑ zeroᵛ    = refl
 subsumeʳ-⊑ (sucᵛ x) = refl
 
@@ -117,6 +161,7 @@ mutual
      → ⟦ ρ $ʳ t ⟧ᵉ δ ∋ v
   ⇓ʳ {ρ = ρ} {δ = δ} η (⇓ x)                     = subst (⟦ ` ρ x ⟧ᵉ δ ∋_) (η x) (⇓ ρ x)
   ⇓ʳ                 η (⇓let φ₁ ⇓in φ₂)          = ⇓let ⇓ʳ η φ₁ ⇓in ⇓ʳ (⊑⇒⊑-↑ʳ η) φ₂
+  ⇓ʳ                 η ⇓tt                       = ⇓tt
   ⇓ʳ                 η ⇓false                    = ⇓false
   ⇓ʳ                 η ⇓true                     = ⇓true
   ⇓ʳ                 η (⇓if φ₁ ⇓else φ₂)         = ⇓if ⇓ʳ η φ₁ ⇓else ⇓ʳ η φ₂
@@ -158,13 +203,27 @@ mutual
   ⇓foldrA′-↑↑ʳ η ⇓foldrA-undefined = ⇓foldrA-undefined
   ⇓foldrA′-↑↑ʳ η (⇓foldrA-thunk φ) = ⇓foldrA-thunk (⇓foldrA-↑↑ʳ η φ)
 
-⇓weaken :
-  ∀ {Γ α τ} {t : Γ ⊢ α} {γ : ⟦ Γ ⟧ᶜ} {v₁ : ⟦ τ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
-  → ⟦ t ⟧ᵉ γ ∋ v
-  → ⟦ weaken t ⟧ᵉ (γ ⸴ v₁) ∋ v
+⇓weaken : {v₁ : ⟦ τ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
+        → ⟦ t ⟧ᵉ γ ∋ v
+        → ⟦ weaken t ⟧ᵉ (γ ⸴ v₁) ∋ v
 ⇓weaken {γ = γ} {v = v₁} φ = ⇓ʳ (weakenʳ-⊑ {γ = γ} {v = v₁}) φ
 
-⇓subsume : ∀ {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
+⇓gweakenr : ∀ {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ) {v}
+          → ⟦ t ⟧ᵉ γ ∋ v
+          → ⟦ gweakenr t ⟧ᵉ (γ …⸴′ δ) ∋ v
+⇓gweakenr δ = ⇓ʳ (gweakenrʳ-⊑ δ)
+
+⇓gweakenl : ∀ (γ : ⟦ Γ ⟧ᶜ) {δ : ⟦ Δ ⟧ᶜ} {v}
+          → ⟦ t ⟧ᵉ γ ∋ v
+          → ⟦ gweakenl t ⟧ᵉ (δ …⸴′ γ) ∋ v
+⇓gweakenl γ = ⇓ʳ (gweakenlʳ-⊑ γ)
+
+⇓exchange : {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
+          → ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ v₂) ∋ v
+          → ⟦ exchange t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v
+⇓exchange = ⇓ʳ exchangeʳ-⊑
+
+⇓subsume : {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
          → ⟦ t ⟧ᵉ (γ ⸴ v₁) ∋ v
          → ⟦ subsume t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v
 ⇓subsume = ⇓ʳ subsumeʳ-⊑
@@ -184,6 +243,7 @@ mutual
      → ⟦ t ⟧ᵉ γ ∋ v
   ⇑ʳ {t = ` x                      } η (⇓ _)                     = subst (⟦ ` x ⟧ᵉ _ ∋_) (sym (η x)) (⇓ x)
   ⇑ʳ {t = `let t₁ `in t₂           } η (⇓let φ₁ ⇓in φ₂)          = ⇓let (⇑ʳ η φ₁) ⇓in (⇑ʳ (⊑⇒⊑-↑ʳ η) φ₂)
+  ⇑ʳ {t = `tt                      } η ⇓tt                       = ⇓tt
   ⇑ʳ {t = `false                   } η ⇓false                    = ⇓false
   ⇑ʳ {t = `true                    } η ⇓true                     = ⇓true
   ⇑ʳ {t = `if t₁ `then t₂ `else t₃ } η (⇓if φ₁ ⇓else φ₂)         = ⇓if ⇑ʳ η φ₁ ⇓else ⇑ʳ η φ₂
@@ -231,6 +291,21 @@ mutual
   → ⟦ weaken t ⟧ᵉ (γ ⸴ a) ∋ v
   → ⟦ t ⟧ᵉ γ ∋ v
 ⇑weaken {γ = γ} {v = v₁} φ = ⇑ʳ (weakenʳ-⊑ {γ = γ} {v = v₁}) φ
+
+⇑gweakenr : ∀ {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ) {v}
+          → ⟦ gweakenr t ⟧ᵉ (γ …⸴′ δ) ∋ v
+          → ⟦ t ⟧ᵉ γ ∋ v
+⇑gweakenr δ = ⇑ʳ (gweakenrʳ-⊑ δ)
+
+⇑gweakenl : ∀ (γ : ⟦ Γ ⟧ᶜ) {δ : ⟦ Δ ⟧ᶜ} {v}
+          → ⟦ gweakenl t ⟧ᵉ (δ …⸴′ γ) ∋ v
+          → ⟦ t ⟧ᵉ γ ∋ v
+⇑gweakenl γ = ⇑ʳ (gweakenlʳ-⊑ γ)
+
+⇑exchange : {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
+          → ⟦ exchange t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v
+          → ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ v₂) ∋ v
+⇑exchange = ⇑ʳ exchangeʳ-⊑
 
 ⇑subsume : ∀ {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v}
          → ⟦ subsume t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v

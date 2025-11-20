@@ -48,6 +48,7 @@ infix  1.50  `let_`in_ ⇓let_⇓in_
 -----------
 
 data Ty : Type where
+  `Unit  : Ty
   `Bool  : Ty
   _`×_   : Ty → Ty → Ty
   `T     : Ty → Ty
@@ -62,6 +63,7 @@ variable
 ------------
 
 ⟦_⟧ᵗ : Ty → Type
+⟦ `Unit    ⟧ᵗ = ⊤
 ⟦ `Bool    ⟧ᵗ = Bool
 ⟦ α `× β   ⟧ᵗ = ⟦ α ⟧ᵗ × ⟦ β ⟧ᵗ
 ⟦ `T α     ⟧ᵗ = T ⟦ α ⟧ᵗ
@@ -122,6 +124,8 @@ data _⊢_ : Ctx → Ty → Type where
   `let_`in_        : Γ ⊢ α
                    → Γ ⸴ α ⊢ β
                    → Γ ⊢ β
+
+  `tt              : Γ ⊢ `Unit
 
   `false           : Γ ⊢ `Bool
   `true            : Γ ⊢ `Bool
@@ -213,6 +217,7 @@ mutual
       ⟦ t₁ ⟧ᵉ γ ∋ v₁ →
       ⟦ t₂ ⟧ᵉ (γ ⸴ v₁) ∋ v₂ →
       ⟦ `let t₁ `in t₂ ⟧ᵉ γ ∋ v₂
+    ⇓tt               : ⟦ `tt ⟧ᵉ γ ∋ tt
     ⇓false            : ⟦ `false ⟧ᵉ γ ∋ false
     ⇓true             : ⟦ `true ⟧ᵉ γ ∋ true
     ⇓if_⇓else_ : ∀ {v} →

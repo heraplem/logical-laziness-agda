@@ -8,8 +8,12 @@ open import Data.List
   using ( List
         ; []
         ; _∷_
+        ; _++_
         )
-open import Data.List.Relation.Unary.All as All
+open import Data.List.Relation.Unary.All
+  as All
+open import Data.List.Relation.Unary.All.Properties
+  as All
 open import Data.List.Relation.Unary.Any
 
 open import LogicalLaziness.Base.Core
@@ -20,7 +24,7 @@ open import LogicalLaziness.Base.Data.List.All.Relation.Binary.Pointwise
 private
   variable
     x y : A
-    xs : List A
+    xs ys zs : List A
     px : P x
     pxs : All P xs
 
@@ -34,13 +38,23 @@ infix 4 _∋_
 _∋_ : (A → Type ℓ) → A → Type ℓ
 P ∋ x = P x
 
--------------------------------------------------
--- Pattern synonyms for variables and contexts --
--------------------------------------------------
+-----------------------------------------
+-- Synonyms for variables and contexts --
+----------------------------------------
 
 pattern zeroᵛ  = here refl
 pattern sucᵛ p = there p
 
+pattern ∅ = []
+
 -- XXX This is codepoint 0x2e34.
 infixl 5 _⸴_
 pattern _⸴_ Γ τ = τ ∷ Γ
+
+infixl 5 _…⸴_
+_…⸴_ : List A → List A → List A
+xs …⸴ ys = ys ++ xs
+
+infixl 5 _…⸴′_
+_…⸴′_ : All P xs → All P ys → All P (xs …⸴ ys)
+pxs …⸴′ pys = All.++⁺ pys pxs

@@ -5,19 +5,32 @@ open import Data.Product
 open import Data.Product.Properties
 open import Data.Nat
 open import Data.Nat.Properties
+open import Data.List
 
 open import LogicalLaziness.Base
 open import LogicalLaziness.Base.Effect.Monad.Tick
+import LogicalLaziness.Base.Data.List.All
+  as All
 open import LogicalLaziness.Base.Data.T
 open import LogicalLaziness.Base.Data.ListA
 open import LogicalLaziness.Language.Logic.Base
 open import LogicalLaziness.Language.Logic.Renaming
 
+infixr 1.51 _`>>=_
+infix  1.50 `assert_`in_
+
+----------------
+-- Assertions --
+----------------
+
+`assert_`in_ : Γ ⊢ `Bool → Γ ⊢ α → Γ ⊢ α
+`assert t₁ `in t₂ = `if t₁ `then t₂ `else `fail
+
+pattern ⇓assert_⇓in φ₁ φ₂ = ⇓if φ₁ ⇓then φ₂
+
 -------------------------------
 -- Object-language writer monad
 -------------------------------
-
-infixr 1.51 _`>>=_
 
 `M : Ty → Ty
 `M α = α `× `ℕ
@@ -252,3 +265,15 @@ data ⟦forced_⟧ᵉ : Γ ⊢ `M (`T α) → ⟦ Γ ⟧ᶜ → ⟦ α ⟧ᵗ ×
 ⇑forced : ∀ {u} → ⟦ `forced t ⟧ᵉ γ ∋ u → ⟦forced t ⟧ᵉ γ ∋ u
 ⇑forced φ with ⇑>>= φ
 ... | ⇓>>=-intro φ₁ (⇓T-case-thunk (⇓ _) (⇓return (⇓ _))) = ⇓forced-intro (⇑[cost+0] φ₁)
+
+-- Extract the entire context
+
+∣_∣ : Ctx → Ty
+∣_∣ = foldr _`×_ `Unit
+
+`ctx : Γ ⊢ ∣ Γ ∣
+`ctx {Γ = ∅    } = `tt
+`ctx {Γ = Γ ⸴ α} = ` zeroᵛ `, weaken `ctx
+
+∥_∥ : ⟦ Γ ⟧ᶜ → ⟦ ∣ Γ ∣ ⟧ᵗ
+∥_∥ = All.foldr⁺ _,_ tt

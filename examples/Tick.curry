@@ -16,7 +16,7 @@ instance Monad Tick where
   return x = Tick (x, 0)
   m >>= k =
     let (x1, c1) = runTick m
-        (x2, c2) = runTick (k x)
+        (x2, c2) = runTick (k x1)
     in Tick (x2, c1 + c2)
 
 tick :: Tick ()

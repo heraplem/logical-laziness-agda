@@ -113,19 +113,19 @@ the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to
 
 \begin{figure}[t]
   \begin{mathpar}
-    \inferrule{\gamma(x) = v}{\EC{\gamma}{x}{0}{v}}{\textsc{L-Var}} \qquad
-    \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}{\textsc{L-Let}} \\
-    \inferrule{\\}{\EC{\gamma}{\ttrue}{0}{\strue}}{\textsc{L-True}} \qquad
-    \inferrule{\\}{\EC{\gamma}{\tfalse}{0}{\sfalse}}{\textsc{L-False}} \\
-    \inferrule{\EC{\gamma}{t_1}{c_1}{\strue} \\ \EC{\gamma}{t_2}{c_2}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}{\textsc{L-If-True}} \qquad
-    \inferrule{\EC{\gamma}{t_1}{c_1}{\sfalse} \\ \EC{\gamma}{t_3}{c_3}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}}{\textsc{L-If-False}} \\
-  \inferrule{\\}{\EC{\gamma}{\tnil}{0}{\snil}}{\textsc{L-Nil}} \qquad
-  \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma}{t_2}{c_1}{v_2}}{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}{\textsc{L-Cons}} \\
-  \inferrule{\EC{\gamma}{t_3}{c_1}{v_1} \\ \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}{\textsc{L-Foldr}} \\
-  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}{\textsc{L-Lazy-Thunk}} \qquad
-  \inferrule{\\}{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}{\textsc{L-Lazy-Undefined}} \\
-  \inferrule{\EC{\gamma}{t}{c}{\sthunk{v}}}{\EC{\gamma}{\tforce{t}}{c}{v}}{\textsc{L-Force}} \qquad
-  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\ttick{t}}{c + 1}{v}}{\textsc{L-Tick}} \\
+    \inferrule{\gamma(x) = v}{\EC{\gamma}{x}{0}{v}}{\textsc{C-Var}} \qquad
+    \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}{\textsc{C-Let}} \\
+    \inferrule{\\}{\EC{\gamma}{\ttrue}{0}{\strue}}{\textsc{C-True}} \qquad
+    \inferrule{\\}{\EC{\gamma}{\tfalse}{0}{\sfalse}}{\textsc{C-False}} \\
+    \inferrule{\EC{\gamma}{t_1}{c_1}{\strue} \\ \EC{\gamma}{t_2}{c_2}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}{\textsc{C-If-True}} \qquad
+    \inferrule{\EC{\gamma}{t_1}{c_1}{\sfalse} \\ \EC{\gamma}{t_3}{c_3}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}}{\textsc{C-If-False}} \\
+  \inferrule{\\}{\EC{\gamma}{\tnil}{0}{\snil}}{\textsc{C-Nil}} \qquad
+  \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma}{t_2}{c_1}{v_2}}{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}{\textsc{C-Cons}} \\
+  \inferrule{\EC{\gamma}{t_3}{c_1}{v_1} \\ \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}{\textsc{C-Foldr}} \\
+  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}{\textsc{C-Lazy-Thunk}} \qquad
+  \inferrule{\\}{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}{\textsc{C-Lazy-Undefined}} \\
+  \inferrule{\EC{\gamma}{t}{c}{\sthunk{v}}}{\EC{\gamma}{\tforce{t}}{c}{v}}{\textsc{C-Force}} \qquad
+  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\ttick{t}}{c + 1}{v}}{\textsc{C-Tick}} \\
 \end{mathpar}
 \caption{The clairvoyance semantics defined on $B$.}\label{fig:clairvoyance-base}
 \end{figure}
@@ -149,12 +149,13 @@ if it is in fact a \( \sthunkZ \); in other words, if we need the result of a
 \( \tlazyZ \) term, then we must have actually evaluated it via
 \rulename{L-Lazy-Thunk}.
 
-In the original formulation of clairvoyance semantics, nondeterminism was
-introduced at \( \tletZ \) bindings: when evaluating \( \tlet{x}{t_1}{t_2} \),
-either \( x \) was immediately bound to the result of evaluting \( t_1 \), or
-else \( x \) was not bound at all. But our base language explicitly marks
-laziness points with \( \tthunkZ \) terms, so we must introduce nondeterminism
-there.\ly{Talk about what we do first; then what other people do.}
+Our base language explicitly marks laziness points with \( \tthunkZ \) terms, so
+we must introduce nondeterminism there. This is in contrast to the original
+formulation of clairvoyance semantics, where nondeterminism was introduced at
+\( \tletZ \) bindings: when evaluating \( \tlet{x}{t_1}{t_2} \), either \( x \)
+was immediately bound to the result of evaluting \( t_1 \), or else \( x \) was
+not bound at all.\ly{Talk about what we do first; then what other people
+  do.}\nc{Is this better?}
 
 Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a value and then iterating over that value.  The iteration is expressed in the following auxiliary relation.
 
@@ -171,10 +172,31 @@ Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a 
 
 \ly{Where is the full demand semantics?}
 
-\begin{align*}
-  \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\
-  \ED{\ttrue}{\gamma}{a} &= (\bot, 0) \\
-  \ED{\tfalse}{\gamma}{a} &= (\bot, 0) \\
-  \ED{\tnil}{\gamma}{a} &= (\bot, 0) \\
-  \ED{\tcons{t_1}{t_2}}{\gamma}{a} &= \ED{t_1}{\gamma}{a} \sqcup \ED{t_2}{\gamma}{a}
-\end{align*}
+The demand semantics is a deterministic semantics that interprets a term \( t \)
+as a function \( \EDU{t} \) that takes two arguments:
+\begin{enumerate}
+\item a fully-defined evaluation context \( \gamma \), and
+\item a demand \( d \) on \( \EE{t}{\gamma} \);
+\end{enumerate}
+it produces a list of demands on \( \gamma \) and an evaluation cost. In summary, demand semantics has the ``type''
+\[
+  \EDU{-} : (t : \Gamma \vdash A) \to (\gamma : \Eval{\Gamma}) \times \Approx{A}_{\approxof{\relax}{\EE{t}{\gamma}}} \to \Approx{\Gamma}_{\approxof{\relax}{\gamma}} \times \N .
+\]
+Intuitively, demand sematics computes ``how much'' of the input \( \gamma \) must be present in order to compute a certain ``amount'' of the output \( \EE{t}{\gamma} \), and also how much it costs to perform that computation.
+
+\begin{figure}\centering
+  \begin{align*}
+    \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\
+    \ED{\tlet{x}{t_1}{t_2}}{\gamma}{a} &= (d_1, c_1) \sqcup (d_2, c_2) &\text{where } ((d_2, x \mapsto b), c_2) &= \ED{t_2}{\gamma}{x \mapsto \EE{t}{\gamma}} \\
+    &&\text{and } (d_1, c_1) &= \ED{t_1}{\gamma}{b} \\
+    \ED{\ttick{t}}{\gamma}{a} &= (d, c + 1) &\text{where } (d, c) &= \ED{t}{\gamma}{a} \\
+    \ED{\tlazy{t}}{\gamma}{\sundefined} &= (\sundefined, 0) \\
+    \ED{\tlazy{t}}{\gamma}{\sthunk{a}} &= \ED{t}{\gamma}{a} \\
+    \ED{\tforce{t}}{\gamma}{a} &= \ED{t}{\gamma}{\sthunk{a}} \\
+    \ED{\ttrue}{\gamma}{a} &= (\sundefined, 0) \\
+    \ED{\tfalse}{\gamma}{a} &= (\sundefined, 0) \\
+    \ED{\tnil}{\gamma}{a} &= (\sundefined, 0) \\
+    \ED{\tcons{t_1}{t_2}}{\gamma}{a} &= \ED{t_1}{\gamma}{a} \sqcup \ED{t_2}{\gamma}{a} \\
+    \ED{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma}{b} &= (d', c) \sqcup \ED{t}{\gamma}{b'} &\text{where } (g, b', c) &= \EDF{t_1}{t_2}{\gamma}{\EE{t_3}{\gamma}}{b}
+  \end{align*}
+\end{figure}

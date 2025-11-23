@@ -31,6 +31,7 @@
 \usepackage{draft} % local
 \newnote{ly}{red}      % Li Yao
 \newnote{lai}{cyan}    % Laura Israel
+\newnote{nc}{violet}      % Nicholas Coltharp
 
 % If you want to set draft to true or false, go to `directive.tex`
 \input{directives.tex}
@@ -164,6 +165,9 @@
 \newcommand{\sthunk}[1]{\text{\sthunkZ\ \({#1}\)}}
 \newcommand{\sundefined}{\bot}
 
+% relations
+\newcommand{\approxof}[2]{{#1} \prec {#2}}
+
 % typing rules
 
 % base
@@ -174,11 +178,15 @@
 % semantics
 
 % evaluation
-\newcommand{\EE}[2]{\SE\bbrackets{#1}({#2})}
+\newcommand{\EEU}[1]{\SE\bbrackets{#1}}
+\newcommand{\EE}[2]{\EEU{#1}({#2})}
 % clairvoyance
 \newcommand{\EC}[4]{{{#1} \mathrel{;} {#2}} \Downarrow^\SC_{#3} {#4}}
 % demand
-\newcommand{\ED}[3]{\SD\bbrackets{#1}({#2}, {#3})}
+\newcommand{\EDU}[1]{\SD\bbrackets{#1}}
+\newcommand{\ED}[3]{\EDU{#1}({#2}, {#3})}
+% demand foldr
+\newcommand{\EDF}[5]{\EDU{#1}_{\text{foldr}}({#2}, {#3}, {#4}, {#5})}
 % clairvoyance foldr
 \newcommand{\ECF}[8]{{{#1} \mathrel{;} \lambda{#2}{#3}.{#4}, {#5}, {#6}} \Downarrow^{\text{\(\SC\)-\tfoldrZ}}_{#7} {#8}}
 % logic

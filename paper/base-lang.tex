@@ -139,15 +139,15 @@ the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to
 \caption{The clairvoyance semantics defined on $B$.}\label{fig:clairvoyance-foldr}
 \end{figure}
 
-The crucial rules are \rulename{L-Lazy-Thunk}, \rulename{L-Lazy-Undefined},
-\rulename{L-Force}.\ly{What does \rulename{L} stand for?}
-\rulename{L-Lazy-Thunk} and \rulename{L-Lazy-Undefined} say that, to evaluate a
+The crucial rules are \rulename{C-Lazy-Thunk}, \rulename{C-Lazy-Undefined},
+\rulename{C-Force}.\ly{What does \rulename{L} stand for?}
+\rulename{C-Lazy-Thunk} and \rulename{C-Lazy-Undefined} say that, to evaluate a
 \( \tlazyZ \) term, we nondeterministically either evaluate its subterm and wrap
 it in a \( \sthunkZ \) or substitute an ``empty'' value \( \sundefined \).
-\rulename{L-Force} says that we can only evaluate a value of \( \TThunkZ \) type
+\rulename{C-Force} says that we can only evaluate a value of \( \TThunkZ \) type
 if it is in fact a \( \sthunkZ \); in other words, if we need the result of a
 \( \tlazyZ \) term, then we must have actually evaluated it via
-\rulename{L-Lazy-Thunk}.
+\rulename{C-Lazy-Thunk}.
 
 Our base language explicitly marks laziness points with \( \tthunkZ \) terms, so
 we must introduce nondeterminism there. This is in contrast to the original

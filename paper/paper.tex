@@ -222,7 +222,7 @@
 \maketitle
 
 \begin{abstract}
-  We provide a relatively simple transformation between the Demand and Clairvoyance semantic models for cost analysis of lazy evaluation using concepts from functional logic programming. This improves on the prior, highly-manual and brittle method implemented in past work. We provide an Agda proof that the transformation maintains functional correctness and time cost equivalence\lai{TODO: Change this when we get the exact bound - do we have equivalence, or near-equivalence?}.
+  We provide a relatively simple transformation between the Demand and Clairvoyance semantic models for cost analysis of lazy evaluation using functional logic programming. This improves on the highly manual and brittle method for translation between the semantics implemented in prior work. We provide an Agda proof that the transformation is functionally correct and time-cost equivalent\lai{TODO: Change this when we get the exact bound - do we have equivalence, or near-equivalence?}.
 \keywords{Functional Logic Programming, Lazy Evaluation, Agda, Cost Analysis, Semantics}\lai{Too many keywords? Too few?}
 \end{abstract}
 
@@ -232,19 +232,37 @@ In functional logic programming, one program contains two semantics: a
 ``forward'' nondeterministic semantics with \emph{choices}, and a ``backward''
 demand-driven semantics with \emph{free variables}. Past research has shown the
 usefulness of this feature in different contexts.\ly{TODO: Citations.} In this
-paper, we show another useful yet distingushing example in lazy cost analysis.
-In particular, we show that two different semantics proposed independently for
-reasoning about the computation cost of lazy functional programs, namely the
-clairvoyance semantics~\cite{clairvoyant,forking-paths} and the demand
-semantics~\cite{bjerner1989,demand-semantics}, can both be represented by one
-program in functional logic programming.
-
-In lazy evaluation, a computation is driven by its demands. A computation is
-stored as a \emph{thunk} that only gets evaluated when its value is demanded.
-Even then, the computation is only minimally evaluated to the extent that's
-sufficient for its demand. \ly{The pros and cons of lazy evaluation, briefly.}
+paper, we demonstrate yet another useful application: lazy cost analysis.
+Specifically, we show that two different semantics proposed independently for
+reasoning about the computation cost of lazy functional programs, 
+clairvoyance semantics~\cite{clairvoyant,forking-paths} and demand
+semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a single functional logic program.
 
 % \subsection{what is lazy evaluation?}
+
+In lazy evaluation, a computation is driven by its demands, performing only the operations strictly required to compute a given result. Computations are
+stored as \emph{thunks} that are only evaluated when their values are demanded.
+Even then, computations are only evaluated to the extent that's
+sufficient for its demand. This prevents the execution of extraneous operations, but results in infamously challenging cost analysis. For example\lai{Is this example the best one to start with, or should I start with one we are going to use again later? It's my favorite easy example, at least}, suppose that we define the \emph{Selection Sort} and \emph{Head} functions in the obvious ways.\lai{Should we give an actual definition, or leave it abstract like this to save space?} Then, say that we want to compute the following (where xs is an arbitrary list):
+
+\lai{adding figures later because I'm just trying to get words down rn - for now, just text will do.}
+
+\(head (selection\_sort xs)\)
+
+At first glance, one unfamiliar with laziness\lai{I think it's funnier to say this than the arguably more correct "one familiar with lazy evaluation"} might expect this to take \(O(n^2)\) average time, as is typical for \emph{Selection Sort}. However, since the algorithm will always search for the largest element first\lai{Do we need to mention smallest-first selection sort?}, the leading element will always be put in place before any others. Hence, if we are only demanding the head of the list, computation can stop after one iteration, and the time complexity falls to \(O(n)\). Eager evaluation strategies cannot take advantage of this fact, but lazy evaluation does.
+
+\lai{This paragraph may be extraneous, but let's see how we are on space before ripping it out. It's good to have some mention of the difficulties here.}
+One major drawback of laziness becomes apparent when we consider how partially executing a function call interferes with traditional cost analysis methods. Shortcutting (or even failing to run) functions runs counter, in particular, to the concept of \(O\)-notation. Technically speaking, every function takes \(O(1)\) time in a lazy language, as it is always possible to call a function and then never demand its output. For example, if we call \(head (selection\_sort xs))\) as part of a larger function that never uses the resulting element of xs, then the call would be stored in a \emph{thunk} and not further evaluated. As \emph{thunk} creation is a constant-time operation\lai{... it is, right?}, this results in the aforementioned \(O(1)\) time cost. This is not a particularly \emph{meaningful} thing to say about a lazy function, but its truth renders much of the existing paradigm for cost analysis nearly useless in the realm of laziness.
+
+This paper will focus on two cost models which address this problem - \emph{Demand Semantics} and \emph{Clairvoyance Semantics}. Some other models will be explored briefly in Section whatever-number-is-related-work\lai{TODO: What number is this, anyway?}, but are not the focus of our work.
+
+Clairvoyance Semantics is...
+
+Demand Semantics is...
+
+Translating between them is annoying and you would want it to be easy because...
+
+Contributions!
 
 \begin{itemize}
 \item what is lazy evaluation?

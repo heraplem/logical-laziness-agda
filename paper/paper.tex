@@ -264,19 +264,17 @@ Demand Semantics, on the other hand, models the cost lazy programs by computing 
 
 While clairvoyance and demand semantics provably produce equivalent cost analyses, directly translating from one to the other is challenging.\lai{Maybe two paragraphs - one outlining the problem, and another introducing the idea of using FLP to solve it.} There is certainly some amount of 'clairvoyance' occurring in demand semantics in the literal sense, as one needs to know what demands will be placed on the output before cost analysis can proceed (in order to construct a meaningful outD). However, the handling of nondeterminism is left implicit - we take as premise that one will know which sorts of output demands a user might wish to reason about, and say little about how they came to possess that information. Clairvoyance semantics has a similar issue, but in reverse\footnote{After we introduce the main ideas of the functional logic translation between the two, the fact that clairvoyance and demand semantics are inverses of each other in this way will likely seem somewhere between ironic and prophetic.}. The concept of "demand" is not explicitly mentioned in the semantics, but nondeterministically choosing a program's execution path is also, \emph{implicitly}, very similar to computing that same path using the output demand as a guide \lai{Feels like I'm not explaining this quite well enough. I'll think about it.}.
 
-Contributions!
+\lai{Separate paragraph here explaining why one would want to do this translation, anyway?}
 
+While this conundrum left us (as researchers interested in lazy cost analysis) at an impasse\lai{too informal?}, those familiar with functional logic programming concepts may have already noticed the connection that eventually led us through it. Functional logic languages which integrate nondeterminism, like Curry\lai{What do I cite here...?}, have a notion of forward and backward execution that maps neatly onto the aforementioned relationship between demand and clairvoyance semantics. Is this mapping correct, though? Yes, we have discovered, and provably so.
 \begin{itemize}
-\item what is lazy evaluation?
-\item why is it cool?
-\item talk about cost analysis specifically
-\item (maybe) briefly explain the standard semantics for laziness and its advantages/disadvantags
-%\item briefly explain clairvoyance and demand semantics
-%\item talk about our troubles with writing demand terms
-\item explain the solution \ly{directly to solution}
-  \item list of contributions \ly{Make sure to mention everything is formalized
-        in Agda; all the examples are implemented in Curry (or PAKCS~\cite{pakcs}?).}
+\item A conceptual link between forward and backward execution and the relationship between clairvoyance and demand semantics for cost analysis of lazy evaluation.
+\item A means by which to translate between the two models in a straightforward way using Curry, with examples.
+\item Proof, formalized in Agda, that the transformation between models is functionally correct and preserves time-cost estimates.
+
 \end{itemize}
+
+\lai{This is where we may want to leave a brief explanation of which sections are which, and maybe a note or two about what sections to skip to for varying levels of reader. I know that some people don't like it, but I appreciate when papers do that.}
 
 % The standard semantics for call-by-name uses a heap that binds variables to
 % expressions; evaluating a variable amounts to evaluating the expression to

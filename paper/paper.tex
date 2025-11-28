@@ -258,11 +258,11 @@ One major drawback of laziness becomes apparent when we consider how partially e
 
 This paper will focus on two cost models which address this problem - \emph{Demand Semantics} and \emph{Clairvoyance Semantics}. Some other models will be explored briefly in Section whatever-number-is-related-work\lai{TODO: What number is this, anyway?}, but are not the focus of our work.
 
-Clairvoyance Semantics models a lazy program as a nondeterministic tree of possible execution paths. The concept was first introduced in \cite{clairvoyant} and implemented in Rocq in \cite{forking-paths}\lai{Is this how we will do inline citations, and how we will reference them in the text?} via the Clairvoyance Monad. To analyze cost within this model, we... \lai{TODO: add more detail here - maybe we can use figures like those in the Forking Paths paper?}.
+Clairvoyance Semantics models a lazy program as a nondeterministic tree of possible execution paths. The concept was first introduced in \cite{clairvoyant} and implemented in Rocq in \cite{forking-paths}\lai{Is this how we will do inline citations, and how we will reference them in the text?} via the Clairvoyance Monad. To analyze cost within this model, we... \lai{TODO: add more detail here - maybe we can use figures like those in the Forking Paths paper?}. \lai{Do we need a concrete example here?}
 
-Demand Semantics, on the other hand, models the cost lazy programs by computing how much of the input must be forced to produce a given output, which is provably cost-equivalent to computing the same output. 
+Demand Semantics, on the other hand, models the cost lazy programs by computing how much of the input must be forced to produce a function's output, which is provably cost-equivalent to computing the same output. First described in \cite{bjerner1989} and formalized in Rocq in \cite{demand-semantics}, the idea is also relatively straightforward, but conceptually quite different from clairvoyance semantics. Rather than involving nondeterminism directly, the 'choices' made in a function's execution path are abstracted away into an "outD" input, which models the output demand. outD is then fed to a separate cost-analysis function derived from the original function in a systematic way. Finally, the cost analysis function uses outD to compute the answer to a different query than the original function - how much of the input was needed to compute outD? It turns out that this computation results in the same time cost as computing the input normally, making it a helpful model for lazy cost analysis.\lai{How about here?}
 
-Translating between them is annoying and you would want it to be easy because...
+While clairvoyance and demand semantics provably result in the same cost analysis, directly translating from one to the other is challenging. \lai{Maybe two paragraphs - one outlining the problem, and another introducing the idea of using FLP to solve it.}
 
 Contributions!
 

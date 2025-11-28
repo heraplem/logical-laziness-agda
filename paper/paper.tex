@@ -228,6 +228,8 @@
 
 \section{Introduction}
 
+\lai{I think we need a catchier intro paragraph (and especially opening sentence), but I'm not sure if the one below should be reworked or broken in half, with the FLP explanation in the second paragraph and the chatter about big ideas and contributions in the first. Something to consider.}
+
 In functional logic programming, one program contains two semantics: a
 ``forward'' nondeterministic semantics with \emph{choices}, and a ``backward''
 demand-driven semantics with \emph{free variables}. Past research has shown the
@@ -256,9 +258,9 @@ One major drawback of laziness becomes apparent when we consider how partially e
 
 This paper will focus on two cost models which address this problem - \emph{Demand Semantics} and \emph{Clairvoyance Semantics}. Some other models will be explored briefly in Section whatever-number-is-related-work\lai{TODO: What number is this, anyway?}, but are not the focus of our work.
 
-Clairvoyance Semantics is...
+Clairvoyance Semantics models a lazy program as a nondeterministic tree of possible execution paths. The concept was first introduced in \cite{clairvoyant} and implemented in Rocq in \cite{forking-paths}\lai{Is this how we will do inline citations, and how we will reference them in the text?} via the Clairvoyance Monad. To analyze cost within this model, we... \lai{TODO: add more detail here - maybe we can use figures like those in the Forking Paths paper?}.
 
-Demand Semantics is...
+Demand Semantics, on the other hand, models the cost lazy programs by computing how much of the input must be forced to produce a given output, which is provably cost-equivalent to computing the same output. 
 
 Translating between them is annoying and you would want it to be easy because...
 

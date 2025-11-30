@@ -4,8 +4,12 @@ data Nat = Z | S Nat
   deriving (Eq, Ord, Read, Show)
 
 instance Num Nat where
-  Z + n = n
+  Z   + n = n
   S m + n = S (m + n)
 
-  fromInt 0 = Z
-  fromInt n | n > 0 = S (fromInt (n - 1))
+  m   - Z   = m
+  S m - S n = m - n
+
+  fromInt n = case n `compare` 0 of
+    EQ -> Z
+    GT -> S (fromInt (n - 1))

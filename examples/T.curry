@@ -3,6 +3,10 @@ module T where
 data T a = Thunk a | Undefined
   deriving (Eq, Ord, Read, Show)
 
+instance Functor T where
+  fmap f (Thunk x) = Thunk (f x)
+  fmap f Undefined = Undefined
+
 -- XXX Should probably only need two of these at most.
 -- And need better names.
 
@@ -19,3 +23,6 @@ forcing (Thunk v) f = f v
 -- In fact, only needs "Pointed", not Applicative.
 force :: Applicative f => T a -> f a
 force t = forcing t pure
+
+withForced :: Monad m => T a -> (a -> m b) -> m (T b)
+withForced t k = thunk (force t >>= k)

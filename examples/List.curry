@@ -8,6 +8,9 @@ infixr 5 :~
 data List a = NilA | (:~) a (T (List a))
   deriving (Eq, Ord, Read, Show)
 
+fromList :: [a] -> List a
+fromList = foldr (\x xs -> x :~ Thunk xs) NilA
+
 appendM :: List a -> T (List a) -> Tick (List a)
 appendM xs ysT = do
   tick

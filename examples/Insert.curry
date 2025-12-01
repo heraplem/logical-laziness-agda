@@ -1,13 +1,13 @@
 module Insert where
 
 import T
-import ListA
+import List
 import Tick
 
 -- pakcs :l Insert :a T
 -- kics2 and curry2go both have Docker images
 
-insertA :: Ord a => a -> T (ListA a) -> Tick (ListA a)
+insertA :: Ord a => a -> T (List a) -> Tick (List a)
 insertA x xsT = do
   tick
   xs <- force xsT
@@ -21,6 +21,6 @@ insertA x xsT = do
         xsT'' <- thunk (insertA x xsT')
         return (x' :~ xsT'')
 
-insertD :: (Data a, Ord a) => a -> ListA a -> Tick (ListA a)
+insertD :: (Data a, Ord a) => a -> List a -> Tick (List a)
 insertD x ys | insertA x (Thunk xs) =:= Tick (ys, c) = Tick (xs, c)
   where xs, c free

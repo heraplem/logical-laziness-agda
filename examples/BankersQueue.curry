@@ -34,7 +34,7 @@ pushM :: a -> Queue a -> Tick (Queue a)
 pushM x q = do
   tick
   back' <- thunk (return (x :~ back q))
-  mkQueueM (frontLen q) (front q) (S (backLen q)) back'
+  mkQueueM (frontLen q) (front q) (1 + backLen q) back'
 
 popM :: Queue a -> Tick (Maybe (a, Queue a))
 popM q = do

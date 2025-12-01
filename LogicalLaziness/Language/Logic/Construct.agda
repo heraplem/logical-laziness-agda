@@ -17,7 +17,8 @@ open import LogicalLaziness.Language.Logic.Base
 open import LogicalLaziness.Language.Logic.Renaming
 
 infixr 1.51 _`>>=_
-infix  1.50 `assert_`in_
+infix  1.50 `assert_`in_ ⇓assert_⇓in_
+infix  1.50 `let-free*_`in_ ⇓let-free*_⇓in_
 
 ----------------
 -- Assertions --
@@ -26,7 +27,7 @@ infix  1.50 `assert_`in_
 `assert_`in_ : Γ ⊢ `Bool → Γ ⊢ α → Γ ⊢ α
 `assert t₁ `in t₂ = `if t₁ `then t₂ `else `fail
 
-pattern ⇓assert_⇓in φ₁ φ₂ = ⇓if φ₁ ⇓then φ₂
+pattern ⇓assert_⇓in_ φ₁ φ₂ = ⇓if φ₁ ⇓then φ₂
 
 -------------------------------
 -- Object-language writer monad
@@ -266,7 +267,19 @@ data ⟦forced_⟧ᵉ : Γ ⊢ `M (`T α) → ⟦ Γ ⟧ᶜ → ⟦ α ⟧ᵗ ×
 ⇑forced φ with ⇑>>= φ
 ... | ⇓>>=-intro φ₁ (⇓T-case-thunk (⇓ _) (⇓return (⇓ _))) = ⇓forced-intro (⇑[cost+0] φ₁)
 
--- Extract the entire context
+-- Bind an arbitrary suffix of the context as free variables.
+
+`let-free*_`in_ : ∀ Δ → Γ …⸴ Δ ⊢ α → Γ ⊢ α
+`let-free* ∅     `in t = t
+`let-free* Δ ⸴ α `in t = `let-free* Δ `in `let `free `in t
+
+⇓let-free*_⇓in_ : {t : Γ …⸴ Δ ⊢ α} (δ : ⟦ Δ ⟧ᶜ) {v : ⟦ α ⟧ᵗ}
+                → ⟦ t ⟧ᵉ (γ …⸴′ δ) ∋ v
+                → ⟦ `let-free* Δ `in t ⟧ᵉ γ ∋ v
+⇓let-free* ∅     ⇓in φ = φ
+⇓let-free* δ ⸴ v ⇓in φ = ⇓let-free* δ ⇓in (⇓let ⇓free v ⇓in φ)
+
+-- Extract the entire context as a product
 
 ∣_∣ : Ctx → Ty
 ∣_∣ = foldr _`×_ `Unit
@@ -277,3 +290,15 @@ data ⟦forced_⟧ᵉ : Γ ⊢ `M (`T α) → ⟦ Γ ⟧ᶜ → ⟦ α ⟧ᵗ ×
 
 ∥_∥ : ⟦ Γ ⟧ᶜ → ⟦ ∣ Γ ∣ ⟧ᵗ
 ∥_∥ = All.foldr⁺ _,_ tt
+
+⇓ctx : ∀ {Γ} {γ : ⟦ Γ ⟧ᶜ} → ⟦ `ctx ⟧ᵉ γ ∋ ∥ γ ∥
+⇓ctx {Γ = ∅    } {γ = ∅    } = ⇓tt
+⇓ctx {Γ = Γ ⸴ τ} {γ = γ ⸴ v} = ⇓ zeroᵛ ⇓, ⇓weaken ⇓ctx
+
+≲ᶜ⇒≲ᵗ : ⟦ Γ ⟧[ γ₁ ≲ᶜ γ₂ ] → ∥ γ₁ ∥ ≲ᵗ ∥ γ₂ ∥
+≲ᶜ⇒≲ᵗ ∅       = tt
+≲ᶜ⇒≲ᵗ (Φ ⸴ φ) = φ , ≲ᶜ⇒≲ᵗ Φ
+
+≲ᵗ⇒≲ᶜ : ∥ γ₁ ∥ ≲ᵗ ∥ γ₂ ∥ → ⟦ Γ ⟧[ γ₁ ≲ᶜ γ₂ ]
+≲ᵗ⇒≲ᶜ {Γ = ∅    } {γ₁ = ∅    } {γ₂ = ∅    } tt      = ∅
+≲ᵗ⇒≲ᶜ {Γ = _ ⸴ _} {γ₁ = _ ⸴ _} {γ₂ = _ ⸴ _} (ψ , Ψ) = ≲ᵗ⇒≲ᶜ Ψ ⸴ ψ

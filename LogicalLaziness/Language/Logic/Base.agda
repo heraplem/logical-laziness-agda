@@ -32,6 +32,12 @@ open import LogicalLaziness.Base.Data.T
         )
 open import LogicalLaziness.Base.Data.ListA
 open import LogicalLaziness.Base.Data.List.Membership.Propositional
+open import LogicalLaziness.Base.Data.List.All.Relation.Binary.Pointwise
+  as AllPointwise
+  using ( []
+        ; _∷_
+        )
+  renaming (Pointwise to AllPointwise)
 
 infix  1.59  `_ ⇓_ #_
 infixl 1.56  _`+_ _⇓+_
@@ -70,27 +76,6 @@ variable
 ⟦ `ℕ       ⟧ᵗ = ℕ
 ⟦ `ListA α ⟧ᵗ = ListA ⟦ α ⟧ᵗ
 
---------------------
--- Approximations --
---------------------
-
-data ⟦_⟧ᵗ[_≲_] : ∀ α → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type where
-  false     : ⟦ `Bool ⟧ᵗ[ false ≲ false ]
-  true      : ⟦ `Bool ⟧ᵗ[ true ≲ true ]
-  undefined : ∀ {v}
-            → ⟦ `T α ⟧ᵗ[ undefined ≲ v ]
-  thunk     : ∀ {v₁ v₂}
-              → ⟦ α ⟧ᵗ[ v₁ ≲ v₂ ]
-            → ⟦ `T α ⟧ᵗ[ thunk v₁ ≲ thunk v₂ ]
-  []        : ⟦ `ListA α ⟧ᵗ[ [] ≲ [] ]
-  _∷_       : ∀ {v₁ vs₁ v₂ vs₂}
-            → ⟦ α ⟧ᵗ[ v₁ ≲ v₂ ]
-            → ⟦ `T (`ListA α) ⟧ᵗ[ vs₁ ≲ vs₂ ]
-            → ⟦ `ListA α ⟧ᵗ[ v₁ ∷ vs₁ ≲ v₂ ∷ vs₂ ]
-
-⟦_⟧ᵗ[_≴_] : ∀ α → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
-⟦ α ⟧ᵗ[ v₁ ≴ v₂ ] = ¬ ⟦ α ⟧ᵗ[ v₁ ≲ v₂ ]
-
 --------------
 -- Contexts --
 --------------
@@ -99,7 +84,7 @@ Ctx : Type
 Ctx = List Ty
 
 variable
-  Γ Δ : Ctx
+  Γ Δ Θ : Ctx
 
 ------------------
 -- Environments --
@@ -109,8 +94,43 @@ variable
 ⟦_⟧ᶜ = All ⟦_⟧ᵗ
 
 variable
-  γ : ⟦ Γ ⟧ᶜ
+  γ γ₁ γ₂ : ⟦ Γ ⟧ᶜ
   δ : ⟦ Δ ⟧ᶜ
+
+--------------------
+-- Approximations --
+--------------------
+
+data ⟦_⟧[_≲ᵗ_] : ∀ α → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type where
+  tt        : ⟦ `Unit ⟧[ tt ≲ᵗ tt ]
+  false     : ⟦ `Bool ⟧[ false ≲ᵗ false ]
+  true      : ⟦ `Bool ⟧[ true ≲ᵗ true ]
+  _,_       : ∀ {v₁ v₁′ v₂ v₂′}
+            → ⟦ α ⟧[ v₁ ≲ᵗ v₁′ ]
+            → ⟦ β ⟧[ v₂ ≲ᵗ v₂′ ]
+            → ⟦ α `× β ⟧[ v₁ , v₂ ≲ᵗ v₁′ , v₂′ ]
+  undefined : ∀ {v}
+            → ⟦ `T α ⟧[ undefined ≲ᵗ v ]
+  thunk     : ∀ {v₁ v₂}
+            → ⟦ α ⟧[ v₁ ≲ᵗ v₂ ]
+            → ⟦ `T α ⟧[ thunk v₁ ≲ᵗ thunk v₂ ]
+  []        : ⟦ `ListA α ⟧[ [] ≲ᵗ [] ]
+  _∷_       : ∀ {v₁ vs₁ v₂ vs₂}
+            → ⟦ α ⟧[ v₁ ≲ᵗ v₂ ]
+            → ⟦ `T (`ListA α) ⟧[ vs₁ ≲ᵗ vs₂ ]
+            → ⟦ `ListA α ⟧[ v₁ ∷ vs₁ ≲ᵗ v₂ ∷ vs₂ ]
+
+_≲ᵗ_ : ∀ {α} → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
+_≲ᵗ_ = ⟦ _ ⟧[_≲ᵗ_]
+
+⟦_⟧[_≴ᵗ_] : ∀ α → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
+⟦ α ⟧[ v₁ ≴ᵗ v₂ ] = ¬ ⟦ α ⟧[ v₁ ≲ᵗ v₂ ]
+
+⟦_⟧[_≲ᶜ_] : ∀ Γ → ⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ → Type
+⟦ Γ ⟧[ γ₁ ≲ᶜ γ₂ ] = AllPointwise _≲ᵗ_ γ₁ γ₂
+
+_≲ᶜ_ : ∀ {Γ} → ⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ → Type
+_≲ᶜ_ = ⟦ _ ⟧[_≲ᶜ_]
 
 -----------
 -- Terms --
@@ -240,14 +260,14 @@ mutual
     ⇓≲-true : {v₁ v₂ : ⟦ α ⟧ᵗ} →
       ⟦ t₁ ⟧ᵉ γ ∋ v₁ →
       ⟦ t₂ ⟧ᵉ γ ∋ v₂ →
-      ⟦ α ⟧ᵗ[ v₁ ≲ v₂ ] →
+      ⟦ α ⟧[ v₁ ≲ᵗ v₂ ] →
       ⟦ t₁ `≲ t₂ ⟧ᵉ γ ∋ true
     ⇓≲-false : {v₁ v₂ : ⟦ α ⟧ᵗ}
              → ⟦ t₁ ⟧ᵉ γ ∋ v₁
              → ⟦ t₂ ⟧ᵉ γ ∋ v₂
-             → ⟦ α ⟧ᵗ[ v₁ ≴ v₂ ]
+             → ⟦ α ⟧[ v₁ ≴ᵗ v₂ ]
              → ⟦ t₁ `≲ t₂ ⟧ᵉ γ ∋ false
-    _⇓,_              : ∀ {v₁ v₂} →
+    _⇓,_ : ∀ {v₁ v₂} →
       ⟦ t₁ ⟧ᵉ γ ∋ v₁ →
       ⟦ t₂ ⟧ᵉ γ ∋ v₂ →
       ⟦ t₁ `, t₂ ⟧ᵉ γ ∋ (v₁ , v₂)
@@ -280,7 +300,7 @@ mutual
                       → ⟦ t₃ ⟧ᵉ γ xs
                       → ⟦foldrA t₁ , t₂ ⟧ᵉ γ xs ∋ v
                       → ⟦ `foldrA t₁ t₂ t₃ ⟧ᵉ γ v
-    ⇓free             : ∀ {v : ⟦ α ⟧ᵗ} → ⟦ `free ⟧ᵉ γ v
+    ⇓free             : (v : ⟦ α ⟧ᵗ) → ⟦ `free ⟧ᵉ γ v
     ⇓?ˡ               : ∀ {x} → ⟦ t₁ ⟧ᵉ γ x → ⟦ t₁ `? t₂ ⟧ᵉ γ x
     ⇓?ʳ               : ∀ {x} → ⟦ t₂ ⟧ᵉ γ x → ⟦ t₁ `? t₂ ⟧ᵉ γ x
 

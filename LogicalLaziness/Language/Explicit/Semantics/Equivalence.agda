@@ -59,18 +59,18 @@ mapToList : {A : Type} {P R : A → Type} {Q : Σ A P → Type}
 mapToList {pxs = []} η [] = []
 mapToList {pxs = px ∷ pxs} η (px₁ ∷ qpxs) = η _ px px₁ ∷ mapToList η qpxs
 
-⟦_⟧⌊_⌋ᵉ : (α : Ty) {v : 𝔼.⟦ α ⟧ᵗ} → 𝔻.⟦ α ⟧≺ᵉ v → ℂ.⟦ α ⟧ᵗ
-⟦ `Bool   ⟧⌊ false     ⌋ᵉ = false
-⟦ `Bool   ⟧⌊ true      ⌋ᵉ = true
-⟦ `List α ⟧⌊ []        ⌋ᵉ = []
-⟦ `List α ⟧⌊ d ∷ ds    ⌋ᵉ = ⟦ `T α ⟧⌊ d ⌋ᵉ ∷ ⟦ `T (`List α) ⟧⌊ ds ⌋ᵉ
-⟦ `T α    ⟧⌊ undefined ⌋ᵉ = undefined
-⟦ `T α    ⟧⌊ thunk d   ⌋ᵉ = thunk ⟦ α ⟧⌊ d ⌋ᵉ
+𝔻→𝕃⟦_⟧⌊_⌋ᵉ : (α : Ty) {v : 𝔼.⟦ α ⟧ᵗ} → 𝔻.⟦ α ⟧≺ᵉ v → ℂ.⟦ α ⟧ᵗ
+𝔻→𝕃⟦ `Bool   ⟧⌊ false     ⌋ᵉ = false
+𝔻→𝕃⟦ `Bool   ⟧⌊ true      ⌋ᵉ = true
+𝔻→𝕃⟦ `List α ⟧⌊ []        ⌋ᵉ = []
+𝔻→𝕃⟦ `List α ⟧⌊ d ∷ ds    ⌋ᵉ = 𝔻→𝕃⟦ α ⟧⌊ d ⌋ᵉ ∷ 𝔻→𝕃⟦ `T (`List α) ⟧⌊ ds ⌋ᵉ
+𝔻→𝕃⟦ `T α    ⟧⌊ undefined ⌋ᵉ = undefined
+𝔻→𝕃⟦ `T α    ⟧⌊ thunk d   ⌋ᵉ = thunk 𝔻→𝕃⟦ α ⟧⌊ d ⌋ᵉ
 
-⌊_⌋ᵉ : {α : Ty} {v : 𝔼.⟦ α ⟧ᵗ} → 𝔻.⟦ α ⟧≺ᵉ v → ℂ.⟦ α ⟧ᵗ
-⌊ d ⌋ᵉ = ⟦ _ ⟧⌊ d ⌋ᵉ
+𝔻→𝕃⌊_⌋ᵉ : {α : Ty} {v : 𝔼.⟦ α ⟧ᵗ} → 𝔻.⟦ α ⟧≺ᵉ v → ℂ.⟦ α ⟧ᵗ
+𝔻→𝕃⌊ d ⌋ᵉ = 𝔻→𝕃⟦ _ ⟧⌊ d ⌋ᵉ
 
-≤⇒≲ : ∀ {α v} {d₁ d₂ : 𝔻.⟦ α ⟧≺ᵉ v} → d₁ ≤ᵉ d₂ → ⌊ d₁ ⌋ᵉ ≲ᵉ ⌊ d₂ ⌋ᵉ
+≤⇒≲ : ∀ {α v} {d₁ d₂ : 𝔻.⟦ α ⟧≺ᵉ v} → d₁ ≤ᵉ d₂ → 𝔻→𝕃⌊ d₁ ⌋ᵉ ≲ᵉ 𝔻→𝕃⌊ d₂ ⌋ᵉ
 ≤⇒≲ false               = false
 ≤⇒≲ true                = true
 ≤⇒≲ undefined           = undefined
@@ -78,20 +78,20 @@ mapToList {pxs = px ∷ pxs} η (px₁ ∷ qpxs) = η _ px px₁ ∷ mapToList �
 ≤⇒≲ []                  = []
 ≤⇒≲ (d₁₁≤d₂₁ ∷ d₁₂≤d₂₂) = ≤⇒≲ d₁₁≤d₂₁ ∷ ≤⇒≲ d₁₂≤d₂₂
 
-⊔-≲-l : {α : Ty} {v : 𝔼.⟦ α ⟧ᵗ} (d₁ d₂ : 𝔻.⟦ α ⟧≺ᵉ v) → ⌊ d₁ ⌋ᵉ ≲ᵉ ⌊ d₁ ⊔ᵉ d₂ ⌋ᵉ
-⊔-≲-l false false             = false
-⊔-≲-l true true               = true
-⊔-≲-l undefined d₂            = undefined
-⊔-≲-l (thunk d₁₁) undefined   = ≲ᵉ-refl
-⊔-≲-l (thunk d₁₁) (thunk d₂₁) = thunk (⊔-≲-l d₁₁ d₂₁)
-⊔-≲-l [] []                   = []
-⊔-≲-l (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = ⊔-≲-l d₁₁ d₂₁ ∷ ⊔-≲-l d₁₂ d₂₂
+-- ⊔-≲-l : {α : Ty} {v : 𝔼.⟦ α ⟧ᵗ} (d₁ d₂ : 𝔻.⟦ α ⟧≺ᵉ v) → ⌊ d₁ ⌋ᵉ ≲ᵉ ⌊ d₁ ⊔ᵉ d₂ ⌋ᵉ
+-- ⊔-≲-l false false             = false
+-- ⊔-≲-l true true               = true
+-- ⊔-≲-l undefined d₂            = undefined
+-- ⊔-≲-l (thunk d₁₁) undefined   = ≲ᵉ-refl
+-- ⊔-≲-l (thunk d₁₁) (thunk d₂₁) = thunk (⊔-≲-l d₁₁ d₂₁)
+-- ⊔-≲-l [] []                   = []
+-- ⊔-≲-l (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = ⊔-≲-l d₁₁ d₂₁ ∷ ⊔-≲-l d₁₂ d₂₂
 
-⟦_⟧⌊_⌋ᶜ : (Γ : Ctx) {γ : 𝔼.⟦ Γ ⟧ᶜ} → 𝔻.⟦ Γ ⟧≺ᶜ γ → ℂ.⟦ Γ ⟧ᶜ
-⟦ Γ ⟧⌊ δ ⌋ᶜ = mapToList (λ α _ d → ⟦ α ⟧⌊ d ⌋ᵉ) δ
+𝔻→𝕃⟦_⟧⌊_⌋ᶜ : (Γ : Ctx) {γ : 𝔼.⟦ Γ ⟧ᶜ} → 𝔻.⟦ Γ ⟧≺ᶜ γ → ℂ.⟦ Γ ⟧ᶜ
+𝔻→𝕃⟦ Γ ⟧⌊ δ ⌋ᶜ = mapToList (λ α _ d → 𝔻→𝕃⟦ α ⟧⌊ d ⌋ᵉ) δ
 
-⌊_⌋ᶜ : {Γ : Ctx} {γ : 𝔼.⟦ Γ ⟧ᶜ} → 𝔻.⟦ Γ ⟧≺ᶜ γ → ℂ.⟦ Γ ⟧ᶜ
-⌊ δ ⌋ᶜ = ⟦ _ ⟧⌊ δ ⌋ᶜ
+𝔻→𝕃⌊_⌋ᶜ : {Γ : Ctx} {γ : 𝔼.⟦ Γ ⟧ᶜ} → 𝔻.⟦ Γ ⟧≺ᶜ γ → ℂ.⟦ Γ ⟧ᶜ
+𝔻→𝕃⌊ δ ⌋ᶜ = 𝔻→𝕃⟦ _ ⟧⌊ δ ⌋ᶜ
 
 -- functional-correctness : {Γ : Ctx} {γ : 𝔼.⟦ Γ ⟧ᶜ} {χ : ℂ.⟦ Γ ⟧ᶜ}
 --                          (t : Γ ⊢ α)
@@ -106,7 +106,7 @@ postulate
     → let (g₁ , n) = 𝔻.⟦ M ⟧ᵉ g a₁
       in (g₂ : 𝔻.⟦ Γ ⟧≺ᶜ g)
        → g₁ ≤ᶜ g₂
-       → Σ[ a₂ ∈ 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ M ⟧ᵉ g ] (a₁ ≤ᵉ a₂ × ℂ.⟦ M ⟧ᵉ ⌊ g₂ ⌋ᶜ ∋ (⌊ a₂ ⌋ᵉ , n))
+       → Σ[ a₂ ∈ 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ M ⟧ᵉ g ] (a₁ ≤ᵉ a₂ × ℂ.⟦ M ⟧ᵉ 𝔻→𝕃⌊ g₂ ⌋ᶜ ∋ (𝔻→𝕃⌊ a₂ ⌋ᵉ , n))
 
   cost-minimality :
     ∀ {Γ α}
@@ -116,7 +116,7 @@ postulate
       {δ₂ : 𝔻.⟦ Γ ⟧≺ᶜ γ}
       {a₂ : ℂ.⟦ α ⟧ᵗ}
       {c₂ : ℕ}
-    → ℂ.⟦ t ⟧ᵉ ⌊ δ₂ ⌋ᶜ ∋ (a₂ , c₂)
+    → ℂ.⟦ t ⟧ᵉ 𝔻→𝕃⌊ δ₂ ⌋ᶜ ∋ (a₂ , c₂)
     → let (δ₁ , c₁) = 𝔻.⟦ t ⟧ᵉ γ a₁
       in (δ₁ , c₁) ≤ᵐ (δ₂ , c₂)
 -- cost-minimality γ a₁ (ℂ.` x) = {!!} , z≤n
@@ -150,14 +150,14 @@ postulate
 
 
 
-theorem₁′ :
-  ∀ {Γ α}
-    (M : Γ ⊢ α)
-    (g : 𝔼.⟦ Γ ⟧ᶜ)
-    (outD : 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ M ⟧ᵉ g) →
-    let (inDs , c) = 𝔻.⟦ M ⟧ᵉ g outD
-    in ℂ.⟦ M ⟧ᵉ ⌊ inDs ⌋ᶜ ∋ (⌊ outD ⌋ᵉ , c)
-theorem₁′ = {!!}
+-- theorem₁′ :
+--   ∀ {Γ α}
+--     (M : Γ ⊢ α)
+--     (g : 𝔼.⟦ Γ ⟧ᶜ)
+--     (outD : 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ M ⟧ᵉ g) →
+--     let (inDs , c) = 𝔻.⟦ M ⟧ᵉ g outD
+--     in ℂ.⟦ M ⟧ᵉ ⌊ inDs ⌋ᶜ ∋ (⌊ outD ⌋ᵉ , c)
+-- theorem₁′ = {!!}
 
 
 

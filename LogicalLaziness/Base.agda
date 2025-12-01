@@ -19,7 +19,9 @@ open import Data.List.Relation.Unary.Any
 open import LogicalLaziness.Base.Core
   public
 open import LogicalLaziness.Base.Data.List.All.Relation.Binary.Pointwise
-  using (_∷_)
+  using ( []
+        ; _∷_
+        )
 
 private
   variable

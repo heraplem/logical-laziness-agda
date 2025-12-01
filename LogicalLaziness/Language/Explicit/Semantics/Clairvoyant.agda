@@ -116,22 +116,23 @@ mutual
 ⇓cost≡ : ∀ {v} → c₁ ≡ c₂ → ⟦ t ⟧ᵉ γ ∋ (v , c₁) → ⟦ t ⟧ᵉ γ ∋ (v , c₂)
 ⇓cost≡ refl φ = φ
 
--- data ⟦_⟧[_≲ᵉ_] : (α : Ty) → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type where
---   undefined : ∀ {v}
---             → ⟦ `T α         ⟧[ undefined ≲ᵉ v         ]
---   thunk     : ∀ {v v′}
---             → ⟦ α            ⟧[ v         ≲ᵉ v′        ]
---             → ⟦ `T α         ⟧[ thunk v   ≲ᵉ thunk v′  ]
---   false     : ⟦ `Bool        ⟧[ false     ≲ᵉ false     ]
---   true      : ⟦ `Bool        ⟧[ true      ≲ᵉ true      ]
---   []        : ⟦ `List α      ⟧[ []        ≲ᵉ []        ]
---   _∷_       : ∀ {v₁ v₁′ v₂ v₂′}
---             → ⟦ α            ⟧[ v₁        ≲ᵉ v₁′       ]
---             → ⟦ `T (`List α) ⟧[ v₂        ≲ᵉ v₂′       ]
---             → ⟦ `List α      ⟧[ v₁ ∷ v₂   ≲ᵉ v₁′ ∷ v₂′ ]
+data ⟦_⟧[_≲ᵉ_] : (α : Ty) → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type where
+  undefined : ∀ {v}
+            → ⟦ `T α         ⟧[ undefined ≲ᵉ v         ]
+  thunk     : ∀ {v v′}
+            → ⟦ α            ⟧[ v         ≲ᵉ v′        ]
+            → ⟦ `T α         ⟧[ thunk v   ≲ᵉ thunk v′  ]
+  false     : ⟦ `Bool        ⟧[ false     ≲ᵉ false     ]
+  true      : ⟦ `Bool        ⟧[ true      ≲ᵉ true      ]
+  []        : ⟦ `List α      ⟧[ []        ≲ᵉ []        ]
+  _∷_       : ∀ {v₁ v₁′ v₂ v₂′}
+            → ⟦ α            ⟧[ v₁        ≲ᵉ v₁′       ]
+            → ⟦ `T (`List α) ⟧[ v₂        ≲ᵉ v₂′       ]
+            → ⟦ `List α      ⟧[ v₁ ∷ v₂   ≲ᵉ v₁′ ∷ v₂′ ]
 
--- _≲ᵉ_ : {α : Ty} → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
--- v₁ ≲ᵉ v₂ = ⟦ _ ⟧[ v₁ ≲ᵉ v₂ ]
+infix 4 _≲ᵉ_
+_≲ᵉ_ : {α : Ty} → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
+v₁ ≲ᵉ v₂ = ⟦ _ ⟧[ v₁ ≲ᵉ v₂ ]
 
 -- ≲ᵉ-refl : Reflexive ⟦ α ⟧[_≲ᵉ_]
 -- ≲ᵉ-refl {α = `Bool} {x = false} = false

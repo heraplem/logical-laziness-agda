@@ -1,5 +1,6 @@
 module Insert where
 
+import Approx
 import T
 import List
 import Tick
@@ -7,20 +8,24 @@ import Tick
 -- pakcs :l Insert :a T
 -- kics2 and curry2go both have Docker images
 
-insertA :: Ord a => a -> T (List a) -> Tick (List a)
-insertA x xsT = do
+insertA :: Ord a => a -> List a -> Tick (List a)
+insertA x ys = do
   tick
-  xs <- force xsT
-  case xs of
+  case ys of
     NilA -> do
-      xs' <- thunk (return NilA)
-      return (x :~ xs')
-    x' :~ xsT' ->
-      if x <= x' then return (x :~ xsT)
+      ys' <- thunk (return NilA)
+      return (x :~ ys')
+    y :~ ysT' ->
+      if x <= y then do
+        ysT <- thunk (return ys)
+        return (x :~ ysT)
       else do
-        xsT'' <- thunk (insertA x xsT')
-        return (x' :~ xsT'')
+        ysT'' <- withForced ysT' (insertA x)
+        return (y :~ ysT'')
 
-insertD :: (Data a, Ord a) => a -> List a -> Tick (List a)
-insertD x ys | insertA x (Thunk xs) =:= Tick (ys, c) = Tick (xs, c)
-  where xs, c free
+insertD :: (Data a, Ord a, Approx a) => a -> List a -> List a -> Tick (a, List a)
+insertD x xs ysD  | xD  <~ x
+               && xsD <~ xs
+               && insertA xD xsD =:= Tick (ysD, c)
+               =  Tick ((xD, xsD), c)
+  where xD, xsD, c free

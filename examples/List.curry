@@ -1,5 +1,6 @@
 module List where
 
+import Approx
 import T
 import Nat
 import Tick
@@ -7,6 +8,10 @@ import Tick
 infixr 5 :~
 data List a = NilA | (:~) a (T (List a))
   deriving (Eq, Ord, Read, Show)
+
+instance Approx a => Approx (List a) where
+  NilA       <~ NilA       = True
+  (x :~ xsT) <~ (y :~ ysT) = x <~ y && xsT <~ ysT
 
 fromList :: [a] -> List a
 fromList = foldr (\x xs -> x :~ Thunk xs) NilA

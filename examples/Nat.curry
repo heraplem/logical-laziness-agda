@@ -1,5 +1,7 @@
 module Nat where
 
+import Approx
+
 data Nat = Z | S Nat
   deriving (Eq, Ord, Read, Show)
 
@@ -13,3 +15,6 @@ instance Num Nat where
   fromInt n = case n `compare` 0 of
     EQ -> Z
     GT -> S (fromInt (n - 1))
+
+instance Approx Nat where
+  (<~) = (==)

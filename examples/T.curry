@@ -1,11 +1,17 @@
 module T where
 
+import Approx
+
 data T a = Thunk a | Undefined
   deriving (Eq, Ord, Read, Show)
 
 instance Functor T where
   fmap f (Thunk x) = Thunk (f x)
   fmap f Undefined = Undefined
+
+instance Approx a => Approx (T a) where
+  _       <~ Undefined = True
+  Thunk x <~ Thunk y   = x <~ y
 
 -- XXX Should probably only need two of these at most.
 -- And need better names.

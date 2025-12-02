@@ -3,6 +3,7 @@
 \subsubsection{Clairvoyance semantics}
 
 \begin{theorem}
+  \label{prop:equiv-clairvoyance}
   \( \EC{\gamma}{t}{c}{v} \) if and only if \( \EL{\gamma}{\floor{t}}{(v, c)} \).
 \end{theorem}
 \begin{proof}
@@ -84,6 +85,32 @@
   Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \) and \( \gamma \in \Eval{\Gamma} \), then \( \TL{\Gamma, y^A : B}{\transD{t}{\Gamma}}{\TM{(\texttt{\(A_1\)\ *\ \(\cdots\) *\ \(A_n\)})}} \)
 \end{lemma}
 
-\begin{theorem}
-  If \( \ED{t}{\gamma}{b^A} = (\gamma^A, c) \), then \( \EL{\gamma, y^A \mapsto b^A}{\transD{t}{\Gamma}}{\spair{\verts{\gamma^A}}{c}} \), where \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) \).
+Define \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) \).
+
+\begin{lemma}[Semantics of the demand translation]
+  \label{prop:dem-trans-sem}
+  \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \) if and only if
+  \begin{enumerate}
+  \item \( \gamma^A \le \gamma \), and
+  \item \(  \EC{\gamma^A}{t}{c}{a^A} \).
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  By construction, applying \cref{prop:equiv-clairvoyance}.
+\end{proof}
+
+\begin{theorem}[Adequacy of the demand translation]
+  Define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \) and let \( {\gamma^A}' \ge \gamma^A \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EL{\gamma, y^A \mapsto {a^A}'}{\transD{t}{\Gamma}}{({\gamma^A}', c)} \).  In particular, \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\gamma^A, c)} \).
 \end{theorem}
+\begin{proof}
+  By \cref{prop:dem-trans-sem} and \cref{prop:cost-existence}.
+\end{proof}
+
+\begin{theorem}[Soundness of the demand translation]
+  If \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \), then \( \ED{t}{\gamma}{a^A} \le (\gamma^A, c) \).
+\end{theorem}
+\begin{proof}
+  By \cref{prop:dem-trans-sem} and \cref{prop:cost-minimality}.
+\end{proof}
+
+It is slightly unsatisfying that the demand translation does not in general reduce \emph{only} to the actual result of demand semantics. Some logic languages have a built-in facility to collapse a nondeterministic computation into a deterministic one, returning either the first result found or a list of all possible results. If we can arrange for less-defined results to always be tried first, we can use such a facility to ensure that the demand translation does in fact always return the actual result of demand semantics.

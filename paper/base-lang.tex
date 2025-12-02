@@ -168,6 +168,11 @@ Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a 
   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then \( \EC{\gamma}{t}{\relax}{\relax} \).
 \end{lemma}
 
+\begin{lemma}[Monotonicity of clairvoyance semantics]
+  \label{prop:clair-mono}
+  If \( \gamma_1 \le \gamma_2 \), \( \EC{\gamma_1}{t}{c_1}{v_1} \), and \( \EC{\gamma_2}{t}{c_2}{v_2} \), then \( (v_1, c_1) \le (v_2, c_2) \).
+\end{lemma}
+
 \subsection{Demand semantics}
 
 \ly{Where is the full demand semantics?}
@@ -200,3 +205,22 @@ Intuitively, demand sematics computes ``how much'' of the input \( \gamma \) mus
     \ED{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma}{b} &= (d', c) \sqcup \ED{t}{\gamma}{b'} &\text{where } (g, b', c) &= \EDF{t_1}{t_2}{\gamma}{\EE{t_3}{\gamma}}{b}
   \end{align*}
 \end{figure}
+
+\begin{lemma}[Demand semantics approximates evaluation semantics]
+  \label{prop:dem-approx-eval}
+  Let \( (\gamma^A, c) = \ED{t}{\gamma}{a} \).  Then \( \approxof{\gamma^A}{\gamma} \).
+\end{lemma}
+
+\subsection{Equivalence}
+
+The following two theorems demonstrate the equivalence of clairvoyance and demand semantics. Let \( \Gamma \vdash t : A \), \( \gamma \in \Eval{\Gamma} \), and \( \approxof{a^A}{\EE{t}{\gamma}} \); and define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \).
+
+\begin{theorem}[Cost existence]
+  \label{prop:cost-existence}
+  Let \( \gamma^A \le {\gamma^A}' \prec \gamma \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EC{{\gamma^A}'}{t}{c}{{a^A}'} \).  In particular, \( \EC{\gamma^A}{t}{c}{a^A} \).
+\end{theorem}
+
+\begin{theorem}[Cost minimality]
+  \label{prop:cost-minimality}
+  Let \( \approxof{{\gamma^A}'}{\gamma}, {a^A}' \ge a^A, c' \in \N \) such that \( \EC{{\gamma^A}'}{t}{c'}{{a^A}'} \). Then \( ({\gamma^A}', c') \ge (\gamma^A, c) \).
+\end{theorem}

@@ -33,7 +33,7 @@ insertA x ys = do
         return (y :~ ysT'')
 
 insertD :: (Data a, Ord a, Approx a) => a -> List a -> List a -> Tick (a, List a)
-insertD x xs ysD |  xD <~ x
+insertD x xs ysD |  xD  <~ x
                  && xsD <~ xs
                  && insertA xD xsD =:= Tick (ysD, c)
                  =  Tick ((xD, xsD), c)

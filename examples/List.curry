@@ -10,8 +10,10 @@ data List a = NilA | (:~) a (T (List a))
   deriving (Eq, Ord, Read, Show)
 
 instance Approx a => Approx (List a) where
-  NilA       <~ NilA       = True
-  (x :~ xsT) <~ (y :~ ysT) = x <~ y && xsT <~ ysT
+  xs <~ ys = case (xs, ys) of
+    (NilA     , NilA     ) -> True
+    (x :~ xsT', y :~ ysT') -> x <~ y && xsT' <~ ysT'
+    (_,         _        ) -> False
 
 fromList :: [a] -> List a
 fromList = foldr (\x xs -> x :~ Thunk xs) NilA

@@ -207,10 +207,14 @@ Intuitively, demand sematics computes ``how much'' of the input \( \gamma \) mus
   \end{align*}
 \end{figure}
 
-\begin{lemma}[Demand semantics approximates evaluation semantics]
-  \label{prop:dem-approx-eval}
+\ly{This lemma doesn't really mention evaluation semantics. It should be a
+  different name.}
+\begin{lemma}[Demand semantics approximates evaluation
+  semantics]\label{prop:dem-approx-eval}
   Let \( (\gamma^A, c) = \ED{t}{\gamma}{a} \).  Then \( \approxof{\gamma^A}{\gamma} \).
 \end{lemma}
+
+\ly{We haven't defined $\approxof{\cdot}{\cdot}$ yet, right?}
 
 \subsection{Equivalence}
 

@@ -11,6 +11,8 @@ open import Data.List.Relation.Unary.All
 
 open import LogicalLaziness.Base
 open import LogicalLaziness.Base.Effect.Monad.Tick
+import LogicalLaziness.Base.Data.List.All
+  as All
 open import LogicalLaziness.Base.Data.List.All.Relation.Binary.Pointwise
   renaming (Pointwise to AllPointwise)
 open import LogicalLaziness.Base.Data.T
@@ -26,6 +28,15 @@ open import LogicalLaziness.Language.Explicit.Semantics.Eval
          ; ⟦_⟧ᵉ
          ; ⟦foldr_,_⟧ᵉ
          )
+open import LogicalLaziness.Language.Explicit.Semantics.Demand
+  as 𝔻
+  using ( false
+        ; true
+        ; undefined
+        ; thunk
+        ; []
+        ; _∷_
+        )
 
 ⟦_⟧ᵗ : Ty → Type
 ⟦ `Bool   ⟧ᵗ = Bool
@@ -43,6 +54,44 @@ private
     t : Γ ⊢ α
     γ γ₁ γ₂ : ⟦ Γ ⟧ᶜ
     c₁ c₂ : ℕ
+
+-- Convert from demand semantics values
+
+𝔻⟦_⟧[_]ᵗ : (α : Ty) {v : 𝔼.⟦ α ⟧ᵗ} → 𝔻.⟦ α ⟧≺ᵗ v → ⟦ α ⟧ᵗ
+𝔻⟦ `Bool   ⟧[ false     ]ᵗ = false
+𝔻⟦ `Bool   ⟧[ true      ]ᵗ = true
+𝔻⟦ `T α    ⟧[ undefined ]ᵗ = undefined
+𝔻⟦ `T α    ⟧[ thunk v   ]ᵗ = thunk 𝔻⟦ α ⟧[ v ]ᵗ
+𝔻⟦ `List α ⟧[ []        ]ᵗ = []
+𝔻⟦ `List α ⟧[ v ∷ vs    ]ᵗ = 𝔻⟦ α ⟧[ v ]ᵗ ∷ 𝔻⟦ `T (`List α) ⟧[ vs ]ᵗ
+
+𝔻[_]ᵗ : {v : 𝔼.⟦ α ⟧ᵗ} → 𝔻.⟦ α ⟧≺ᵗ v → ⟦ α ⟧ᵗ
+𝔻[_]ᵗ = 𝔻⟦ _ ⟧[_]ᵗ
+
+𝔻⟦_⟧[_]ᶜ : (Γ : Ctx) {γ : 𝔼.⟦ Γ ⟧ᶜ} → 𝔻.⟦ Γ ⟧≺ᶜ γ → ⟦ Γ ⟧ᶜ
+𝔻⟦ _ ⟧[ γ ]ᶜ = All.uncurry-const⁻ (All.map 𝔻[_]ᵗ γ)
+
+𝔻[_]ᶜ : {γ : 𝔼.⟦ Γ ⟧ᶜ} → 𝔻.⟦ Γ ⟧≺ᶜ γ → ⟦ Γ ⟧ᶜ
+𝔻[_]ᶜ = 𝔻⟦ _ ⟧[_]ᶜ
+
+-- Convert from evaluation semantics values
+--
+-- It may seem unnecessarily complicated to pass through the conversion to
+-- demand semantics, but it gives us some useful judgmental equalities later on.
+
+𝔼⟦_⟧[_]ᵗ : (α : Ty) → 𝔼.⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ
+𝔼⟦ α ⟧[ v ]ᵗ = 𝔻⟦ α ⟧[ 𝔻.𝔼⟦ α ⟧[ v ]ᵗ ]ᵗ
+
+𝔼[_]ᵗ : 𝔼.⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ
+𝔼[_]ᵗ = 𝔼⟦ _ ⟧[_]ᵗ
+
+𝔼⟦_⟧[_]ᶜ : (Γ : Ctx) → 𝔼.⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ
+𝔼⟦ Γ ⟧[ γ ]ᶜ = 𝔻⟦ Γ ⟧[ 𝔻.𝔼⟦ Γ ⟧[ γ ]ᶜ ]ᶜ
+
+𝔼[_]ᶜ : 𝔼.⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ
+𝔼[_]ᶜ = 𝔼⟦ _ ⟧[_]ᶜ
+
+-- Semantics
 
 mutual
 
@@ -116,34 +165,51 @@ mutual
 ⇓cost≡ : ∀ {v} → c₁ ≡ c₂ → ⟦ t ⟧ᵉ γ ∋ (v , c₁) → ⟦ t ⟧ᵉ γ ∋ (v , c₂)
 ⇓cost≡ refl φ = φ
 
-data ⟦_⟧[_≲ᵉ_] : (α : Ty) → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type where
+data ⟦_⟧[_≤ᵗ_] : (α : Ty) → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type where
   undefined : ∀ {v}
-            → ⟦ `T α         ⟧[ undefined ≲ᵉ v         ]
+            → ⟦ `T α         ⟧[ undefined ≤ᵗ v         ]
   thunk     : ∀ {v v′}
-            → ⟦ α            ⟧[ v         ≲ᵉ v′        ]
-            → ⟦ `T α         ⟧[ thunk v   ≲ᵉ thunk v′  ]
-  false     : ⟦ `Bool        ⟧[ false     ≲ᵉ false     ]
-  true      : ⟦ `Bool        ⟧[ true      ≲ᵉ true      ]
-  []        : ⟦ `List α      ⟧[ []        ≲ᵉ []        ]
+            → ⟦ α            ⟧[ v         ≤ᵗ v′        ]
+            → ⟦ `T α         ⟧[ thunk v   ≤ᵗ thunk v′  ]
+  false     : ⟦ `Bool        ⟧[ false     ≤ᵗ false     ]
+  true      : ⟦ `Bool        ⟧[ true      ≤ᵗ true      ]
+  []        : ⟦ `List α      ⟧[ []        ≤ᵗ []        ]
   _∷_       : ∀ {v₁ v₁′ v₂ v₂′}
-            → ⟦ α            ⟧[ v₁        ≲ᵉ v₁′       ]
-            → ⟦ `T (`List α) ⟧[ v₂        ≲ᵉ v₂′       ]
-            → ⟦ `List α      ⟧[ v₁ ∷ v₂   ≲ᵉ v₁′ ∷ v₂′ ]
+            → ⟦ α            ⟧[ v₁        ≤ᵗ v₁′       ]
+            → ⟦ `T (`List α) ⟧[ v₂        ≤ᵗ v₂′       ]
+            → ⟦ `List α      ⟧[ v₁ ∷ v₂   ≤ᵗ v₁′ ∷ v₂′ ]
 
-infix 4 _≲ᵉ_
-_≲ᵉ_ : {α : Ty} → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
-v₁ ≲ᵉ v₂ = ⟦ _ ⟧[ v₁ ≲ᵉ v₂ ]
+infix 4 _≤ᵗ_
+_≤ᵗ_ : {α : Ty} → ⟦ α ⟧ᵗ → ⟦ α ⟧ᵗ → Type
+v₁ ≤ᵗ v₂ = ⟦ _ ⟧[ v₁ ≤ᵗ v₂ ]
 
--- ≲ᵉ-refl : Reflexive ⟦ α ⟧[_≲ᵉ_]
--- ≲ᵉ-refl {α = `Bool} {x = false} = false
--- ≲ᵉ-refl {α = `Bool} {x = true} = true
--- ≲ᵉ-refl {α = `T α} {x = undefined} = undefined
--- ≲ᵉ-refl {α = `T α} {x = thunk x} = thunk ≲ᵉ-refl
--- ≲ᵉ-refl {α = `List α} =
---   ListA.ind
---     (λ x → ⟦ `List α ⟧[ x ≲ᵉ x ])
---     []
---     (λ{ x _ undefined → ≲ᵉ-refl ∷ undefined ; x _ (thunk y) → ≲ᵉ-refl ∷ thunk y }) _
+⟦_⟧[_≤ᶜ_] : (Γ : Ctx) → ⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ → Type
+⟦ Γ ⟧[ γ₁ ≤ᶜ γ₂ ] = AllPointwise ⟦ _ ⟧[_≤ᵗ_] γ₁ γ₂
 
--- ⟦_⟧[_≲_]ᶜ : (Γ : Ctx) → ⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ → Type
--- ⟦ Γ ⟧[ γ₁ ≲ γ₂ ]ᶜ = AllPointwise ⟦ _ ⟧[_≲ᵉ_] γ₁ γ₂
+infix 4 _≤ᶜ_
+_≤ᶜ_ : {Γ : Ctx} → ⟦ Γ ⟧ᶜ → ⟦ Γ ⟧ᶜ → Type
+_≤ᶜ_ = ⟦ _ ⟧[_≤ᶜ_]
+
+𝔻≤⇒≤ᵗ : ∀ {v} {d₁ d₂ : 𝔻.⟦ α ⟧≺ᵗ v} → d₁ 𝔻.≤ᵗ d₂ → 𝔻[ d₁ ]ᵗ ≤ᵗ 𝔻[ d₂ ]ᵗ
+𝔻≤⇒≤ᵗ false     = false
+𝔻≤⇒≤ᵗ true      = true
+𝔻≤⇒≤ᵗ undefined = undefined
+𝔻≤⇒≤ᵗ (thunk φ) = thunk (𝔻≤⇒≤ᵗ φ)
+𝔻≤⇒≤ᵗ []        = []
+𝔻≤⇒≤ᵗ (φ ∷ Φ)   = 𝔻≤⇒≤ᵗ φ ∷ 𝔻≤⇒≤ᵗ Φ
+
+𝔻≤⇒≤ᶜ : ∀ {γ} {γ₁ γ₂ : 𝔻.⟦ Γ ⟧≺ᶜ γ} → γ₁ 𝔻.≤ᶜ γ₂ → 𝔻[ γ₁ ]ᶜ ≤ᶜ 𝔻[ γ₂ ]ᶜ
+𝔻≤⇒≤ᶜ {Γ = ∅    } {∅    } {∅    } {∅    } φ       = ∅
+𝔻≤⇒≤ᶜ {Γ = _ ⸴ _} {_ ⸴ _} {_ ⸴ _} {_ ⸴ _} (Φ ⸴ φ) = 𝔻≤⇒≤ᶜ Φ ⸴ 𝔻≤⇒≤ᵗ φ
+
+𝔻≤𝔼ᵗ : ∀ {v} (d : 𝔻.⟦ α ⟧≺ᵗ v) → 𝔻[ d ]ᵗ ≤ᵗ 𝔼[ v ]ᵗ
+𝔻≤𝔼ᵗ false     = false
+𝔻≤𝔼ᵗ true      = true
+𝔻≤𝔼ᵗ (thunk d) = thunk (𝔻≤𝔼ᵗ d)
+𝔻≤𝔼ᵗ undefined = undefined
+𝔻≤𝔼ᵗ []        = []
+𝔻≤𝔼ᵗ (d ∷ ds)  = 𝔻≤𝔼ᵗ d ∷ 𝔻≤𝔼ᵗ ds
+
+𝔻≤𝔼ᶜ : ∀ {γ} (γᴬ : 𝔻.⟦ Γ ⟧≺ᶜ γ) → 𝔻[ γᴬ ]ᶜ ≤ᶜ 𝔼[ γ ]ᶜ
+𝔻≤𝔼ᶜ {Γ = ∅     } {∅    } ∅          = ∅
+𝔻≤𝔼ᶜ {Γ = _ ⸴ _ } {_ ⸴ _} (γsᴬ ⸴ γᴬ) = 𝔻≤𝔼ᶜ γsᴬ ⸴ 𝔻≤𝔼ᵗ γᴬ

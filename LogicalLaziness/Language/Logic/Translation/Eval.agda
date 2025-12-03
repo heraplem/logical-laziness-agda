@@ -15,21 +15,26 @@ open import LogicalLaziness.Language.Explicit
         )
 import LogicalLaziness.Language.Explicit.Semantics.Eval
   as 𝔼
+import LogicalLaziness.Language.Explicit.Semantics.Clairvoyant
+  as ℂ
 import LogicalLaziness.Language.Logic.Translation.Base
-  as Base
+  as 𝕃
+import LogicalLaziness.Language.Logic.Translation.Clairvoyance
+  as ℂ
 
-⟦_⟧⌊_⌋ᵗ : (α : Explicit.Ty) → 𝔼.⟦ α ⟧ᵗ → Base.⟦⌊ α ⌋⟧ᵗ
-⟦ `Bool   ⟧⌊ false  ⌋ᵗ = false
-⟦ `Bool   ⟧⌊ true   ⌋ᵗ = true
-⟦ `T α    ⟧⌊ v      ⌋ᵗ = thunk ⟦ α ⟧⌊ v ⌋ᵗ
-⟦ `List α ⟧⌊ []     ⌋ᵗ = []
-⟦ `List α ⟧⌊ x ∷ xs ⌋ᵗ = ⟦ α ⟧⌊ x ⌋ᵗ ∷ thunk ⟦ `List α ⟧⌊ xs ⌋ᵗ
+⟦_⟧⌊_⌋ᵗ : (α : Explicit.Ty) → 𝔼.⟦ α ⟧ᵗ → 𝕃.⟦⌊ α ⌋⟧ᵗ
+⟦ α ⟧⌊ v ⌋ᵗ = ℂ.⟦ α ⟧⌊ ℂ.𝔼⟦ α ⟧[ v ]ᵗ ⌋ᵗ
+-- ⟦ `Bool   ⟧⌊ false  ⌋ᵗ = false
+-- ⟦ `Bool   ⟧⌊ true   ⌋ᵗ = true
+-- ⟦ `T α    ⟧⌊ v      ⌋ᵗ = thunk ⟦ α ⟧⌊ v ⌋ᵗ
+-- ⟦ `List α ⟧⌊ []     ⌋ᵗ = []
+-- ⟦ `List α ⟧⌊ x ∷ xs ⌋ᵗ = ⟦ α ⟧⌊ x ⌋ᵗ ∷ thunk ⟦ `List α ⟧⌊ xs ⌋ᵗ
 
-⌊_⌋ᵗ : {α : Explicit.Ty} → 𝔼.⟦ α ⟧ᵗ → Base.⟦⌊ α ⌋⟧ᵗ
+⌊_⌋ᵗ : ∀ {α} → 𝔼.⟦ α ⟧ᵗ → 𝕃.⟦⌊ α ⌋⟧ᵗ
 ⌊_⌋ᵗ = ⟦ _ ⟧⌊_⌋ᵗ
 
-⟦_⟧⌊_⌋ᶜ : (Γ : Explicit.Ctx) → 𝔼.⟦ Γ ⟧ᶜ → Base.⟦⌊ Γ ⌋⟧ᶜ
-⟦ Γ ⟧⌊ γ ⌋ᶜ = All.gmap⁺ ⟦ _ ⟧⌊_⌋ᵗ γ
+⟦_⟧⌊_⌋ᶜ : (Γ : Explicit.Ctx) → 𝔼.⟦ Γ ⟧ᶜ → 𝕃.⟦⌊ Γ ⌋⟧ᶜ
+⟦ Γ ⟧⌊ γ ⌋ᶜ = ℂ.⟦ Γ ⟧⌊ ℂ.𝔼⟦ Γ ⟧[ γ ]ᶜ ⌋ᶜ
 
-⌊_⌋ᶜ : {Γ : Explicit.Ctx} → 𝔼.⟦ Γ ⟧ᶜ → Base.⟦⌊ Γ ⌋⟧ᶜ
+⌊_⌋ᶜ : ∀ {Γ} → 𝔼.⟦ Γ ⟧ᶜ → 𝕃.⟦⌊ Γ ⌋⟧ᶜ
 ⌊_⌋ᶜ = ⟦ _ ⟧⌊_⌋ᶜ

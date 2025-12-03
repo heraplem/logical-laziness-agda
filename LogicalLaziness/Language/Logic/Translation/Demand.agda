@@ -34,8 +34,8 @@ import LogicalLaziness.Language.Explicit.Semantics.Clairvoyant
   as ℂ
 import LogicalLaziness.Language.Explicit.Semantics.Demand
   as 𝔻
-import LogicalLaziness.Language.Explicit.Semantics.Equivalence
-  as 𝕃
+open import LogicalLaziness.Language.Explicit.Semantics.Equivalence
+  as 𝐁
 open import LogicalLaziness.Language.Logic.Base
 open import LogicalLaziness.Language.Logic.Renaming
 open import LogicalLaziness.Language.Logic.Construct
@@ -45,24 +45,19 @@ import LogicalLaziness.Language.Logic.Translation.Eval
   as 𝔼
 import LogicalLaziness.Language.Logic.Translation.Clairvoyance
   as ℂ
+import LogicalLaziness.Language.Logic.Equivalence.Clairvoyance
+  as ℂ
 
-⌊_⌋ᵗ : ∀ {α} {v : 𝔼.⟦ α ⟧ᵗ} → 𝔻.⟦ α ⟧≺ᵉ v → 𝕃.⟦⌊ α ⌋⟧ᵗ
-⌊ 𝔻.false     ⌋ᵗ = false
-⌊ 𝔻.true      ⌋ᵗ = true
-⌊ 𝔻.thunk d   ⌋ᵗ = thunk ⌊ d ⌋ᵗ
-⌊ 𝔻.undefined ⌋ᵗ = undefined
-⌊ 𝔻.[]        ⌋ᵗ = []
-⌊ d 𝔻.∷ dsT   ⌋ᵗ = ⌊ d ⌋ᵗ ∷ ⌊ dsT ⌋ᵗ
+⌊_⌋ᵗ : ∀ {α} {v : 𝔼.⟦ α ⟧ᵗ} → 𝔻.⟦ α ⟧≺ᵗ v → 𝕃.⟦⌊ α ⌋⟧ᵗ
+⌊ d ⌋ᵗ = ℂ.⌊ ℂ.𝔻[ d ]ᵗ ⌋ᵗ
 
 ⌊_⌋ᶜ : ∀ {Γ} {γ : 𝔼.⟦ Γ ⟧ᶜ} → 𝔻.⟦ Γ ⟧≺ᶜ γ → 𝕃.⟦⌊ Γ ⌋⟧ᶜ
-⌊_⌋ᶜ {γ = γ} δ = All.map⁺ (All.uncurry-const⁻ (All.map-toList ⌊_⌋ᵗ δ))
+⌊_⌋ᶜ {γ = γ} δ = ℂ.⌊ ℂ.𝔻[ δ ]ᶜ ⌋ᶜ
 
 final : Γ ⊢ α `× β
       → Γ ⸴ α ⊢ ∣ Γ ∣ `× β
 final t =
   `let (weaken t) `in
-  -- XXX is it ≟, or is it ≲?
-  -- (IS IT FUTURE, OR IS IT PAST?)
   `assert ` sucᵛ zeroᵛ `≟ `proj₁ (` zeroᵛ) `in
   weaken (weaken `ctx) `, `proj₂ (` zeroᵛ)
 
@@ -117,24 +112,64 @@ wrap {Γ = Γ} {α = α} t =
 
 ⇓⌊⌋ᵉ : ∀ {Γ α} {t : Explicit.Tm Γ α}
          {γ γᴬ : 𝕃.⟦⌊ Γ ⌋⟧ᶜ} {vᴬ c}
-      → ℂ.⟦⌊ t ⌋⟧ᵉ γᴬ ∋ (vᴬ , c)
       → γᴬ ≲ᶜ γ
+      → ℂ.⟦⌊ t ⌋⟧ᵉ γᴬ ∋ (vᴬ , c)
       → ⟦⌊ t ⌋⟧ᵉ (γ ⸴ vᴬ) ∋ (∥ γᴬ ∥ , c)
-⇓⌊⌋ᵉ φ ψ = ⇓wrap φ ψ
+⇓⌊⌋ᵉ ψ φ = ⇓wrap φ ψ
 
-ℂ⟦⌊_⌋⟧ᵉ : ∀ {Γ α} {t : Explicit.Tm Γ α}
-            {γ v c}
-        → ℂ.⟦ t ⟧ᵉ γ ∋ (v , c)
-        → ⟦⌊ t ⌋⟧ᵉ (ℂ.⌊ γ ⌋ᶜ ⸴ ℂ.⌊ v ⌋ᵗ) ∋ (∥ ℂ.⌊ γ ⌋ᶜ ∥ , c)
-ℂ⟦⌊_⌋⟧ᵉ = {!!}
+ℂ⟦⌊⌋⟧ᵉ : ∀ {Γ α} {t : Explicit.Tm Γ α}
+           {γ γᴬ aᴬ c}
+        → γᴬ ℂ.≤ᶜ γ
+        → ℂ.⟦ t ⟧ᵉ γᴬ ∋ (aᴬ , c)
+        → ⟦⌊ t ⌋⟧ᵉ (ℂ.⌊ γ ⌋ᶜ ⸴ ℂ.⌊ aᴬ ⌋ᵗ) ∋ (∥ ℂ.⌊ γᴬ ⌋ᶜ ∥ , c)
+ℂ⟦⌊⌋⟧ᵉ ψ φ = ⇓⌊⌋ᵉ {!!} ℂ.⌊ φ ⌋ᵈ
 
-adequacy : ∀ {Γ α} {t : Explicit.Tm Γ α} {γ} {vᴬ : 𝔻.⟦ α ⟧≺ᵉ 𝔼.⟦ t ⟧ᵉ γ}
-         → let γᴬ , c = 𝔻.⟦ t ⟧ᵉ γ vᴬ
-           in ⟦⌊ t ⌋⟧ᵉ (𝔼.⌊ γ ⌋ᶜ ⸴ ⌊ vᴬ ⌋ᵗ) ∋ (∥ ⌊ γᴬ ⌋ᶜ ∥ , c)
-adequacy {t = t} {γ = γ} {vᴬ = vᴬ} =
-  let γᴬ , c = 𝔻.⟦ t ⟧ᵉ γ vᴬ
-      φ₁ , φ₂ , φ₃ = 𝕃.cost-existence t γ vᴬ γᴬ {!!}
-  in {!ℂ⟦⌊ ? ⌋⟧ᵉ!}
+adequacy′ : ∀ {Γ α} (t : Explicit.Tm Γ α) γ (aᴬ : 𝔻.⟦ α ⟧≺ᵗ 𝔼.⟦ t ⟧ᵉ γ)
+          → let γᴬ , c = 𝔻.⟦ t ⟧ᵉ γ aᴬ
+            in ⟦⌊ t ⌋⟧ᵉ (𝔼.⌊ γ ⌋ᶜ ⸴ ⌊ aᴬ ⌋ᵗ) ∋ (∥ ⌊ γᴬ ⌋ᶜ ∥ , c)
+adequacy′ t γ aᴬ =
+  let γᴬ , c = 𝔻.⟦ t ⟧ᵉ γ aᴬ
+      aᴬ′ , aᴬ≤aᴬ′ , φ = 𝐁.cost-existence t γ aᴬ γᴬ {!!}
+  in {!!}
+
+
+-- adequacy : ∀ {Γ α} (t : Explicit.Tm Γ α) γ (aᴬ : 𝔻.⟦ α ⟧≺ᵗ 𝔼.⟦ t ⟧ᵉ γ)
+--          → let γᴬ , c = 𝔻.⟦ t ⟧ᵉ γ aᴬ
+--            in ∀ γᴬ′
+--             → γᴬ 𝔻.≤ᶜ γᴬ′
+--             → Σ[ aᴬ′ ∈ 𝔻.⟦ α ⟧≺ᵗ 𝔼.⟦ t ⟧ᵉ γ ]
+--               (aᴬ 𝔻.≤ᵗ aᴬ′ × ⟦⌊ t ⌋⟧ᵉ (⌊ γᴬ′ ⌋ᶜ ⸴ ⌊ aᴬ′ ⌋ᵗ) ∋ (∥ ⌊ γᴬ ⌋ᶜ ∥ , c))
+-- adequacy t γ aᴬ γᴬ′ γᴬ≤γᴬ′ =
+--   let γᴬ , c = 𝔻.⟦ t ⟧ᵉ γ aᴬ
+--       aᴬ′ , aᴬ≤aᴬ′ , φ = 𝐁.cost-existence t γ aᴬ γᴬ′ γᴬ≤γᴬ′
+--   in aᴬ′ , aᴬ≤aᴬ′ , ℂ⟦⌊⌋⟧ᵉ (ℂ.𝔻≤⇒≤ᶜ γᴬ≤γᴬ′) {!!}
+
+{-
+∥ ℂ.⌊ ℂ.𝔻[ γᴬ′ ]ᶜ ⌋ᶜ ∥
+All.foldr⁺ _,_ tt
+(All.map⁺
+ (List.map (ℂ.⟦_⟧⌊_⌋ᵗ x)
+  (All.uncurry-const⁻ (List.map (ℂ.𝔻⟦_⟧[_]ᵗ (x .proj₁)) γᴬ′))))
+
+∥ ⌊ γᴬ′ ⌋ᶜ ∥
+All.foldr⁺ _,_ tt
+(All.map⁺
+ (List.map (ℂ.⟦_⟧⌊_⌋ᵗ x)
+  (All.uncurry-const⁻ (List.map (ℂ.𝔻⟦_⟧[_]ᵗ (x .proj₁)) γᴬ′))))
+-}
+
+  -- ℂ⟦⌊⌋⟧ᵉ (ℂ.𝔻≤⇒≤ᶜ γᴬ≤γᴬ′) φ
+  --     φ₁ , φ₂ , φ₃ = 𝐁.cost-existence t γ vᴬ γᴬ {!!}
+  -- in {!ℂ⟦⌊ ? ⌋⟧ᵉ!}
+
+
+-- adequacy : ∀ {Γ α} {t : Explicit.Tm Γ α} {γ} {vᴬ : 𝔻.⟦ α ⟧≺ᵗ 𝔼.⟦ t ⟧ᵉ γ}
+--          → let γᴬ , c = 𝔻.⟦ t ⟧ᵉ γ vᴬ
+--            in ⟦⌊ t ⌋⟧ᵉ (𝔼.⌊ γ ⌋ᶜ ⸴ ⌊ vᴬ ⌋ᵗ) ∋ (∥ ⌊ γᴬ ⌋ᶜ ∥ , c)
+-- adequacy {t = t} {γ = γ} {vᴬ = vᴬ} =
+--   let γᴬ , c = 𝔻.⟦ t ⟧ᵉ γ vᴬ
+--       φ₁ , φ₂ , φ₃ = 𝐁.cost-existence t γ vᴬ γᴬ {!!}
+--   in {!ℂ⟦⌊ ? ⌋⟧ᵉ!}
 
   -- sink (`assert weaken (`pairwise-≲ Γ) `in {!!})
 

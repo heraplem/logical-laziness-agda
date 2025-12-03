@@ -54,9 +54,9 @@ map-toList : ∀ {q r}
 map-toList {pxs = []}       h []           = []
 map-toList {pxs = px ∷ pxs} h (qpx ∷ qpxs) = h qpx ∷ map-toList h qpxs
 
-uncurry-const⁻ : ∀ {q} {Q : A → Type q} {xs} {pxs : All.All P xs}
-  → All.All (uncurry (λ x _ → Q x)) (All.toList pxs)
-  → All.All Q xs
+uncurry-const⁻ : ∀ {q} {Q : A → Type q} {xs} {pxs : All P xs}
+  → All (uncurry (λ x _ → Q x)) (All.toList pxs)
+  → All Q xs
 uncurry-const⁻ {pxs = []      } []         = []
 uncurry-const⁻ {pxs = px ∷ pxs} (qx ∷ qxs) = qx ∷ uncurry-const⁻ qxs
 

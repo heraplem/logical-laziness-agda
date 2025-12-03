@@ -1,4 +1,4 @@
-module LogicalLaziness.Language.Logic.Equivalence where
+module LogicalLaziness.Language.Logic.Equivalence.Clairvoyance where
 
 open import Relation.Binary.PropositionalEquality
 open import Data.Product

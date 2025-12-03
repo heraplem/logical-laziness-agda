@@ -29,8 +29,9 @@ open import LogicalLaziness.Base
 open import LogicalLaziness.Base.Effect.Monad.Tick
 import LogicalLaziness.Base.Data.Product.Relation.Binary.Pointwise
   as ×
-open import LogicalLaziness.Base.Data.List.All
 open import LogicalLaziness.Base.Data.List.Membership.Propositional
+open import LogicalLaziness.Base.Data.List.All
+  as All
 open import LogicalLaziness.Base.Data.List.All.Relation.Binary.Pointwise
   as AllPointwise
   using ( []
@@ -57,68 +58,68 @@ private
 -- The bounded join-semilattice of demands --
 ---------------------------------------------
 
--- `⟦ α ⟧≺ᵉ v` describes the set of demands in `α` that approximate the total
+-- `⟦ α ⟧≺ᵗ v` describes the set of demands in `α` that approximate the total
 -- value `v`.
-infix 4 ⟦_⟧≺ᵉ_
-data ⟦_⟧≺ᵉ_ : (α : Ty) → 𝔼.⟦ α ⟧ᵗ → Type where
-  false     : ⟦ `Bool ⟧≺ᵉ false
-  true      : ⟦ `Bool ⟧≺ᵉ true
+infix 4 ⟦_⟧≺ᵗ_
+data ⟦_⟧≺ᵗ_ : (α : Ty) → 𝔼.⟦ α ⟧ᵗ → Type where
+  false     : ⟦ `Bool ⟧≺ᵗ false
+  true      : ⟦ `Bool ⟧≺ᵗ true
   thunk     : {v : 𝔼.⟦ α ⟧ᵗ}
-            → ⟦ α ⟧≺ᵉ v
-            → ⟦ `T α ⟧≺ᵉ v
+            → ⟦ α ⟧≺ᵗ v
+            → ⟦ `T α ⟧≺ᵗ v
   undefined : {v : 𝔼.⟦ α ⟧ᵗ}
-            → ⟦ `T α ⟧≺ᵉ v
-  []        : ⟦ `List α ⟧≺ᵉ []
+            → ⟦ `T α ⟧≺ᵗ v
+  []        : ⟦ `List α ⟧≺ᵗ []
   _∷_       : {v : 𝔼.⟦ α ⟧ᵗ} {vs : List 𝔼.⟦ α ⟧ᵗ}
-            → ⟦ α ⟧≺ᵉ v
-            → ⟦ `T (`List α) ⟧≺ᵉ vs
-            → ⟦ `List α ⟧≺ᵉ v ∷ vs
+            → ⟦ α ⟧≺ᵗ v
+            → ⟦ `T (`List α) ⟧≺ᵗ vs
+            → ⟦ `List α ⟧≺ᵗ v ∷ vs
 
 -- Now we introduce a join-semilattice (≤, ⊔, ⊥) of demands (on a fixed value).
 -- We do not prove any properties yet.
 
-infix 4 ⟦_⟧[_≻_≤ᵉ_]
-data ⟦_⟧[_≻_≤ᵉ_] : (α : Ty) (v : 𝔼.⟦ α ⟧ᵗ) → ⟦ α ⟧≺ᵉ v → ⟦ α ⟧≺ᵉ v → Type where
-  false     : ⟦ `Bool ⟧[ false ≻ false ≤ᵉ false ]
-  true      : ⟦ `Bool ⟧[ true  ≻ true  ≤ᵉ true  ]
+infix 4 ⟦_⟧[_≻_≤ᵗ_]
+data ⟦_⟧[_≻_≤ᵗ_] : (α : Ty) (v : 𝔼.⟦ α ⟧ᵗ) → ⟦ α ⟧≺ᵗ v → ⟦ α ⟧≺ᵗ v → Type where
+  false     : ⟦ `Bool ⟧[ false ≻ false ≤ᵗ false ]
+  true      : ⟦ `Bool ⟧[ true  ≻ true  ≤ᵗ true  ]
   undefined : ∀ {v d}
-            → ⟦ `T α ⟧[ v ≻ undefined ≤ᵉ d ]
+            → ⟦ `T α ⟧[ v ≻ undefined ≤ᵗ d ]
   thunk     : ∀ {v d₁ d₂}
-            → ⟦ α ⟧[ v ≻ d₁ ≤ᵉ d₂ ]
-            → ⟦ `T α ⟧[ v ≻ thunk d₁ ≤ᵉ thunk d₂ ]
-  []        : ⟦ `List α ⟧[ [] ≻ [] ≤ᵉ [] ]
+            → ⟦ α ⟧[ v ≻ d₁ ≤ᵗ d₂ ]
+            → ⟦ `T α ⟧[ v ≻ thunk d₁ ≤ᵗ thunk d₂ ]
+  []        : ⟦ `List α ⟧[ [] ≻ [] ≤ᵗ [] ]
   _∷_       : ∀ {v₁ v₂ d₁₁ d₁₂ d₂₁ d₂₂}
-            → ⟦ α ⟧[ v₁ ≻ d₁₁ ≤ᵉ d₁₂ ]
-            → ⟦ `T (`List α) ⟧[ v₂ ≻ d₂₁ ≤ᵉ d₂₂ ]
-            → ⟦ `List α ⟧[ v₁ ∷ v₂ ≻ d₁₁ ∷ d₂₁ ≤ᵉ d₁₂ ∷ d₂₂ ]
+            → ⟦ α ⟧[ v₁ ≻ d₁₁ ≤ᵗ d₁₂ ]
+            → ⟦ `T (`List α) ⟧[ v₂ ≻ d₂₁ ≤ᵗ d₂₂ ]
+            → ⟦ `List α ⟧[ v₁ ∷ v₂ ≻ d₁₁ ∷ d₂₁ ≤ᵗ d₁₂ ∷ d₂₂ ]
 
-infix 4 _≤ᵉ_
-_≤ᵉ_ : {α : Ty} {v : 𝔼.⟦ α ⟧ᵗ} → ⟦ α ⟧≺ᵉ v → ⟦ α ⟧≺ᵉ v → Type
-_≤ᵉ_ = ⟦ _ ⟧[ _ ≻_≤ᵉ_]
+infix 4 _≤ᵗ_
+_≤ᵗ_ : {α : Ty} {v : 𝔼.⟦ α ⟧ᵗ} → ⟦ α ⟧≺ᵗ v → ⟦ α ⟧≺ᵗ v → Type
+_≤ᵗ_ = ⟦ _ ⟧[ _ ≻_≤ᵗ_]
 
--- `d₁ ⊔ᵉ d₂` is the join of the demands `d₁` and `d₂`.
-infixl 6 _⊔ᵉ_
-_⊔ᵉ_ : {v : 𝔼.⟦ α ⟧ᵗ} → ⟦ α ⟧≺ᵉ v → ⟦ α ⟧≺ᵉ v → ⟦ α ⟧≺ᵉ v
-false       ⊔ᵉ false       = false
-true        ⊔ᵉ true        = true
-thunk d₁    ⊔ᵉ thunk d₂    = thunk (d₁ ⊔ᵉ d₂)
-thunk d₁    ⊔ᵉ undefined   = thunk d₁
-undefined   ⊔ᵉ thunk d₂    = thunk d₂
-undefined   ⊔ᵉ undefined   = undefined
-[]          ⊔ᵉ []          = []
-(d₁₁ ∷ d₁₂) ⊔ᵉ (d₂₁ ∷ d₂₂) = d₁₁ ⊔ᵉ d₂₁ ∷ d₁₂ ⊔ᵉ d₂₂
+-- `d₁ ⊔ᵗ d₂` is the join of the demands `d₁` and `d₂`.
+infixl 6 _⊔ᵗ_
+_⊔ᵗ_ : {v : 𝔼.⟦ α ⟧ᵗ} → ⟦ α ⟧≺ᵗ v → ⟦ α ⟧≺ᵗ v → ⟦ α ⟧≺ᵗ v
+false       ⊔ᵗ false       = false
+true        ⊔ᵗ true        = true
+thunk d₁    ⊔ᵗ thunk d₂    = thunk (d₁ ⊔ᵗ d₂)
+thunk d₁    ⊔ᵗ undefined   = thunk d₁
+undefined   ⊔ᵗ thunk d₂    = thunk d₂
+undefined   ⊔ᵗ undefined   = undefined
+[]          ⊔ᵗ []          = []
+(d₁₁ ∷ d₁₂) ⊔ᵗ (d₂₁ ∷ d₂₂) = d₁₁ ⊔ᵗ d₂₁ ∷ d₁₂ ⊔ᵗ d₂₂
 
--- `⊥⟦ α ⟧≺ᵉ v` is the least demand in `α` on the total value `v`.
-infix 4 ⊥⟦_⟧≺ᵉ_
-⊥⟦_⟧≺ᵉ_ : ∀ α (v : 𝔼.⟦ α ⟧ᵗ) → ⟦ α ⟧≺ᵉ v
-⊥⟦ `Bool   ⟧≺ᵉ false   = false
-⊥⟦ `Bool   ⟧≺ᵉ true     = true
-⊥⟦ `T α    ⟧≺ᵉ v        = undefined
-⊥⟦ `List α ⟧≺ᵉ []       = []
-⊥⟦ `List α ⟧≺ᵉ (v ∷ vs) = (⊥⟦ α ⟧≺ᵉ v) ∷ undefined
+-- `⊥⟦ α ⟧≺ᵗ v` is the least demand in `α` on the total value `v`.
+infix 4 ⊥⟦_⟧≺ᵗ_
+⊥⟦_⟧≺ᵗ_ : ∀ α (v : 𝔼.⟦ α ⟧ᵗ) → ⟦ α ⟧≺ᵗ v
+⊥⟦ `Bool   ⟧≺ᵗ false   = false
+⊥⟦ `Bool   ⟧≺ᵗ true     = true
+⊥⟦ `T α    ⟧≺ᵗ v        = undefined
+⊥⟦ `List α ⟧≺ᵗ []       = []
+⊥⟦ `List α ⟧≺ᵗ (v ∷ vs) = (⊥⟦ α ⟧≺ᵗ v) ∷ undefined
 
-⊥ᵉ : ∀ {α} {v : 𝔼.⟦ α ⟧ᵗ} → ⟦ α ⟧≺ᵉ v
-⊥ᵉ = ⊥⟦ _ ⟧≺ᵉ _
+⊥ᵗ : ∀ {α} {v : 𝔼.⟦ α ⟧ᵗ} → ⟦ α ⟧≺ᵗ v
+⊥ᵗ = ⊥⟦ _ ⟧≺ᵗ _
 
 -----------------------------------------------------
 -- The bounded join-semilattice of demand contexts --
@@ -129,11 +130,11 @@ infix 4 ⊥⟦_⟧≺ᵉ_
 
 infix 4 ⟦_⟧≺ᶜ_
 ⟦_⟧≺ᶜ_ : (Γ : Ctx) (γ : 𝔼.⟦ Γ ⟧ᶜ) → Type
-⟦ Γ ⟧≺ᶜ γ = All (uncurry ⟦_⟧≺ᵉ_) (All.toList γ)
+⟦ Γ ⟧≺ᶜ γ = All (uncurry ⟦_⟧≺ᵗ_) (All.toList γ)
 
 infix 4 ≺ᶜ_
 ≺ᶜ_ : 𝔼.⟦ Γ ⟧ᶜ → Type
-≺ᶜ γ = All (uncurry ⟦_⟧≺ᵉ_) (All.toList γ)
+≺ᶜ γ = All (uncurry ⟦_⟧≺ᵗ_) (All.toList γ)
 
 private
   variable
@@ -144,7 +145,7 @@ private
 
 infix 4 ⟦_⟧[_≻_≤ᶜ_]
 ⟦_⟧[_≻_≤ᶜ_] : (Γ : Ctx) (γ : 𝔼.⟦ Γ ⟧ᶜ) → ≺ᶜ γ → ≺ᶜ γ → Type
-⟦ Γ ⟧[ γ ≻ δ₁ ≤ᶜ δ₂ ] = AllPointwise _≤ᵉ_ δ₁ δ₂
+⟦ Γ ⟧[ γ ≻ δ₁ ≤ᶜ δ₂ ] = AllPointwise _≤ᵗ_ δ₁ δ₂
 
 infix 4 _≤ᶜ_
 _≤ᶜ_ : ≺ᶜ γ → ≺ᶜ γ → Type
@@ -152,13 +153,13 @@ _≤ᶜ_ : ≺ᶜ γ → ≺ᶜ γ → Type
 
 infixl 6 _⊔ᶜ_
 _⊔ᶜ_ : ≺ᶜ γ → ≺ᶜ γ → ≺ᶜ γ
-δ₁ ⊔ᶜ δ₂ = All.zipWith (uncurry _⊔ᵉ_) (δ₁ , δ₂)
+δ₁ ⊔ᶜ δ₂ = All.zipWith (uncurry _⊔ᵗ_) (δ₁ , δ₂)
 
 -- `⊥⟦ Γ ⟧≺ᶜ γ` is the least demand context of shape `Γ` on the evaluation
 -- context `γ`.
 infix 4 ⊥⟦_⟧≺ᶜ_
 ⊥⟦_⟧≺ᶜ_ : (Γ : Ctx) (γ : 𝔼.⟦ Γ ⟧ᶜ) → ⟦ Γ ⟧≺ᶜ γ
-⊥⟦ Γ ⟧≺ᶜ γ = All.universal (λ _ → ⊥ᵉ) (All.toList γ)
+⊥⟦ Γ ⟧≺ᶜ γ = All.universal (λ _ → ⊥ᵗ) (All.toList γ)
 
 ⊥ᶜ : ≺ᶜ γ
 ⊥ᶜ = ⊥⟦ _ ⟧≺ᶜ _
@@ -194,6 +195,21 @@ infix 4 ⊥⟦_⟧≺ᵐ_
 ⊥ᵐ : ≺ᵐ γ
 ⊥ᵐ = ⊥⟦ _ ⟧≺ᵐ _
 
+-- Convert from evaluation semantics values
+
+𝔼⟦_⟧[_]ᵗ : (α : Ty) (v : 𝔼.⟦ α ⟧ᵗ) → ⟦ α ⟧≺ᵗ v
+𝔼⟦ `Bool   ⟧[ false  ]ᵗ = false
+𝔼⟦ `Bool   ⟧[ true   ]ᵗ = true
+𝔼⟦ `T α    ⟧[ x      ]ᵗ = thunk 𝔼⟦ α ⟧[ x ]ᵗ
+𝔼⟦ `List α ⟧[ []     ]ᵗ = []
+𝔼⟦ `List α ⟧[ x ∷ xs ]ᵗ = 𝔼⟦ α ⟧[ x ]ᵗ ∷ 𝔼⟦ `T (`List α) ⟧[ xs ]ᵗ
+
+𝔼[_]ᵗ : (v : 𝔼.⟦ α ⟧ᵗ) → ⟦ α ⟧≺ᵗ v
+𝔼[_]ᵗ = 𝔼⟦ _ ⟧[_]ᵗ
+
+𝔼⟦_⟧[_]ᶜ : (Γ : Ctx) (γ : 𝔼.⟦ Γ ⟧ᶜ) → ⟦ Γ ⟧≺ᶜ γ
+𝔼⟦ _ ⟧[ γ ]ᶜ = universal (uncurry 𝔼⟦_⟧[_]ᵗ) _
+
 ----------------------
 -- Demand semantics --
 ----------------------
@@ -201,7 +217,7 @@ infix 4 ⊥⟦_⟧≺ᵐ_
 ⟦_⟧ᵉ :
   (t : Γ ⊢ α)
   (γ : 𝔼.⟦ Γ ⟧ᶜ) →
-  ⟦ α ⟧≺ᵉ 𝔼.⟦ t ⟧ᵉ γ →
+  ⟦ α ⟧≺ᵗ 𝔼.⟦ t ⟧ᵉ γ →
   ⟦ Γ ⟧≺ᵐ γ
 
 ⟦foldr_,_⟧ᵉ :
@@ -209,26 +225,26 @@ infix 4 ⊥⟦_⟧≺ᵐ_
   (t₂ : Γ ⊢ β) →
   (γ : 𝔼.⟦ Γ ⟧ᶜ) →
   (vs : List 𝔼.⟦ α ⟧ᵗ) →
-  ⟦ β ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs →
+  ⟦ β ⟧≺ᵗ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs →
   ⟦ Γ ⸴ `List α ⟧≺ᵐ (γ ⸴ vs)
 
 ⟦let-step₁_,_⟧ᵉ : (t₁ : Γ ⊢ α)
                   (t₂ : Γ ⸴ α ⊢ β)
                   (γ : 𝔼.⟦ Γ ⟧ᶜ)
-                → ⟦ β ⟧≺ᵉ 𝔼.⟦ `let t₁ `in t₂ ⟧ᵉ γ
+                → ⟦ β ⟧≺ᵗ 𝔼.⟦ `let t₁ `in t₂ ⟧ᵉ γ
                 → ⟦ Γ ⟧≺ᵐ γ
 
 ⟦if-step₁_,_,_⟧ᵉ : (t₁ : Γ ⊢ `Bool)
                    (t₂ t₃ : Γ ⊢ α)
                    (γ : 𝔼.⟦ Γ ⟧ᶜ)
-                 → ⟦ α ⟧≺ᵉ 𝔼.⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ γ
+                 → ⟦ α ⟧≺ᵗ 𝔼.⟦ `if t₁ `then t₂ `else t₃ ⟧ᵉ γ
                  → ⟦ Γ ⟧≺ᵐ γ
 
 ⟦foldr-step₁_,_,_⟧ᵉ : (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
                       (t₂ : Γ ⊢ β)
                       (t₃ : Γ ⊢ `List α)
                       (γ : 𝔼.⟦ Γ ⟧ᶜ)
-                    → ⟦ β ⟧≺ᵉ 𝔼.⟦ `foldr t₁ t₂ t₃ ⟧ᵉ γ
+                    → ⟦ β ⟧≺ᵗ 𝔼.⟦ `foldr t₁ t₂ t₃ ⟧ᵉ γ
                     → ⟦ Γ ⟧≺ᵐ γ
 
 ⟦ ` x                      ⟧ᵉ γ d         = return (⊥ᶜ [ ∈ᴸ⇒lookup∈ᴸtoList x ]≔ d)
@@ -253,7 +269,7 @@ infix 4 ⊥⟦_⟧≺ᵐ_
   (t₂ t₃ : Γ ⊢ α)
   (γ : 𝔼.⟦ Γ ⟧ᶜ)
   (v : Bool) →
-  ⟦ α ⟧≺ᵉ 𝔼.⟦if t₂ , t₃ ⟧ᵉ γ v →
+  ⟦ α ⟧≺ᵗ 𝔼.⟦if t₂ , t₃ ⟧ᵉ γ v →
   ⟦ Γ ⸴ `Bool ⟧≺ᵐ (γ ⸴ v)
 
 ⟦let-step₂_⟧ᵉ : (t₁ : Γ ⊢ α₁)
@@ -310,7 +326,7 @@ infix 4 ⊥⟦_⟧≺ᵐ_
              (v : 𝔼.⟦ α ⟧ᵗ)
              (vs : List 𝔼.⟦ α ⟧ᵗ)
            → ⟦ Γ ⟧≺ᶜ γ
-           → ⟦ α ⟧≺ᵉ v
+           → ⟦ α ⟧≺ᵗ v
            → ⟦ Γ ⸴ `T (`List α) ⟧≺ᶜ (γ ⸴ vs)
            → ⟦ Γ ⸴ `List α ⟧≺ᵐ (γ ⸴ (v ∷ vs))
 
@@ -318,7 +334,7 @@ infix 4 ⊥⟦_⟧≺ᵐ_
                (t₂ : Γ ⊢ β)
                (γ : 𝔼.⟦ Γ ⟧ᶜ)
                (vs : List 𝔼.⟦ α ⟧ᵗ)
-             → ⟦ `T β ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs
+             → ⟦ `T β ⟧≺ᵗ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs
              → ⟦ Γ ⸴ `T (`List α) ⟧≺ᵐ (γ ⸴ vs)
 
 ⟦foldr t₁ , t₂ ⟧ᵉ γ []       d₁ = do
@@ -349,98 +365,98 @@ infix 4 ⊥⟦_⟧≺ᵐ_
 -- Proof that (≤, ⊔, ⊥) is a bounded join-semilattice on demands --
 -------------------------------------------------------------------
 
-≤ᵉ-refl : ∀ {v} → Reflexive ⟦ α ⟧[ v ≻_≤ᵉ_]
-≤ᵉ-refl  {`Bool   } {x = false    } = false
-≤ᵉ-refl  {`Bool   } {x = true     } = true
-≤ᵉ-refl  {`T α    } {x = thunk d₁ } = thunk ≤ᵉ-refl
-≤ᵉ-refl  {`T α    } {x = undefined} = undefined
-≤ᵉ-refl  {`List α } {x = []       } = []
-≤ᵉ-refl  {`List α } {x = d₁ ∷ d₂  } = ≤ᵉ-refl ∷ ≤ᵉ-refl
+≤ᵗ-refl : ∀ {v} → Reflexive ⟦ α ⟧[ v ≻_≤ᵗ_]
+≤ᵗ-refl  {`Bool   } {x = false    } = false
+≤ᵗ-refl  {`Bool   } {x = true     } = true
+≤ᵗ-refl  {`T α    } {x = thunk d₁ } = thunk ≤ᵗ-refl
+≤ᵗ-refl  {`T α    } {x = undefined} = undefined
+≤ᵗ-refl  {`List α } {x = []       } = []
+≤ᵗ-refl  {`List α } {x = d₁ ∷ d₂  } = ≤ᵗ-refl ∷ ≤ᵗ-refl
 
-≤ᵉ-trans : ∀ {v} → Transitive ⟦ α ⟧[ v ≻_≤ᵉ_]
-≤ᵉ-trans false           false           = false
-≤ᵉ-trans true            true            = true
-≤ᵉ-trans undefined       undefined       = undefined
-≤ᵉ-trans undefined       (thunk d₂≤d₃)   = undefined
-≤ᵉ-trans (thunk d₁≤d₂)   (thunk d₂≤d₃)   = thunk (≤ᵉ-trans d₁≤d₂ d₂≤d₃)
-≤ᵉ-trans []              []              = []
-≤ᵉ-trans (d₁≤d₂ ∷ d₁≤d₃) (d₂≤d₃ ∷ d₂≤d₄) = ≤ᵉ-trans d₁≤d₂ d₂≤d₃ ∷ ≤ᵉ-trans d₁≤d₃ d₂≤d₄
+≤ᵗ-trans : ∀ {v} → Transitive ⟦ α ⟧[ v ≻_≤ᵗ_]
+≤ᵗ-trans false           false           = false
+≤ᵗ-trans true            true            = true
+≤ᵗ-trans undefined       undefined       = undefined
+≤ᵗ-trans undefined       (thunk d₂≤d₃)   = undefined
+≤ᵗ-trans (thunk d₁≤d₂)   (thunk d₂≤d₃)   = thunk (≤ᵗ-trans d₁≤d₂ d₂≤d₃)
+≤ᵗ-trans []              []              = []
+≤ᵗ-trans (d₁≤d₂ ∷ d₁≤d₃) (d₂≤d₃ ∷ d₂≤d₄) = ≤ᵗ-trans d₁≤d₂ d₂≤d₃ ∷ ≤ᵗ-trans d₁≤d₃ d₂≤d₄
 
-≤ᵉ-isPreorder : ∀ {v} → IsPreorder _≡_ ⟦ α ⟧[ v ≻_≤ᵉ_]
-≤ᵉ-isPreorder = record
+≤ᵗ-isPreorder : ∀ {v} → IsPreorder _≡_ ⟦ α ⟧[ v ≻_≤ᵗ_]
+≤ᵗ-isPreorder = record
   { isEquivalence = ≡.isEquivalence
-  ; reflexive     = λ{ refl → ≤ᵉ-refl }
-  ; trans         = ≤ᵉ-trans
+  ; reflexive     = λ{ refl → ≤ᵗ-refl }
+  ; trans         = ≤ᵗ-trans
   }
 
-≤ᵉ-antisym : ∀ {v} → Antisymmetric _≡_ ⟦ α ⟧[ v ≻_≤ᵉ_]
-≤ᵉ-antisym false               false               = refl
-≤ᵉ-antisym true                true                = refl
-≤ᵉ-antisym undefined           undefined           = refl
-≤ᵉ-antisym (thunk d₁₁≤d₂₁)     (thunk d₂₁≤d₁₁)     = cong thunk (≤ᵉ-antisym d₁₁≤d₂₁ d₂₁≤d₁₁)
-≤ᵉ-antisym []                  []                  = refl
-≤ᵉ-antisym (d₁₁≤d₂₁ ∷ d₁₂≤d₂₂) (d₂₁≤d₃₁ ∷ d₂₂≤d₃₂) = cong₂ _∷_ (≤ᵉ-antisym d₁₁≤d₂₁ d₂₁≤d₃₁) (≤ᵉ-antisym d₁₂≤d₂₂ d₂₂≤d₃₂)
+≤ᵗ-antisym : ∀ {v} → Antisymmetric _≡_ ⟦ α ⟧[ v ≻_≤ᵗ_]
+≤ᵗ-antisym false               false               = refl
+≤ᵗ-antisym true                true                = refl
+≤ᵗ-antisym undefined           undefined           = refl
+≤ᵗ-antisym (thunk d₁₁≤d₂₁)     (thunk d₂₁≤d₁₁)     = cong thunk (≤ᵗ-antisym d₁₁≤d₂₁ d₂₁≤d₁₁)
+≤ᵗ-antisym []                  []                  = refl
+≤ᵗ-antisym (d₁₁≤d₂₁ ∷ d₁₂≤d₂₂) (d₂₁≤d₃₁ ∷ d₂₂≤d₃₂) = cong₂ _∷_ (≤ᵗ-antisym d₁₁≤d₂₁ d₂₁≤d₃₁) (≤ᵗ-antisym d₁₂≤d₂₂ d₂₂≤d₃₂)
 
-≤ᵉ-isPartialOrder : ∀ {v} → IsPartialOrder _≡_ ⟦ α ⟧[ v ≻_≤ᵉ_]
-≤ᵉ-isPartialOrder = record
-  { isPreorder = ≤ᵉ-isPreorder
-  ; antisym    = ≤ᵉ-antisym
+≤ᵗ-isPartialOrder : ∀ {v} → IsPartialOrder _≡_ ⟦ α ⟧[ v ≻_≤ᵗ_]
+≤ᵗ-isPartialOrder = record
+  { isPreorder = ≤ᵗ-isPreorder
+  ; antisym    = ≤ᵗ-antisym
   }
 
-d₁≤ᵉd₁⊔ᵉd₂ : ∀ {v} d₁ d₂ → ⟦ α ⟧[ v ≻ d₁ ≤ᵉ d₁ ⊔ᵉ d₂ ]
-d₁≤ᵉd₁⊔ᵉd₂ false false = false
-d₁≤ᵉd₁⊔ᵉd₂ true true = true
-d₁≤ᵉd₁⊔ᵉd₂ (thunk d₁₁) (thunk d₂₁) = thunk (d₁≤ᵉd₁⊔ᵉd₂ d₁₁ d₂₁)
-d₁≤ᵉd₁⊔ᵉd₂ (thunk d₁₁) undefined   = ≤ᵉ-refl
-d₁≤ᵉd₁⊔ᵉd₂ undefined   (thunk d₂₁) = undefined
-d₁≤ᵉd₁⊔ᵉd₂ undefined   undefined   = undefined
-d₁≤ᵉd₁⊔ᵉd₂ []          []          = []
-d₁≤ᵉd₁⊔ᵉd₂ (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = d₁≤ᵉd₁⊔ᵉd₂ d₁₁ d₂₁ ∷ d₁≤ᵉd₁⊔ᵉd₂ d₁₂ d₂₂
+d₁≤ᵗd₁⊔ᵗd₂ : ∀ {v} d₁ d₂ → ⟦ α ⟧[ v ≻ d₁ ≤ᵗ d₁ ⊔ᵗ d₂ ]
+d₁≤ᵗd₁⊔ᵗd₂ false false = false
+d₁≤ᵗd₁⊔ᵗd₂ true true = true
+d₁≤ᵗd₁⊔ᵗd₂ (thunk d₁₁) (thunk d₂₁) = thunk (d₁≤ᵗd₁⊔ᵗd₂ d₁₁ d₂₁)
+d₁≤ᵗd₁⊔ᵗd₂ (thunk d₁₁) undefined   = ≤ᵗ-refl
+d₁≤ᵗd₁⊔ᵗd₂ undefined   (thunk d₂₁) = undefined
+d₁≤ᵗd₁⊔ᵗd₂ undefined   undefined   = undefined
+d₁≤ᵗd₁⊔ᵗd₂ []          []          = []
+d₁≤ᵗd₁⊔ᵗd₂ (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = d₁≤ᵗd₁⊔ᵗd₂ d₁₁ d₂₁ ∷ d₁≤ᵗd₁⊔ᵗd₂ d₁₂ d₂₂
 
-d₂≤ᵉd₁⊔ᵉd₂ : ∀ {v} d₁ d₂ → ⟦ α ⟧[ v ≻ d₂ ≤ᵉ d₁ ⊔ᵉ d₂ ]
-d₂≤ᵉd₁⊔ᵉd₂ false       false       = false
-d₂≤ᵉd₁⊔ᵉd₂ true        true        = true
-d₂≤ᵉd₁⊔ᵉd₂ (thunk d₁₁) (thunk d₂₁) = thunk (d₂≤ᵉd₁⊔ᵉd₂ d₁₁ d₂₁)
-d₂≤ᵉd₁⊔ᵉd₂ (thunk d₁₁) undefined   = undefined
-d₂≤ᵉd₁⊔ᵉd₂ undefined   (thunk d₂₁) = ≤ᵉ-refl
-d₂≤ᵉd₁⊔ᵉd₂ undefined   undefined   = undefined
-d₂≤ᵉd₁⊔ᵉd₂ []          []          = []
-d₂≤ᵉd₁⊔ᵉd₂ (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = d₂≤ᵉd₁⊔ᵉd₂ d₁₁ d₂₁ ∷ d₂≤ᵉd₁⊔ᵉd₂ d₁₂ d₂₂
+d₂≤ᵗd₁⊔ᵗd₂ : ∀ {v} d₁ d₂ → ⟦ α ⟧[ v ≻ d₂ ≤ᵗ d₁ ⊔ᵗ d₂ ]
+d₂≤ᵗd₁⊔ᵗd₂ false       false       = false
+d₂≤ᵗd₁⊔ᵗd₂ true        true        = true
+d₂≤ᵗd₁⊔ᵗd₂ (thunk d₁₁) (thunk d₂₁) = thunk (d₂≤ᵗd₁⊔ᵗd₂ d₁₁ d₂₁)
+d₂≤ᵗd₁⊔ᵗd₂ (thunk d₁₁) undefined   = undefined
+d₂≤ᵗd₁⊔ᵗd₂ undefined   (thunk d₂₁) = ≤ᵗ-refl
+d₂≤ᵗd₁⊔ᵗd₂ undefined   undefined   = undefined
+d₂≤ᵗd₁⊔ᵗd₂ []          []          = []
+d₂≤ᵗd₁⊔ᵗd₂ (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = d₂≤ᵗd₁⊔ᵗd₂ d₁₁ d₂₁ ∷ d₂≤ᵗd₁⊔ᵗd₂ d₁₂ d₂₂
 
-⊔ᵉ-least : ∀ {v d₁ d₂ d₃} →
-  ⟦ α ⟧[ v ≻ d₁ ≤ᵉ d₃ ] →
-  ⟦ α ⟧[ v ≻ d₂ ≤ᵉ d₃ ] →
-  ⟦ α ⟧[ v ≻ d₁ ⊔ᵉ d₂ ≤ᵉ d₃ ]
-⊔ᵉ-least false               false               = false
-⊔ᵉ-least true                true                = true
-⊔ᵉ-least undefined           undefined           = undefined
-⊔ᵉ-least undefined           (thunk d₂₁≤d₃₁)     = thunk d₂₁≤d₃₁
-⊔ᵉ-least (thunk d₁₁≤d₂₁)     undefined           = thunk d₁₁≤d₂₁
-⊔ᵉ-least (thunk d₁₁≤d₂₁)     (thunk d₂₁≤d₃₁)     = thunk (⊔ᵉ-least d₁₁≤d₂₁ d₂₁≤d₃₁)
-⊔ᵉ-least []                  []                  = []
-⊔ᵉ-least (d₁₁≤d₂₁ ∷ d₁₂≤d₂₂) (d₂₁≤d₃₁ ∷ d₂₂≤d₃₂) = ⊔ᵉ-least d₁₁≤d₂₁ d₂₁≤d₃₁ ∷ ⊔ᵉ-least d₁₂≤d₂₂ d₂₂≤d₃₂
+⊔ᵗ-least : ∀ {v d₁ d₂ d₃} →
+  ⟦ α ⟧[ v ≻ d₁ ≤ᵗ d₃ ] →
+  ⟦ α ⟧[ v ≻ d₂ ≤ᵗ d₃ ] →
+  ⟦ α ⟧[ v ≻ d₁ ⊔ᵗ d₂ ≤ᵗ d₃ ]
+⊔ᵗ-least false               false               = false
+⊔ᵗ-least true                true                = true
+⊔ᵗ-least undefined           undefined           = undefined
+⊔ᵗ-least undefined           (thunk d₂₁≤d₃₁)     = thunk d₂₁≤d₃₁
+⊔ᵗ-least (thunk d₁₁≤d₂₁)     undefined           = thunk d₁₁≤d₂₁
+⊔ᵗ-least (thunk d₁₁≤d₂₁)     (thunk d₂₁≤d₃₁)     = thunk (⊔ᵗ-least d₁₁≤d₂₁ d₂₁≤d₃₁)
+⊔ᵗ-least []                  []                  = []
+⊔ᵗ-least (d₁₁≤d₂₁ ∷ d₁₂≤d₂₂) (d₂₁≤d₃₁ ∷ d₂₂≤d₃₂) = ⊔ᵗ-least d₁₁≤d₂₁ d₂₁≤d₃₁ ∷ ⊔ᵗ-least d₁₂≤d₂₂ d₂₂≤d₃₂
 
-⊔ᵉ-supremum : ∀ {v} → Supremum ⟦ α ⟧[ v ≻_≤ᵉ_] _⊔ᵉ_
-⊔ᵉ-supremum d₁ d₂ = d₁≤ᵉd₁⊔ᵉd₂ d₁ d₂ , d₂≤ᵉd₁⊔ᵉd₂ d₁ d₂ , λ _ → ⊔ᵉ-least
+⊔ᵗ-supremum : ∀ {v} → Supremum ⟦ α ⟧[ v ≻_≤ᵗ_] _⊔ᵗ_
+⊔ᵗ-supremum d₁ d₂ = d₁≤ᵗd₁⊔ᵗd₂ d₁ d₂ , d₂≤ᵗd₁⊔ᵗd₂ d₁ d₂ , λ _ → ⊔ᵗ-least
 
-≤ᵉ-⊔ᵉ-isJoinSemilattice : ∀ {v} → IsJoinSemilattice _≡_ ⟦ α ⟧[ v ≻_≤ᵉ_] _⊔ᵉ_
-≤ᵉ-⊔ᵉ-isJoinSemilattice = record
-  { isPartialOrder = ≤ᵉ-isPartialOrder
-  ; supremum       = ⊔ᵉ-supremum
+≤ᵗ-⊔ᵗ-isJoinSemilattice : ∀ {v} → IsJoinSemilattice _≡_ ⟦ α ⟧[ v ≻_≤ᵗ_] _⊔ᵗ_
+≤ᵗ-⊔ᵗ-isJoinSemilattice = record
+  { isPartialOrder = ≤ᵗ-isPartialOrder
+  ; supremum       = ⊔ᵗ-supremum
   }
 
-⊥ᵉ-minimum : ∀ {v} → Minimum ⟦ α ⟧[ v ≻_≤ᵉ_] (⊥⟦ α ⟧≺ᵉ v)
-⊥ᵉ-minimum false      = false
-⊥ᵉ-minimum true       = true
-⊥ᵉ-minimum (thunk d₁) = undefined
-⊥ᵉ-minimum undefined  = undefined
-⊥ᵉ-minimum []         = []
-⊥ᵉ-minimum (d₁ ∷ d₂)  = ⊥ᵉ-minimum d₁ ∷ undefined
+⊥ᵗ-minimum : ∀ {v} → Minimum ⟦ α ⟧[ v ≻_≤ᵗ_] (⊥⟦ α ⟧≺ᵗ v)
+⊥ᵗ-minimum false      = false
+⊥ᵗ-minimum true       = true
+⊥ᵗ-minimum (thunk d₁) = undefined
+⊥ᵗ-minimum undefined  = undefined
+⊥ᵗ-minimum []         = []
+⊥ᵗ-minimum (d₁ ∷ d₂)  = ⊥ᵗ-minimum d₁ ∷ undefined
 
-≤ᵉ-⊔ᵉ-⊥ᵉ-isBoundedJoinSemilattice : ∀ {v} → IsBoundedJoinSemilattice _≡_ ⟦ α ⟧[ v ≻_≤ᵉ_] _⊔ᵉ_ (⊥⟦ α ⟧≺ᵉ v)
-≤ᵉ-⊔ᵉ-⊥ᵉ-isBoundedJoinSemilattice = record
-  { isJoinSemilattice = ≤ᵉ-⊔ᵉ-isJoinSemilattice
-  ; minimum           = ⊥ᵉ-minimum
+≤ᵗ-⊔ᵗ-⊥ᵗ-isBoundedJoinSemilattice : ∀ {v} → IsBoundedJoinSemilattice _≡_ ⟦ α ⟧[ v ≻_≤ᵗ_] _⊔ᵗ_ (⊥⟦ α ⟧≺ᵗ v)
+≤ᵗ-⊔ᵗ-⊥ᵗ-isBoundedJoinSemilattice = record
+  { isJoinSemilattice = ≤ᵗ-⊔ᵗ-isJoinSemilattice
+  ; minimum           = ⊥ᵗ-minimum
   }
 
 ---------------------------------------
@@ -448,7 +464,7 @@ d₂≤ᵉd₁⊔ᵉd₂ (d₁₁ ∷ d₁₂) (d₂₁ ∷ d₂₂) = d₂≤�
 ---------------------------------------
 
 ≤ᶜ-⊔ᶜ-⊥ᶜ-isBoundedJoinSemilattice : IsBoundedJoinSemilattice _≡_ ⟦ Γ ⟧[ γ ≻_≤ᶜ_] _⊔ᶜ_ (⊥⟦ Γ ⟧≺ᶜ γ)
-≤ᶜ-⊔ᶜ-⊥ᶜ-isBoundedJoinSemilattice = AllPointwise.isBoundedJoinSemilattice ≤ᵉ-⊔ᵉ-⊥ᵉ-isBoundedJoinSemilattice
+≤ᶜ-⊔ᶜ-⊥ᶜ-isBoundedJoinSemilattice = AllPointwise.isBoundedJoinSemilattice ≤ᵗ-⊔ᵗ-⊥ᵗ-isBoundedJoinSemilattice
 
 ⊥ᶜ-minimum : Minimum ⟦ Γ ⟧[ γ ≻_≤ᶜ_] (⊥⟦ Γ ⟧≺ᶜ γ)
 ⊥ᶜ-minimum = ≤ᶜ-⊔ᶜ-⊥ᶜ-isBoundedJoinSemilattice .IsBoundedJoinSemilattice.minimum
@@ -529,23 +545,23 @@ return-mono δ₁≤δ₂ = δ₁≤δ₂ , ≤-refl
 
 ⟦_⟧ᵉ-mono : (t : Γ ⊢ α)
             (γ : 𝔼.⟦ Γ ⟧ᶜ)
-            {d d′ : ⟦ α ⟧≺ᵉ 𝔼.⟦ t ⟧ᵉ γ}
-          → d ≤ᵉ d′
+            {d d′ : ⟦ α ⟧≺ᵗ 𝔼.⟦ t ⟧ᵉ γ}
+          → d ≤ᵗ d′
           → ⟦ t ⟧ᵉ γ d ≤ᵐ ⟦ t ⟧ᵉ γ d′
 
 ⟦if_,_⟧ᵉ-mono : (t₂ t₃ : Γ ⊢ α)
                 (γ : 𝔼.⟦ Γ ⟧ᶜ)
                 (v : Bool)
-                {d₂₃ d₂₃′ : ⟦ α ⟧≺ᵉ 𝔼.⟦if t₂ , t₃ ⟧ᵉ γ v}
-              → d₂₃ ≤ᵉ d₂₃′
+                {d₂₃ d₂₃′ : ⟦ α ⟧≺ᵗ 𝔼.⟦if t₂ , t₃ ⟧ᵉ γ v}
+              → d₂₃ ≤ᵗ d₂₃′
               → ⟦if t₂ , t₃ ⟧ᵉ γ v d₂₃ ≤ᵐ ⟦if t₂ , t₃ ⟧ᵉ γ v d₂₃′
 
 ⟦foldr_,_⟧ᵉ-mono : (t₁ : Γ ⸴ α ⸴ `T β ⊢ β)
                    (t₂ : Γ ⊢ β)
                    (γ : 𝔼.⟦ Γ ⟧ᶜ)
                    (vs : List 𝔼.⟦ α ⟧ᵗ)
-                   {d₁₂ d₁₂′ : ⟦ β ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs}
-                 → d₁₂ ≤ᵉ d₁₂′
+                   {d₁₂ d₁₂′ : ⟦ β ⟧≺ᵗ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs}
+                 → d₁₂ ≤ᵗ d₁₂′
                  → ⟦foldr t₁ , t₂ ⟧ᵉ γ vs d₁₂ ≤ᵐ ⟦foldr t₁ , t₂ ⟧ᵉ γ vs d₁₂′
 
 ⟦ ` x                      ⟧ᵉ-mono γ d≤d′                =
@@ -599,8 +615,8 @@ return-mono δ₁≤δ₂ = δ₁≤δ₂ , ≤-refl
                     (t₂ : Γ ⊢ β)
                     (γ : 𝔼.⟦ Γ ⟧ᶜ)
                     (vs : List 𝔼.⟦ α ⟧ᵗ)
-                    {d₁ d₁′ : ⟦ `T β ⟧≺ᵉ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs}
-                  → d₁ ≤ᵉ d₁′
+                    {d₁ d₁′ : ⟦ `T β ⟧≺ᵗ 𝔼.⟦foldr t₁ , t₂ ⟧ᵉ γ vs}
+                  → d₁ ≤ᵗ d₁′
                   → ⟦foldr′ t₁ , t₂ ⟧ᵉ γ vs d₁ ≤ᵐ ⟦foldr′ t₁ , t₂ ⟧ᵉ γ vs d₁′
 ⟦foldr′ t₁ , t₂ ⟧ᵉ-mono γ vs undefined      = ⊥ᵐ-minimum _
 ⟦foldr′ t₁ , t₂ ⟧ᵉ-mono γ vs (thunk d₁≤d₁′) =

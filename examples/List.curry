@@ -10,10 +10,10 @@ data List a = NilA | (:~) a (T (List a))
   deriving (Eq, Ord, Read, Show)
 
 instance Approx a => Approx (List a) where
-  xs <~ ys = case (xs, ys) of
-    (NilA     , NilA     ) -> True
-    (x :~ xsT', y :~ ysT') -> x <~ y && xsT' <~ ysT'
-    (_,         _        ) -> False
+  NilA      <~ NilA      = True
+  NilA      <~ _ :~ _    = False
+  _ :~ _    <~ NilA      = False
+  x :~ xsT' <~ y :~ ysT' = x <~ y && xsT' <~ ysT'
 
 fromList :: [a] -> List a
 fromList = foldr (\x xs -> x :~ Thunk xs) NilA
@@ -21,7 +21,7 @@ fromList = foldr (\x xs -> x :~ Thunk xs) NilA
 appendM :: List a -> T (List a) -> Tick (List a)
 appendM xs ysT = do
   tick
-  case xs of
+  fcase xs of
     NilA -> force ysT
     x :~ xsT' -> do
       zsT <- withForced xsT' (`appendM` ysT)
@@ -31,7 +31,7 @@ reverseM :: List a -> Tick (List a)
 reverseM = go NilA where
   go ys xs = do
     tick
-    case xs of
+    fcase xs of
       NilA -> return ys
       x :~ xsT' -> do
         ysT <- thunk (return ys)

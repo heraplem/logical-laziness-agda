@@ -12,7 +12,7 @@ instance Num Nat where
   m   - Z   = m
   S m - S n = m - n
 
-  fromInt n = case n `compare` 0 of
+  fromInt n = fcase n `compare` 0 of
     EQ -> Z
     GT -> S (fromInt (n - 1))
 

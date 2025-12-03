@@ -20,7 +20,7 @@ insertionSort = foldr insert []
 insertA :: Ord a => a -> List a -> Tick (List a)
 insertA x ys = do
   tick
-  case ys of
+  fcase ys of
     NilA -> do
       ys' <- thunk (return NilA)
       return (x :~ ys')

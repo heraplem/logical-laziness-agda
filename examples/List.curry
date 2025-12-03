@@ -18,6 +18,17 @@ instance Approx a => Approx (List a) where
 fromList :: [a] -> List a
 fromList = foldr (\x xs -> x :~ Thunk xs) NilA
 
+takeM :: Nat -> List a -> List a
+takeM n xs = do
+  tick
+  fcase (n, xs) of
+    (Z  , NilA     ) -> return NilA
+    (Z  , _ :~ _   ) -> return NilA
+    (S _, NilA     ) -> return NilA
+    (S n, x :~ xsT ) -> do
+      xsT' <- withForced xsT' (takeM n)
+      return (x :~ xsT')
+
 appendM :: List a -> T (List a) -> Tick (List a)
 appendM xs ysT = do
   tick

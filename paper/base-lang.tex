@@ -1,5 +1,9 @@
 \section{The Base Language $B$}
 
+\ly{There should be a commuting diagram outlining the relation among all our
+  semantics and theorems, either in the beginning of this section, or in earlier
+  sections.}
+
 To show the relation among the clairvoyance semantics, the demand semantics, and
 functional logic programming, we first define a base language $B$ that can be
 translated into those semantics.
@@ -140,22 +144,20 @@ the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to
 \end{figure}
 
 The crucial rules are \rulename{C-Lazy-Thunk}, \rulename{C-Lazy-Undefined},
-\rulename{C-Force}.\ly{What does \rulename{L} stand for?}
-\rulename{C-Lazy-Thunk} and \rulename{C-Lazy-Undefined} say that, to evaluate a
-\( \tlazyZ \) term, we nondeterministically either evaluate its subterm and wrap
-it in a \( \sthunkZ \) or substitute an ``empty'' value \( \sundefined \).
-\rulename{C-Force} says that we can only evaluate a value of \( \TThunkZ \) type
-if it is in fact a \( \sthunkZ \); in other words, if we need the result of a
-\( \tlazyZ \) term, then we must have actually evaluated it via
-\rulename{C-Lazy-Thunk}.
+\rulename{C-Force}. \rulename{C-Lazy-Thunk} and \rulename{C-Lazy-Undefined} say
+that, to evaluate a \( \tlazyZ \) term, we nondeterministically either evaluate
+its subterm and wrap it in a \( \sthunkZ \) or substitute an ``empty'' value
+\( \sundefined \). \rulename{C-Force} says that we can only evaluate a value of
+\( \TThunkZ \) type if it is in fact a \( \sthunkZ \); in other words, if we
+need the result of a \( \tlazyZ \) term, then we must have actually evaluated it
+via \rulename{C-Lazy-Thunk}.
 
 Our base language explicitly marks laziness points with \( \tthunkZ \) terms, so
 we must introduce nondeterminism there. This is in contrast to the original
 formulation of clairvoyance semantics, where nondeterminism was introduced at
 \( \tletZ \) bindings: when evaluating \( \tlet{x}{t_1}{t_2} \), either \( x \)
 was immediately bound to the result of evaluting \( t_1 \), or else \( x \) was
-not bound at all.\ly{Talk about what we do first; then what other people
-  do.}\nc{Is this better?}
+not bound at all.
 
 Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a value and then iterating over that value.  The iteration is expressed in the following auxiliary relation.
 
@@ -168,14 +170,13 @@ Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a 
   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then \( \EC{\gamma}{t}{\relax}{\relax} \).
 \end{lemma}
 
-\begin{lemma}[Monotonicity of clairvoyance semantics]
-  \label{prop:clair-mono}
+\ly{Really? How could \cref{prop:clair-mono} be true when there is
+  nondeterminism?}
+\begin{lemma}[Monotonicity of clairvoyance semantics]\label{prop:clair-mono}
   If \( \gamma_1 \le \gamma_2 \), \( \EC{\gamma_1}{t}{c_1}{v_1} \), and \( \EC{\gamma_2}{t}{c_2}{v_2} \), then \( (v_1, c_1) \le (v_2, c_2) \).
 \end{lemma}
 
 \subsection{Demand semantics}
-
-\ly{Where is the full demand semantics?}
 
 The demand semantics is a deterministic semantics that interprets a term \( t \)
 as a function \( \EDU{t} \) that takes two arguments:

@@ -356,14 +356,9 @@ Suppose now that we would prefer a method of cost analysis of our original progr
 
 Rather than defining insertD naively through transforming insertA, suppose that we instead took full advantage of the nondeterminism [TODO: explain the Curry benefits better] that Curry offers. Indeed, it turns out that the following is equivalent to a directly translated version of insertD:
 
+[TODO: Curry insertD goes here]
 
-- Start with insert def not in Curry
-- Refer to Forking Paths paper for example of insert -> insertA
-- Argue that getting to insertA isn't the hard part
-- Explain why bad times are had getting to insertD specifically
-- Re-define insert in Curry and show insertA is still easy
-- Now show how it's easy to define insertD in terms of insertA!
-
+Now, all we need to do is prove that this version of insertD is also correct and time-cost equivalent, and we will have solved our problem. How we do so is detailed in sections 3-5. \lai{TODO: Too informal :/}
 
 \begin{itemize}
   \item a more in-depth discussion of lazy evaluation semantics, esp.

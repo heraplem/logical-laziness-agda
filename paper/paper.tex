@@ -242,16 +242,15 @@ semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a s
 
 % \subsection{what is lazy evaluation?}
 
-In lazy evaluation, a computation is driven by its demands, performing only the operations strictly required to compute a given result. Computations are
-stored as \emph{thunks} that are only evaluated when their values are demanded.
-Even then, computations are only evaluated to the extent that's
-sufficient for its demand. This prevents the execution of extraneous operations, but results in infamously challenging cost analysis. For example\lai{Is this example the best one to start with, or should I start with one we are going to use again later? It's my favorite easy example, at least}, suppose that we define the \emph{Insertion Sort} and \emph{Head} functions in the obvious ways.\lai{Should we give an actual definition, or leave it abstract like this to save space?} Then, say that we want to compute the following (where xs is an arbitrary list):
+In lazy evaluation, a computation is driven by its demands, performing only the operations strictly required to compute its result. Computations are
+stored as \emph{thunks} which are only evaluated when their values are demanded, and only to the extent required to produce the demanded value.
+This prevents the execution of extraneous code, but results in infamously challenging cost analysis. For example\lai{Gotta start with take n xs, where xs is arbitrarily long}, suppose that we define \emph{take n xs} as a function that takes the first n prefixes from a list xs.\lai{Should we give an actual definition, or leave it abstract like this to save space?} Let \([1..]\) represent an aribtrarily long list of natural numbers indexed at 1. Then, suppose that we wished to compute the following:
 
 \lai{adding figures later because I'm just trying to get words down rn - for now, just text will do.}
 
-\(head (insertion\_sort xs)\)
+\(take n [1..])\)
 
-At first glance, one unfamiliar with laziness\lai{I think it's funnier to say this than the arguably more correct "one familiar with lazy evaluation"} might expect this to take \(O(n^2)\) average time, as is typical for \emph{insertion Sort}. However, since the algorithm will always search for the largest element first\lai{Do we need to mention smallest-first insertion sort?}, the leading element will always be put in place before any others. Hence, if we are only demanding the head of the list, computation can stop after one iteration, and the time complexity falls to \(O(n)\). Eager evaluation strategies cannot take advantage of this fact, but lazy evaluation does.
+At first glance, one unfamiliar with laziness\lai{I think it's funnier to say this than the arguably more correct "one unfamiliar with lazy evaluation"} might expect this to fail to terminate, since defining [1..] would fail to terminate. However, since only n elements are demanded, so long as n is not arbitrarily long, the program will terminate in \(O(n)\) time. This is because n bounds the number of elements of [1..] that need to be computed, preventing the rest of the list from being generated. Thus, lazy programs can sometimes achieve termination when eager ones cannot.
 
 \lai{This paragraph may be extraneous, but let's see how we are on space before ripping it out. It's good to have some mention of the difficulties here.}
 One major drawback of laziness becomes apparent when we consider how partially executing a function call interferes with traditional cost analysis methods. Shortcutting (or even failing to run) functions runs counter, in particular, to the concept of \(O\)-notation. Technically speaking, every function takes \(O(1)\) time in a lazy language, as it is always possible to call a function and then never demand its output. For example, if we call \(head (insertion\_sort xs))\) as part of a larger function that never uses the resulting element of xs, then the call would be stored in a \emph{thunk} and not further evaluated. As \emph{thunk} creation is a constant-time operation\lai{... it is, right?}, this results in the aforementioned \(O(1)\) time cost. This is not a particularly \emph{meaningful} thing to say about a lazy function, but its truth renders much of the existing paradigm for cost analysis nearly useless in the realm of laziness.

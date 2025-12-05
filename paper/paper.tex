@@ -332,25 +332,17 @@ Our contributions are as follows:
 
 \section{Motivating example(s)}
 
-\lai{I'm using insertion sort as the running example until someone stops me.}
+\lai{ok fine I'll use take n xs instead...}
 
-Let us return to the example of insertion sort. We can define it in Curry as follows:
-
-[TODO: definition goes here]
-
-We can also define a head function:
+Let us return to the example of take n [1..]. We can define it in Curry, a lazy functional logic language which is syntactically similar to Haskell,\lai{Might need to explain this more...} as follows:
 
 [TODO: definition goes here]
 
-Finally, our example from before translates to this:
+Suppose that we wanted to analyze the cost of this program. As explained prior, we should expect the final time cost to be \(O(n)\), despite [1..]'s naive non-termination. To do this, we can perform the transformation outlined in \cite{forking-paths} as follows, using the Tick monad to count function calls:
 
-[TODO: definition goes here]
+[TODO: takeA here]
 
-Suppose that we wanted to analyze the cost of this final program. As explained prior, we should expect the final time cost to be \(O(n)\) due to lazy evaluation, despite insertion sort's naive \(O(n^2)\) time cost. To do this, we can perform the transformation outlined in \cite{forking-paths} as follows, using the Tick monad to count function calls:
-
-[TODO: insertA here]
-
-Notice how insertA is structurally similar to insert. [TODO: expand on this more later].
+Notice how takeA is structurally similar to take. [TODO: expand on this more later].
 
 Suppose now that we would prefer a method of cost analysis of our original program that [TODO: succinctly write benefit of Demand Semantics here later]. If that is the case, we would like to be able to use the method detailed in \cite{demand-semantics} instead. However, this leaves us with some unresolved issues in practice. The paper does not detail a simple and precise method for translating our source function into a demand-semantics-based cost analysis function. Indeed, this is one of the main drawbacks of the paper - the actual translation is a brittle, manual process, which is time consuming and prone to error if not mechanically proven to maintain functional correctness and time cost equivalence. It is certainly possible, but untenable for most applications.\lai{Do we need to do the work of showing insertD not defined in terms of insertA? I don't remember if we have that somewhere, and if not, that could be very annoying!}
 

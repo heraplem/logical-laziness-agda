@@ -208,7 +208,7 @@
 
 \begin{document}
 
-\title{When Hindsight and Foresight Are the Same:\\ Lazy Cost Analysis as
+\title{Hindsight Meets Foresight:\\ Lazy Cost Analysis as
   Functional Logic Programming}
 
 \author{Nicholas Coltharp\inst{1} \and
@@ -222,7 +222,7 @@
 \maketitle
 
 \begin{abstract}
-  We provide a relatively simple translation of lazy programs into functional logic programs, which results in a transformation between Clairvoyance and Demand semantics that requires only one term. This improves on the highly manual and brittle method for translation between the semantics implemented in prior work. We provide an Agda proof that the transformation is functionally correct and time-cost equivalent.
+  We provide a relatively simple translation of lazy programs into functional logic programs, which yields a transformation between Clairvoyance and Demand semantics that requires only one term. This improves on the highly manual and brittle method for translation between the semantics implemented in prior work. This makes cost analysis of lazy programs more flexible, as we have made these two cost models easily interchangeable. We provide an Agda proof that the transformation is functionally correct and time-cost equivalent.
 \keywords{Functional Logic Programming, Lazy Evaluation, Agda, Cost Analysis, Semantics}\lai{Too many keywords? Too few?}
 \end{abstract}
 
@@ -413,7 +413,7 @@ Now, all we need to do is prove that this version of insertD is also correct and
   \item (maybe) how is the performance? are there any problems?
 \end{itemize}
 
-\section{Related works}
+\section{Related work}
 
 \section{Conclusion}
 

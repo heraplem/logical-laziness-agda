@@ -25,101 +25,24 @@
   \sfoldr{f}{y}{(x_1, x_2, \ldots, x_n)} = f(x_1, f(x_2, \cdots f(x_n, y) \cdots))
 \end{align*}
 
-\iffalse
+
 \section{The Clairvoyance Semantics of $B$}\label{apx:clairvoyance-semantics}
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\gamma(x) = v}
-    \infer1{\EC{\gamma}{x}{0}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_1}{c_1}{v_1}}
-    \hypo{\EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}
-    \infer2{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EC{\gamma}{\ttrue}{0}{\strue}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EC{\gamma}{\tfalse}{0}{\sfalse}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_1}{c_1}{\strue}}
-    \hypo{\EC{\gamma}{t_2}{c_2}{v}}
-    \infer2{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_1}{c_1}{\sfalse}}
-    \hypo{\EC{\gamma}{t_3}{c_3}{v}}
-    \infer2{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0{\EC{\gamma}{\tnil}{0}{\snil}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_1}{c_1}{v_1}}
-    \hypo{\EC{\gamma}{t_2}{c_1}{v_2}}
-    \infer2{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t_3}{c_1}{v_1}}
-    \hypo{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}
-    \infer2[\rulename{L-Foldr}]{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t}{c}{v}}
-    \infer1[\rulename{L-Lazy-Thunk}]{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \infer0[\rulename{L-Lazy-Undefined}]{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t}{c}{\sthunk{v}}}
-    \infer1[\rulename{L-Force}]{\EC{\gamma}{\tforce{t}}{c}{v}}
-  \end{prooftree}
-\end{center}
-
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EC{\gamma}{t}{c}{v}}
-    \infer1{\EC{\gamma}{\ttick{t}}{c + 1}{v}}
-  \end{prooftree}
-\end{center}
-\fi
+\begin{mathpar}
+  \inferrule{\gamma(x) = v}{\EC{\gamma}{x}{0}{v}}{\textsc{C-Var}} \qquad
+  \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma, x \mapsto v_1}{t_2}{c_2}{v_2}}{\EC{\gamma}{\tlet{x}{t_1}{t_2}}{c_1 + c_2}{v_2}}{\textsc{C-Let}} \\
+  \inferrule{\\}{\EC{\gamma}{\ttrue}{0}{\strue}}{\textsc{C-True}} \qquad
+  \inferrule{\\}{\EC{\gamma}{\tfalse}{0}{\sfalse}}{\textsc{C-False}} \\
+  \inferrule{\EC{\gamma}{t_1}{c_1}{\strue} \\ \EC{\gamma}{t_2}{c_2}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_2}{v}}{\textsc{C-If-True}} \qquad
+  \inferrule{\EC{\gamma}{t_1}{c_1}{\sfalse} \\ \EC{\gamma}{t_3}{c_3}{v}}{\EC{\gamma}{\tif{t_1}{t_2}{t_3}}{c_1 + c_3}{v}}{\textsc{C-If-False}} \\
+  \inferrule{\\}{\EC{\gamma}{\tnil}{0}{\snil}}{\textsc{C-Nil}} \qquad
+  \inferrule{\EC{\gamma}{t_1}{c_1}{v_1} \\ \EC{\gamma}{t_2}{c_1}{v_2}}{\EC{\gamma}{\tcons{t_1}{t_2}}{c_1 + c_2}{\scons{v_1}{v_2}}}{\textsc{C-Cons}} \\
+  \inferrule{\EC{\gamma}{t_3}{c_1}{v_1} \\ \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}{\textsc{C-Foldr}} \\
+  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}{\textsc{C-Lazy-Result}} \qquad
+  \inferrule{\\}{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}{\textsc{C-Lazy-Undefined}} \\
+  \inferrule{\EC{\gamma}{t}{c}{\sthunk{v}}}{\EC{\gamma}{\tforce{t}}{c}{v}}{\textsc{C-Force}} \qquad
+  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\ttick{t}}{c + 1}{v}}{\textsc{C-Tick}} \\
+\end{mathpar}
 
 \section{The Evaluation Semantics of $L$}\label{apx:semantics-logic}
 

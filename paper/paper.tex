@@ -161,7 +161,7 @@
 \newcommand{\snil}{\varepsilon}
 \newcommand{\scons}[2]{(#1, #2)}
 \newcommand{\sfoldr}[3]{\text{foldr}({#1}, {#2}, {#3})}
-\newcommand{\sthunkZ}{\text{thunk}}
+\newcommand{\sthunkZ}{\text{result}}
 \newcommand{\sthunk}[1]{\text{\sthunkZ\ \({#1}\)}}
 \newcommand{\sundefined}{\bot}
 
@@ -203,12 +203,15 @@
 % rules font
 \newcommand{\rulename}[1]{\textsc{#1}}
 
+\newcommand\ie{\textit{i.e.,\ }}
+\newcommand\eg{\textit{e.g.,\ }}
+
 \raggedbottom
 %%\unnumbered% uncomment this for unnumbered level heads
 
 \begin{document}
 
-\title{Hindsight Meets Foresight:\\ Lazy Cost Analysis as
+\title{When Hindsight Is Foresight:\\ Lazy Cost Analysis as
   Functional Logic Programming}
 
 \author{Nicholas Coltharp\inst{1} \and

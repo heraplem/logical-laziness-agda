@@ -1,6 +1,7 @@
 module LogicalLaziness.Language.Logic.Renaming where
 
 open import Relation.Binary.PropositionalEquality
+open import Data.Sum
 open import Data.List.Relation.Unary.All
   as All
 open import Data.List.Membership.Propositional.Properties
@@ -62,19 +63,19 @@ weaken t = weakenʳ $ʳ t
 
 -- Generalized weakening on the right
 
-gweakenrʳ : Γ →ʳ Γ …⸴ Δ
-gweakenrʳ = ∈-++⁺ʳ _
+gweakenrʳ : ∀ Δ → Γ →ʳ Γ …⸴ Δ
+gweakenrʳ Δ = ∈-++⁺ʳ Δ
 
-gweakenr : Γ ⊢ α → Γ …⸴ Δ ⊢ α
-gweakenr = gweakenrʳ $ʳ_
+gweakenr : ∀ Δ → Γ ⊢ α → Γ …⸴ Δ ⊢ α
+gweakenr Δ = gweakenrʳ Δ $ʳ_
 
 -- Generalized weakening on the left
 
-gweakenlʳ : Γ →ʳ Δ …⸴ Γ
-gweakenlʳ = ∈-++⁺ˡ
+gweakenlʳ : ∀ Γ → Γ →ʳ Δ …⸴ Γ
+gweakenlʳ _ = ∈-++⁺ˡ
 
-gweakenl : Γ ⊢ α → Δ …⸴ Γ ⊢ α
-gweakenl = gweakenlʳ $ʳ_
+gweakenl : ∀ Γ → Γ ⊢ α → Δ …⸴ Γ ⊢ α
+gweakenl Γ = gweakenlʳ Γ $ʳ_
 
 -- Exchange
 
@@ -85,6 +86,30 @@ exchangeʳ (sucᵛ (sucᵛ x)) = sucᵛ (sucᵛ x)
 
 exchange : Γ ⸴ τ₁ ⸴ τ₂ ⊢ α → Γ ⸴ τ₂ ⸴ τ₁ ⊢ α
 exchange = exchangeʳ $ʳ_
+
+-- Sink a variable down arbitrarily far in the context.
+
+sinkʳ : ∀ Δ → Γ …⸴ Δ ⸴ τ →ʳ Γ ⸴ τ …⸴ Δ
+sinkʳ Δ zeroᵛ = gweakenrʳ Δ zeroᵛ
+sinkʳ Δ (sucᵛ x) with ∈-++⁻ Δ x
+... | inj₁ x′ = gweakenlʳ Δ x′
+... | inj₂ x′ = gweakenrʳ Δ (sucᵛ x′)
+
+sink : ∀ Δ → Γ …⸴ Δ ⸴ τ ⊢ α → Γ ⸴ τ …⸴ Δ ⊢ α
+sink Δ = sinkʳ Δ $ʳ_
+
+-- Reassociate concatenated contexts
+
+reassocʳ : ∀ Γ Δ Θ → Γ …⸴ (Δ …⸴ Θ) →ʳ (Γ …⸴ Δ) …⸴ Θ
+reassocʳ Γ       Δ       (Θ ⸴ _) zeroᵛ    = zeroᵛ
+reassocʳ Γ       Δ       (Θ ⸴ _) (sucᵛ x) = sucᵛ (reassocʳ Γ Δ Θ x)
+reassocʳ Γ       (Δ ⸴ _) ∅ zeroᵛ          = zeroᵛ
+reassocʳ Γ       (Δ ⸴ _) ∅ (sucᵛ x)       = sucᵛ x
+reassocʳ (Γ ⸴ _) ∅       ∅ zeroᵛ          = zeroᵛ
+reassocʳ (Γ ⸴ _) ∅       ∅ (sucᵛ x)       = sucᵛ x
+
+reassoc : ∀ Γ Δ Θ → Γ …⸴ (Δ …⸴ Θ) ⊢ α → (Γ …⸴ Δ) …⸴ Θ ⊢ α
+reassoc Γ Δ Θ = reassocʳ Γ Δ Θ $ʳ_
 
 -- A common special-case context manipulation
 
@@ -113,7 +138,7 @@ subsume₂ t = subsume₂ʳ $ʳ t
 -- environment δ.
 infix 4 _ʳ_⊑_
 _ʳ_⊑_ : Γ →ʳ Δ → ⟦ Γ ⟧ᶜ → ⟦ Δ ⟧ᶜ → Type
-_ʳ_⊑_ {Γ = Γ} ρ γ δ = (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x)
+_ʳ_⊑_ {Γ = Γ} ρ γ δ = ∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ x) ≡ All.lookup γ x
 
 -- A weakened embedding is again an embedding.
 ⊑⇒⊑-↑ʳ : ρ ʳ γ ⊑ δ
@@ -129,17 +154,32 @@ _ʳ_⊑_ {Γ = Γ} ρ γ δ = (∀ {α} (x : α ∈ᴸ Γ) → All.lookup δ (ρ
 weakenʳ-⊑ : ∀ {v : ⟦ τ ⟧ᵗ} → weakenʳ ʳ γ ⊑ γ ⸴ v
 weakenʳ-⊑ _ = refl
 
-gweakenrʳ-⊑ : {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ) → gweakenrʳ ʳ γ ⊑ (γ …⸴′ δ)
-gweakenrʳ-⊑ {Γ = Γ} {Δ = Δ} {γ = γ} δ = All.lookup-++ʳ {pxs = δ} {pys = γ}
+gweakenrʳ-⊑ : {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ) → gweakenrʳ Δ ʳ γ ⊑ (γ …⸴′ δ)
+gweakenrʳ-⊑ δ = All.lookup-++ʳ {pxs = δ} 
 
-gweakenlʳ-⊑ : (γ : ⟦ Γ ⟧ᶜ) {δ : ⟦ Δ ⟧ᶜ} → gweakenlʳ ʳ γ ⊑ (δ …⸴′ γ)
-gweakenlʳ-⊑ {Γ = Γ} {Δ = Δ} γ {δ} = All.lookup-++ˡ {pxs = γ} {pys = δ}
+gweakenlʳ-⊑ : (γ : ⟦ Γ ⟧ᶜ) {δ : ⟦ Δ ⟧ᶜ} → gweakenlʳ Γ ʳ γ ⊑ (δ …⸴′ γ)
+gweakenlʳ-⊑ γ = All.lookup-++ˡ {pxs = γ}
 
 exchangeʳ-⊑ : ∀ {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ}
             → exchangeʳ ʳ γ ⸴ v₁ ⸴ v₂ ⊑ γ ⸴ v₂ ⸴ v₁
 exchangeʳ-⊑ zeroᵛ           = refl
 exchangeʳ-⊑ (sucᵛ zeroᵛ)    = refl
 exchangeʳ-⊑ (sucᵛ (sucᵛ x)) = refl
+
+sinkʳ-⊑ : {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ) {v : ⟦ τ ⟧ᵗ} → sinkʳ Δ ʳ (γ …⸴′ δ ⸴ v) ⊑ (γ ⸴ v …⸴′ δ)
+sinkʳ-⊑ δ zeroᵛ    = gweakenrʳ-⊑ δ zeroᵛ
+sinkʳ-⊑ {Δ = Δ} {γ = γ} δ (sucᵛ x) with ∈-++⁻ Δ x | All.lookup-∈-++⁻ δ γ x
+... | inj₁ x′ | φ = trans (gweakenlʳ-⊑ δ x′) (sym φ)
+... | inj₂ x′ | φ = trans (gweakenrʳ-⊑ δ (sucᵛ x′)) (sym φ)
+
+reassocʳ-⊑ : (γ : ⟦ Γ ⟧ᶜ) (δ : ⟦ Δ ⟧ᶜ) (θ : ⟦ Θ ⟧ᶜ)
+           → reassocʳ Γ Δ Θ ʳ γ …⸴′ (δ …⸴′ θ) ⊑ (γ …⸴′ δ) …⸴′ θ
+reassocʳ-⊑ γ        δ        (θ ⸴ px) zeroᵛ    = refl
+reassocʳ-⊑ γ        δ        (θ ⸴ px) (sucᵛ x) = reassocʳ-⊑ γ δ θ x
+reassocʳ-⊑ γ        (δ ⸴ px) ∅        zeroᵛ    = refl
+reassocʳ-⊑ γ        (δ ⸴ px) ∅        (sucᵛ x) = refl
+reassocʳ-⊑ (γ ⸴ px) ∅        ∅        zeroᵛ    = refl
+reassocʳ-⊑ (γ ⸴ px) ∅        ∅        (sucᵛ x) = refl
 
 subsumeʳ-⊑ : ∀ {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ}
            → subsumeʳ ʳ γ ⸴ v₁ ⊑ γ ⸴ v₂ ⸴ v₁
@@ -208,20 +248,31 @@ mutual
         → ⟦ weaken t ⟧ᵉ (γ ⸴ v₁) ∋ v
 ⇓weaken {γ = γ} {v = v₁} φ = ⇓ʳ (weakenʳ-⊑ {γ = γ} {v = v₁}) φ
 
-⇓gweakenr : ∀ (γ : ⟦ Γ ⟧ᶜ) (δ : ⟦ Δ ⟧ᶜ) {v}
+⇓gweakenr : ∀ {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ) {v}
           → ⟦ t ⟧ᵉ γ ∋ v
-          → ⟦ gweakenr t ⟧ᵉ (γ …⸴′ δ) ∋ v
-⇓gweakenr γ δ = ⇓ʳ (gweakenrʳ-⊑ δ)
+          → ⟦ gweakenr Δ t ⟧ᵉ (γ …⸴′ δ) ∋ v
+⇓gweakenr δ = ⇓ʳ (gweakenrʳ-⊑ δ)
 
-⇓gweakenl : ∀ (γ : ⟦ Γ ⟧ᶜ) (δ : ⟦ Δ ⟧ᶜ) {v}
-          → ⟦ t ⟧ᵉ δ ∋ v
-          → ⟦ gweakenl t ⟧ᵉ (γ …⸴′ δ) ∋ v
-⇓gweakenl γ δ = ⇓ʳ (gweakenlʳ-⊑ δ)
+⇓gweakenl : ∀ (γ : ⟦ Γ ⟧ᶜ) {δ : ⟦ Δ ⟧ᶜ} {v}
+          → ⟦ t ⟧ᵉ γ ∋ v
+          → ⟦ gweakenl Γ t ⟧ᵉ (δ …⸴′ γ) ∋ v
+⇓gweakenl γ = ⇓ʳ (gweakenlʳ-⊑ γ)
 
 ⇓exchange : {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
           → ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ v₂) ∋ v
           → ⟦ exchange t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v
 ⇓exchange = ⇓ʳ exchangeʳ-⊑
+
+⇓sink : {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ)
+        {v′ : ⟦ τ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
+      → ⟦ t ⟧ᵉ (γ …⸴′ δ ⸴ v′) ∋ v
+      → ⟦ sink Δ t ⟧ᵉ (γ ⸴ v′ …⸴′ δ) ∋ v
+⇓sink δ = ⇓ʳ (sinkʳ-⊑ δ)
+
+⇓reassoc : ∀ {t : Γ …⸴ (Δ …⸴ Θ) ⊢ α} (γ : ⟦ Γ ⟧ᶜ) (δ : ⟦ Δ ⟧ᶜ) (θ : ⟦ Θ ⟧ᶜ) {v}
+         → ⟦ t ⟧ᵉ (γ …⸴′ (δ …⸴′ θ)) ∋ v
+         → ⟦ reassoc Γ Δ Θ t ⟧ᵉ ((γ …⸴′ δ) …⸴′ θ) ∋ v
+⇓reassoc γ δ θ = ⇓ʳ (reassocʳ-⊑ γ δ θ)
 
 ⇓subsume : {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
          → ⟦ t ⟧ᵉ (γ ⸴ v₁) ∋ v
@@ -293,12 +344,12 @@ mutual
 ⇑weaken {γ = γ} {v = v₁} φ = ⇑ʳ (weakenʳ-⊑ {γ = γ} {v = v₁}) φ
 
 ⇑gweakenr : ∀ {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ) {v}
-          → ⟦ gweakenr t ⟧ᵉ (γ …⸴′ δ) ∋ v
+          → ⟦ gweakenr Δ t ⟧ᵉ (γ …⸴′ δ) ∋ v
           → ⟦ t ⟧ᵉ γ ∋ v
 ⇑gweakenr δ = ⇑ʳ (gweakenrʳ-⊑ δ)
 
 ⇑gweakenl : ∀ (γ : ⟦ Γ ⟧ᶜ) {δ : ⟦ Δ ⟧ᶜ} {v}
-          → ⟦ gweakenl t ⟧ᵉ (δ …⸴′ γ) ∋ v
+          → ⟦ gweakenl Γ t ⟧ᵉ (δ …⸴′ γ) ∋ v
           → ⟦ t ⟧ᵉ γ ∋ v
 ⇑gweakenl γ = ⇑ʳ (gweakenlʳ-⊑ γ)
 
@@ -306,6 +357,17 @@ mutual
           → ⟦ exchange t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v
           → ⟦ t ⟧ᵉ (γ ⸴ v₁ ⸴ v₂) ∋ v
 ⇑exchange = ⇑ʳ exchangeʳ-⊑
+
+⇑sink : {γ : ⟦ Γ ⟧ᶜ} (δ : ⟦ Δ ⟧ᶜ)
+        {v′ : ⟦ τ ⟧ᵗ} {v : ⟦ α ⟧ᵗ}
+      → ⟦ sink Δ t ⟧ᵉ (γ ⸴ v′ …⸴′ δ) ∋ v
+      → ⟦ t ⟧ᵉ (γ …⸴′ δ ⸴ v′) ∋ v
+⇑sink δ = ⇑ʳ (sinkʳ-⊑ δ)
+
+⇑reassoc : ∀ {t : Γ …⸴ (Δ …⸴ Θ) ⊢ α} (γ : ⟦ Γ ⟧ᶜ) (δ : ⟦ Δ ⟧ᶜ) (θ : ⟦ Θ ⟧ᶜ) {v}
+         → ⟦ reassoc Γ Δ Θ t ⟧ᵉ ((γ …⸴′ δ) …⸴′ θ) ∋ v
+         → ⟦ t ⟧ᵉ (γ …⸴′ (δ …⸴′ θ)) ∋ v
+⇑reassoc γ δ θ = ⇑ʳ (reassocʳ-⊑ γ δ θ)
 
 ⇑subsume : ∀ {v₁ : ⟦ τ₁ ⟧ᵗ} {v₂ : ⟦ τ₂ ⟧ᵗ} {v}
          → ⟦ subsume t ⟧ᵉ (γ ⸴ v₂ ⸴ v₁) ∋ v

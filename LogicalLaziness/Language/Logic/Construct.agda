@@ -279,21 +279,33 @@ data ⟦forced_⟧ᵉ : Γ ⊢ `M (`T α) → ⟦ Γ ⟧ᶜ → ⟦ α ⟧ᵗ ×
 ⇓let-free* ∅     ⇓in φ = φ
 ⇓let-free* δ ⸴ v ⇓in φ = ⇓let-free* δ ⇓in (⇓let ⇓free v ⇓in φ)
 
--- Extract the entire context as a product
+⇑let-free*_⇑in_ : ∀ Δ {t : Γ …⸴ Δ ⊢ α} {v : ⟦ α ⟧ᵗ}
+                → ⟦ `let-free* Δ `in t ⟧ᵉ γ ∋ v
+                → Σ[ δ ∈ ⟦ Δ ⟧ᶜ ] ⟦ t ⟧ᵉ (γ …⸴′ δ) ∋ v
+⇑let-free* ∅     ⇑in φ = ∅ , φ
+⇑let-free* Δ ⸴ τ ⇑in φ
+ with ⇑let-free* Δ ⇑in φ
+... | δ , (⇓let ⇓free v ⇓in φ′) = δ ⸴ v , φ′
+
+-- Extract the entire environment as a product
 
 ∣_∣ : Ctx → Ty
 ∣_∣ = foldr _`×_ `Unit
 
-`ctx : Γ ⊢ ∣ Γ ∣
-`ctx {Γ = ∅    } = `tt
-`ctx {Γ = Γ ⸴ α} = ` zeroᵛ `, weaken `ctx
+`env : Γ ⊢ ∣ Γ ∣
+`env {Γ = ∅    } = `tt
+`env {Γ = Γ ⸴ α} = ` zeroᵛ `, weaken `env
 
 ∥_∥ : ⟦ Γ ⟧ᶜ → ⟦ ∣ Γ ∣ ⟧ᵗ
 ∥_∥ = All.foldr⁺ _,_ tt
 
-⇓ctx : ∀ {Γ} {γ : ⟦ Γ ⟧ᶜ} → ⟦ `ctx ⟧ᵉ γ ∋ ∥ γ ∥
-⇓ctx {Γ = ∅    } {γ = ∅    } = ⇓tt
-⇓ctx {Γ = Γ ⸴ τ} {γ = γ ⸴ v} = ⇓ zeroᵛ ⇓, ⇓weaken ⇓ctx
+⇓env : ∀ {Γ} {γ : ⟦ Γ ⟧ᶜ} → ⟦ `env ⟧ᵉ γ ∋ ∥ γ ∥
+⇓env {Γ = ∅    } {γ = ∅    } = ⇓tt
+⇓env {Γ = Γ ⸴ τ} {γ = γ ⸴ v} = ⇓ zeroᵛ ⇓, ⇓weaken ⇓env
+
+⇑env : ∀ {Γ} {γ : ⟦ Γ ⟧ᶜ} {u : ⟦ ∣ Γ ∣ ⟧ᵗ} → ⟦ `env ⟧ᵉ γ ∋ u → u ≡ ∥ γ ∥
+⇑env {Γ} {∅    } ⇓tt             = refl
+⇑env {Γ} {γ ⸴ v} (⇓ zeroᵛ ⇓, φ₂) = cong (v ,_) (⇑env (⇑weaken φ₂))
 
 ≲ᶜ⇒≲ᵗ : ⟦ Γ ⟧[ γ₁ ≲ᶜ γ₂ ] → ∥ γ₁ ∥ ≲ᵗ ∥ γ₂ ∥
 ≲ᶜ⇒≲ᵗ ∅       = tt

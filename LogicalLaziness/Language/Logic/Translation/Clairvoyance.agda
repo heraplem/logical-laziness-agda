@@ -10,6 +10,8 @@ import Data.List.Relation.Unary.All.Properties
 
 open import LogicalLaziness.Base
 open import LogicalLaziness.Base.Effect.Monad.Tick
+import LogicalLaziness.Base.Data.List.All
+  as All
 open import LogicalLaziness.Base.Data.List.Membership.Propositional
 open import LogicalLaziness.Base.Data.T
 open import LogicalLaziness.Base.Data.ListA
@@ -70,7 +72,7 @@ import LogicalLaziness.Language.Logic.Translation.Base
   in cong₂ _∷_ ⌊ ψ₁ ⌋ᵗ-injective ⌊ ψ₂ ⌋ᵗ-injective
 
 ⌊_⌋ᵗ-surjective : ∀ {α} (v : 𝕃.⟦⌊ α ⌋⟧ᵗ)
-               → Σ[ v′ ∈ ℂ.⟦ α ⟧ᵗ ] v ≡ ⌊ v′ ⌋ᵗ
+                → Σ[ v′ ∈ ℂ.⟦ α ⟧ᵗ ] v ≡ ⌊ v′ ⌋ᵗ
 ⌊_⌋ᵗ-surjective {α = `Bool  } false     = false , refl
 ⌊_⌋ᵗ-surjective {α = `Bool  } true      = true , refl
 ⌊_⌋ᵗ-surjective {α = `T α   } undefined = undefined , refl
@@ -87,6 +89,41 @@ import LogicalLaziness.Language.Logic.Translation.Base
 ⌊ x ∷ undefined ⌋ᵗ-map = refl
 ⌊ x ∷ thunk xs  ⌋ᵗ-map = cong₂ _∷_ refl (cong thunk ⌊ xs ⌋ᵗ-map)
 
+⌊_⌋≤ᵗ : ∀ {α} {v₁ v₂ : ℂ.⟦ α ⟧ᵗ} → v₁ ℂ.≤ᵗ v₂ → ⌊ v₁ ⌋ᵗ ≲ᵗ ⌊ v₂ ⌋ᵗ
+⌊ ℂ.undefined ⌋≤ᵗ = undefined
+⌊ ℂ.thunk ψ   ⌋≤ᵗ = thunk ⌊ ψ ⌋≤ᵗ
+⌊ ℂ.false     ⌋≤ᵗ = false
+⌊ ℂ.true      ⌋≤ᵗ = true
+⌊ ℂ.[]        ⌋≤ᵗ = []
+⌊ ψ₁ ℂ.∷ ψ₂   ⌋≤ᵗ = ⌊ ψ₁ ⌋≤ᵗ ∷ ⌊ ψ₂ ⌋≤ᵗ
+
+⟦_⟧⌈_⌉ᵗ : (α : Explicit.Ty) → 𝕃.⟦⌊ α ⌋⟧ᵗ → ℂ.⟦ α ⟧ᵗ
+⟦ `Bool   ⟧⌈ false     ⌉ᵗ = false
+⟦ `Bool   ⟧⌈ true      ⌉ᵗ = true
+⟦ `T α    ⟧⌈ undefined ⌉ᵗ = undefined
+⟦ `T α    ⟧⌈ thunk v   ⌉ᵗ = thunk ⟦ α ⟧⌈ v ⌉ᵗ
+⟦ `List α ⟧⌈ []        ⌉ᵗ = []
+⟦ `List α ⟧⌈ v ∷ vs    ⌉ᵗ = ⟦ α ⟧⌈ v ⌉ᵗ ∷ ⟦ `T (`List α) ⟧⌈ vs ⌉ᵗ
+
+⌈_⌉ᵗ : ∀ {α} → 𝕃.⟦⌊ α ⌋⟧ᵗ → ℂ.⟦ α ⟧ᵗ
+⌈_⌉ᵗ = ⟦ _ ⟧⌈_⌉ᵗ
+
+⌈_⌉≤ᵗ : ∀ {α} {v₁ v₂ : ℂ.⟦ α ⟧ᵗ} → ⌊ v₁ ⌋ᵗ ≲ᵗ ⌊ v₂ ⌋ᵗ → v₁ ℂ.≤ᵗ v₂
+⌈_⌉≤ᵗ {`Bool  } {false    } {false  } false     = ℂ.false
+⌈_⌉≤ᵗ {`Bool  } {true     } {true   } true      = ℂ.true
+⌈_⌉≤ᵗ {`T α   } {undefined} {_      } undefined = ℂ.undefined
+⌈_⌉≤ᵗ {`T α   } {thunk _  } {thunk _} (thunk ψ) = ℂ.thunk ⌈ ψ ⌉≤ᵗ
+⌈_⌉≤ᵗ {`List α} {[]       } {[]     } []        = ℂ.[]
+⌈_⌉≤ᵗ {`List α} {_ ∷ _    } {_ ∷ _  } (ψ₁ ∷ ψ₂) = ⌈ ψ₁ ⌉≤ᵗ ℂ.∷ ⌈ ψ₂ ⌉≤ᵗ
+
+⌊⌈_⌉⌋ᵗ : ∀ {α} (v : 𝕃.⟦⌊ α ⌋⟧ᵗ) → ⌊ ⌈ v ⌉ᵗ ⌋ᵗ ≡ v
+⌊⌈_⌉⌋ᵗ {`Bool   } false     = refl
+⌊⌈_⌉⌋ᵗ {`Bool   } true      = refl
+⌊⌈_⌉⌋ᵗ {`T α    } undefined = refl
+⌊⌈_⌉⌋ᵗ {`T α    } (thunk v) = cong thunk ⌊⌈ v ⌉⌋ᵗ
+⌊⌈_⌉⌋ᵗ {`List α } []        = refl
+⌊⌈_⌉⌋ᵗ {`List α } (v ∷ vs)  = cong₂ _∷_ ⌊⌈ v ⌉⌋ᵗ ⌊⌈ vs ⌉⌋ᵗ
+
 -- Convert evaluation contexts
 
 ⟦_⟧⌊_⌋ᶜ : (Γ : Explicit.Ctx) → ℂ.⟦ Γ ⟧ᶜ → 𝕃.⟦⌊ Γ ⌋⟧ᶜ
@@ -94,6 +131,25 @@ import LogicalLaziness.Language.Logic.Translation.Base
 
 ⌊_⌋ᶜ : {Γ : Explicit.Ctx} → ℂ.⟦ Γ ⟧ᶜ → 𝕃.⟦⌊ Γ ⌋⟧ᶜ
 ⌊ γ ⌋ᶜ = ⟦ _ ⟧⌊ γ ⌋ᶜ
+
+⌊_⌋≤ᶜ : ∀ {Γ} {γ₁ γ₂ : ℂ.⟦ Γ ⟧ᶜ} → γ₁ ℂ.≤ᶜ γ₂ → ⌊ γ₁ ⌋ᶜ ≲ᶜ ⌊ γ₂ ⌋ᶜ
+⌊ ∅             ⌋≤ᶜ = ∅
+⌊ γ₁≤γ₂ ⸴ v₁≤v₂ ⌋≤ᶜ = ⌊ γ₁≤γ₂ ⌋≤ᶜ ⸴ ⌊ v₁≤v₂ ⌋≤ᵗ
+
+⟦_⟧⌈_⌉ᶜ : (Γ : Explicit.Ctx) → 𝕃.⟦⌊ Γ ⌋⟧ᶜ → ℂ.⟦ Γ ⟧ᶜ
+⟦ Γ ⟧⌈ γ ⌉ᶜ = All.gmap⁻ ⟦ _ ⟧⌈_⌉ᵗ γ
+
+⌈_⌉ᶜ : {Γ : Explicit.Ctx} → 𝕃.⟦⌊ Γ ⌋⟧ᶜ → ℂ.⟦ Γ ⟧ᶜ
+⌈ γ ⌉ᶜ = ⟦ _ ⟧⌈ γ ⌉ᶜ
+
+⌈_⌉≤ᶜ : ∀ {Γ} {γ₁ γ₂ : ℂ.⟦ Γ ⟧ᶜ} → ⌊ γ₁ ⌋ᶜ ≲ᶜ ⌊ γ₂ ⌋ᶜ → γ₁ ℂ.≤ᶜ γ₂
+⌈_⌉≤ᶜ {γ₁ = ∅    } {γ₂ = ∅    } ∅                       = ∅
+⌈_⌉≤ᶜ {γ₁ = _ ⸴ _} {γ₂ = _ ⸴ _} (⌊γ₁⌋≤⌊γ₂⌋ ⸴ ⌊v₁⌋≤⌊v₂⌋) = ⌈ ⌊γ₁⌋≤⌊γ₂⌋ ⌉≤ᶜ ⸴ ⌈ ⌊v₁⌋≤⌊v₂⌋ ⌉≤ᵗ
+
+open import Data.List.Relation.Unary.All as All
+⌊⌈_⌉⌋ᶜ : ∀ {Γ} (γ : 𝕃.⟦⌊ Γ ⌋⟧ᶜ) → ⌊ ⌈ γ ⌉ᶜ ⌋ᶜ ≡ γ
+⌊⌈_⌉⌋ᶜ {∅} ∅ = refl
+⌊⌈_⌉⌋ᶜ {Γ = _ ⸴ _} (γ ⸴ v) = cong₂ _⸴_ (All.map⁺-map⁻ ⌈_⌉ᵗ ⌊_⌋ᵗ ⌊⌈_⌉⌋ᵗ γ) ⌊⌈ v ⌉⌋ᵗ
 
 -- Convert terms
 

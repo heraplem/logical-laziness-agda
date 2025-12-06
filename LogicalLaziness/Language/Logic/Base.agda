@@ -96,6 +96,7 @@ variable
 variable
   γ γ₁ γ₂ : ⟦ Γ ⟧ᶜ
   δ : ⟦ Δ ⟧ᶜ
+  θ : ⟦ Θ ⟧ᶜ
 
 --------------------
 -- Approximations --
@@ -325,9 +326,15 @@ mutual
                       → ⟦foldrA t₁ , t₂ ⟧ᵉ γ as ∋ b
                       → ⟦foldrA′ t₁ , t₂ ⟧ᵉ γ (thunk as) ∋ thunk b
 
-----------------------------------------------------------------
--- A special case of (equality) substitution  for evaluation. --
-----------------------------------------------------------------
+---------------------------
+-- Some evaluation theorems
+---------------------------
 
+-- A special case of subsitution for evaluation
 ⇓≡ : ∀ {v₁ v₂} → v₁ ≡ v₂ → ⟦ t ⟧ᵉ γ ∋ v₁ → ⟦ t ⟧ᵉ γ ∋ v₂
 ⇓≡ refl φ = φ
+
+-- Sometimes, trying to pattern match on the evaluation rule for variables
+-- causes unification failures.  This can get around that problem.
+⇑ : ∀ {x : α ∈ᴸ Γ} {v} → ⟦ ` x ⟧ᵉ γ ∋ v → All.lookup γ x ≡ v
+⇑ (⇓ x) = refl

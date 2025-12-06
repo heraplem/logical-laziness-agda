@@ -21,8 +21,6 @@ open import LogicalLaziness.Language.Explicit.Semantics.Demand
         ; _∷_
         ; undefined
         ; thunk
-        ; _≤ᵉ_
-        ; _⊔ᵉ_
         ; _≤ᶜ_
         ; _≤ᵐ_
         ; ⊥ᵐ-minimum
@@ -36,16 +34,6 @@ open import LogicalLaziness.Language.Explicit.Semantics.Clairvoyant
         ; _∷_
         ; undefined
         ; thunk
-        ; `false
-        ; `true
-        ; `[]
-        ; _`∷_
-        ; `tick
-        ; `lazy-undefined
-        ; `lazy-thunk
-        ; `force
-        ; _≲ᵉ_
-        ; ≲ᵉ-refl
         )
 import LogicalLaziness.Language.Explicit.Semantics.Clairvoyant
   as ℂ
@@ -114,9 +102,9 @@ postulate
       (γ : 𝔼.⟦ Γ ⟧ᶜ)
       (a₁ : 𝔻.⟦ α ⟧≺ᵗ 𝔼.⟦ t ⟧ᵉ γ)
       {δ₂ : 𝔻.⟦ Γ ⟧≺ᶜ γ}
-      {a₂ : ℂ.⟦ α ⟧ᵗ}
+      {a₂ : 𝔻.⟦ α ⟧≺ᵗ 𝔼.⟦ t ⟧ᵉ γ}
       {c₂ : ℕ}
-    → ℂ.⟦ t ⟧ᵉ ℂ.𝔻[ δ₂ ]ᶜ ∋ (a₂ , c₂)
+    → ℂ.⟦ t ⟧ᵉ ℂ.𝔻[ δ₂ ]ᶜ ∋ (ℂ.𝔻[ a₂ ]ᵗ , c₂)
     → let (δ₁ , c₁) = 𝔻.⟦ t ⟧ᵉ γ a₁
       in (δ₁ , c₁) ≤ᵐ (δ₂ , c₂)
 

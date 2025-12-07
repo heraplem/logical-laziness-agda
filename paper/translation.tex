@@ -357,7 +357,7 @@ We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended 
 \subsection{The Demand Translation}
 
 We now define another translation from \( \LB \) to \( \LL \) that is intended to simulate demand semantics. Given \( \TL{\Gamma}{t}{A} \), the demand translation of \( t \) must introduce new 
-logic variables with types corresponding to the types in \( \Gamma \), so \( \Gamma \) must be a parameter to the translation; we therefore denote it by \( \transD{\Gamma}{t} \).
+logic variables with types corresponding to the types in \( \Gamma \), so \( \Gamma \) must be a parameter to the translation; we therefore denote it by \( \transD{t}{\Gamma} \).
 
 \begin{align*}
   \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x'_1 \) = \tfree{A_1} in} \\

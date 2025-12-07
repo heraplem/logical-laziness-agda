@@ -116,9 +116,6 @@ following auxiliary relation.\ly{TODO: explain \( \tfoldrZ \) in more details.}
 \ly{Really? How could \cref{prop:clair-mono} be true when there is
   nondeterminism? Clearly there can be smaller results even if $\gamma_2$ is
   bigger?}
-\begin{lemma}[Monotonicity of clairvoyance semantics]\label{prop:clair-mono}
-  If \( \gamma_1 \le \gamma_2 \), \( \EC{\gamma_1}{t}{c_1}{v_1} \), and \( \EC{\gamma_2}{t}{c_2}{v_2} \), then \( (v_1, c_1) \le (v_2, c_2) \).
-\end{lemma}
 
 \subsection{Demand semantics}
 
@@ -173,7 +170,6 @@ The following two theorems demonstrate the equivalence of clairvoyance and deman
   \label{prop:cost-minimality}
   Let \( \approxof{{\gamma^A}'}{\gamma}, {a^A}' \ge a^A, c' \in \N \) such that \( \EC{{\gamma^A}'}{t}{c'}{{a^A}'} \). Then \( ({\gamma^A}', c') \ge (\gamma^A, c) \).
 \end{theorem}
-
 
 \paragraph{Clairvoyance translation}
 
@@ -244,12 +240,9 @@ The following two theorems demonstrate the equivalence of clairvoyance and deman
 
 \paragraph{Demand translation}
 
-
 \begin{lemma}
-  Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \) and \( \gamma \in \Eval{\Gamma} \), then \( \TL{\Gamma, y^A : B}{\transD{t}{\Gamma}}{\TM{(\texttt{\(A_1\)\ *\ \(\cdots\) *\ \(A_n\)})}} \)
+  Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \) and \( \gamma \in \Eval{\Gamma} \), then \( \TL{\Gamma, y^A : B}{\transD{t}{\Gamma}}{\TM{(\texttt{\(A_1\)\ *\ \(\cdots\) *\ \(A_n\)})}} \),
 \end{lemma}
-
-Define \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) \).
 
 \begin{lemma}[Semantics of the demand translation]\label{prop:dem-trans-sem}
   \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \) if and only if

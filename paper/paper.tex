@@ -82,10 +82,7 @@
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclarePairedDelimiter{\verts}{\lvert}{\rvert}
-
-% theorem environments
-% \newtheorem{lemma}{Lemma}
-% \newtheorem{theorem}{Theorem}
+\DeclarePairedDelimiter{\Verts}{\lVert}{\rVert}
 
 % math notation
 \newcommand{\N}{\mathbb{N}}
@@ -119,12 +116,15 @@
 % terms
 \newcommand{\tletZ}{\texttt{let}}
 \newcommand{\tlet}[3]{\texttt{\tletZ\ \({#1}\)\ =\ \({#2}\)\ in\ \({#3}\)}}
+\newcommand{\tunit}{\texttt{()}}
 \newcommand{\ttrue}{\texttt{true}}
 \newcommand{\tfalse}{\texttt{false}}
 \newcommand{\teq}[2]{\texttt{\(#1\)\ ==\ \(#2\)}}
 \newcommand{\tle}[2]{\texttt{\(#1\)\ <=\ \(#2\)}}
 \newcommand{\tif}[3]{\texttt{if\ \({#1}\)\ then\ \({#2}\)\ else\ \({#3}\)}}
 \newcommand{\tpair}[2]{\texttt{(\(#1\),\ \(#2\))}}
+\newcommand{\tfst}[1]{\texttt{fst\ \(#1\)}}
+\newcommand{\tsnd}[1]{\texttt{snd\ \(#1\)}}
 \newcommand{\tadd}[2]{\texttt{\(#1\)\ +\ \(#2\)}}
 \newcommand{\tnil}{\texttt{[]}}
 \newcommand{\tcons}[2]{\texttt{\(#1\)\ ::\ \(#2\)}}
@@ -144,8 +144,9 @@
 \newcommand{\tfreeZ}{\texttt{free}}
 \newcommand{\tfree}[1]{\texttt{\tfreeZ\ \(#1\)}}
 \newcommand{\tfail}{\texttt{fail}}
-\newcommand{\tassert}[1]{\texttt{assert\ \(#1\)}}
+\newcommand{\tassert}[2]{\texttt{assert\ \(#1\)\ in \(#2\)}}
 \newcommand{\treturn}[1]{\texttt{return\ \(#1\)}}
+\newcommand{\tdo}[3]{\texttt{\(#1\)\ <-\ \(#2\);\ \(#3\)}}
 \newcommand{\ttranspose}[1]{\texttt{transpose\ \(#1\)}}
 \newcommand{\tfoldMZ}{\texttt{foldM}}
 \newcommand{\tfoldM}[5]{\texttt{\tfoldMZ(\(\lambda {#1}{#2}.{#3}\),\ \(#4\),\ \(#5\))}}
@@ -199,7 +200,7 @@
 
 % translations
 \newcommand{\transC}[1]{\SC\floor{#1}}
-\newcommand{\transD}[2]{\SD\floor{#1}({#2})}
+\newcommand{\transD}[2]{\SD_{#2}\floor{#1}}
 
 % rules font
 \newcommand{\rulename}[1]{\textsc{#1}}

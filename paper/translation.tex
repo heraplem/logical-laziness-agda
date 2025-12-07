@@ -91,13 +91,16 @@ We show the syntax of $L$ in \cref{fig:syntax-logic}. \ly{TODO: Talk about all
 $t$ ::=
 | $x$
 // \tlet{x}{t}{t}
+// \tunit{}
 // \ttrue{}
 // \tfalse{}
 // \teq{t}{t}
 // \tle{t}{t}
 // \tif{t}{t}{t}
 | \tpair{t}{t}
-// \tthunk{t}
+// \tfst{t}
+// \tsnd{t}
+| \tthunk{t}
 // \tundefined{}
 // \tcase{t}{x}{t}{t}
 | $n$
@@ -112,7 +115,6 @@ $t$ ::=
 \end{center}
 \caption{The syntax of the logic language $L$.}\label{fig:syntax-logic}
 \end{figure}
-
 
 \paragraph{Typing.}
 
@@ -137,197 +139,246 @@ Note that $L$ is not total because \( \tfail \) never reduces.
 
 \subsection{The Clairvoyance Translation}
 
-\ly{This section describes properties of the clairvoyance translation, but where
-  is the clairvoyance translation?}
+% \ly{This section describes properties of the clairvoyance translation, but where
+%   is the clairvoyance translation?}
 
-We now define some constructs on the terms in \( \LL \).  For each construct \( c \), we provide typing rules and a set of evaluation rules that \emph{completely characterize} \( c \).  By ``completely characterize'', we mean the following.
+% We now define some constructs on the terms in \( \LL \).  For each construct \( c \), we provide typing rules and a set of evaluation rules that \emph{completely characterize} \( c \).  By ``completely characterize'', we mean the following.
 
-\begin{itemize}
-\item \emph{Soundness:} Each rule is valid.
-\item \emph{Completeness:} Any derivation of the form \( \EL{\gamma}{c}{v} \) must have the form of one of the elimation rules for that construct.  In particular, there must be some elimination rule whose hypotheses are all true.  This allows us to ``invert'' judgments of the form \( \EL{\gamma}{c}{v} \).
-\end{itemize}
+% \begin{itemize}
+% \item \emph{Soundness:} Each rule is valid.
+% \item \emph{Completeness:} Any derivation of the form \( \EL{\gamma}{c}{v} \) must have the form of one of the elimation rules for that construct.  In particular, there must be some elimination rule whose hypotheses are all true.  This allows us to ``invert'' judgments of the form \( \EL{\gamma}{c}{v} \).
+% \end{itemize}
 
-\subsubsection{\texttt{return}}
+% \subsubsection{\texttt{return}}
 
-\[
-  \texttt{\treturn{t}} = \tpair{t}{0}
-\]
+% \[
+%   \texttt{\treturn{t}} = \tpair{t}{0}
+% \]
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\TL{\Gamma}{t}{A}}
-    \infer1{\TL{\Gamma}{\treturn{t}}{\TM{A}}}
-  \end{prooftree}
-\end{center}
+% \begin{center}
+%   \begin{prooftree}
+%     \hypo{\TL{\Gamma}{t}{A}}
+%     \infer1{\TL{\Gamma}{\treturn{t}}{\TM{A}}}
+%   \end{prooftree}
+% \end{center}
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t}{v}}
-    \infer1{\EL{\gamma}{\treturn{t}}{\spair{v}{0}}}
-  \end{prooftree}
-\end{center}
+% \begin{center}
+%   \begin{prooftree}
+%     \hypo{\EL{\gamma}{t}{v}}
+%     \infer1{\EL{\gamma}{\treturn{t}}{\spair{v}{0}}}
+%   \end{prooftree}
+% \end{center}
 
-\subsubsection{bind}
+% \subsubsection{bind}
 
-\[
-  \texttt{do $x$ <- $t_1$; $t_2$} = \tlet{\tpair{x}{y_1}}{t_1}{\tlet{\tpair{y_2}{y_3}}{t_2}{\tpair{y_2}{y_1 + y_3}}}
-\]
+% \[
+%   \texttt{do $x$ <- $t_1$; $t_2$} = \tlet{\tpair{x}{y_1}}{t_1}{\tlet{\tpair{y_2}{y_3}}{t_2}{\tpair{y_2}{y_1 + y_3}}}
+% \]
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\TL{\Gamma}{t_1}{\TM{A}}}
-    \hypo{\TL{\Gamma, x : A}{t_2}{\TM{B}}}
-    \infer2{\TL{\Gamma}{\texttt{do $x$ <- $t_1$; $t_2$}}{\TM{B}}}
-  \end{prooftree}
-\end{center}
+% \begin{center}
+%   \begin{prooftree}
+%     \hypo{\TL{\Gamma}{t_1}{\TM{A}}}
+%     \hypo{\TL{\Gamma, x : A}{t_2}{\TM{B}}}
+%     \infer2{\TL{\Gamma}{\texttt{do $x$ <- $t_1$; $t_2$}}{\TM{B}}}
+%   \end{prooftree}
+% \end{center}
 
-\subsubsection{\texttt{transpose}}
+% \subsubsection{\texttt{transpose}}
 
-\[
-\begin{array}{l@{}l@{}l@{}}
-  \texttt{transpose \(t\)} = \texttt{case \(t\) of } & \texttt{thunk \(y_1\) -> do $y_2$ <- $y_1$; return (\tthunk{y_2})} \\ & \texttt{undefined -> return undefined}
-\end{array}
-\]
+% \[
+% \begin{array}{l@{}l@{}l@{}}
+%   \texttt{transpose \(t\)} = \texttt{case \(t\) of } & \texttt{thunk \(y_1\) -> do $y_2$ <- $y_1$; return (\tthunk{y_2})} \\ & \texttt{undefined -> return undefined}
+% \end{array}
+% \]
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}
-    \infer1{\TL{\Gamma}{\ttranspose{t}}{\TM{(\TThunk{A})}}}
-  \end{prooftree}
-\end{center}
+% \begin{center}
+%   \begin{prooftree}
+%     \hypo{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}
+%     \infer1{\TL{\Gamma}{\ttranspose{t}}{\TM{(\TThunk{A})}}}
+%   \end{prooftree}
+% \end{center}
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t}{\sundefined}}
-    \infer1{\EL{\gamma}{\ttranspose{t}}{\spair{\sundefined}{0}}}
-  \end{prooftree}
-\end{center}
+% \begin{center}
+%   \begin{prooftree}
+%     \hypo{\EL{\gamma}{t}{\sundefined}}
+%     \infer1{\EL{\gamma}{\ttranspose{t}}{\spair{\sundefined}{0}}}
+%   \end{prooftree}
+% \end{center}
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\EL{\gamma}{t}{\sthunk{\spair{v}{c}}}}
-    \infer1{\EL{\gamma}{\ttranspose{t}}{\spair{\sthunk{v}}{c}}}
-  \end{prooftree}
-\end{center}
+% \begin{center}
+%   \begin{prooftree}
+%     \hypo{\EL{\gamma}{t}{\sthunk{\spair{v}{c}}}}
+%     \infer1{\EL{\gamma}{\ttranspose{t}}{\spair{\sthunk{v}}{c}}}
+%   \end{prooftree}
+% \end{center}
 
-\subsubsection{\texttt{foldM}}
+% \subsubsection{\texttt{foldM}}
 
-\[
-  \texttt{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} = \tfoldr{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{t_3}} .
-\]
+% \[
+%   \texttt{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} = \tfoldr{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{t_3}} .
+% \]
 
-\begin{center}
-  \begin{prooftree}
-    \hypo{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}}}
-    \hypo{\TL{\Gamma}{t_2}{\TM{B}}}
-    \hypo{\TL{\Gamma}{t_3}{\TList{A}}}
-    \infer3{\TL{\Gamma}{\texttt{foldM(\(\lambda x_1 x_2\).\(t_1\), \(t_2\), \(t_3\))}}{\TM{B}}}
-  \end{prooftree}
-\end{center}
+% \begin{center}
+%   \begin{prooftree}
+%     \hypo{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}}}
+%     \hypo{\TL{\Gamma}{t_2}{\TM{B}}}
+%     \hypo{\TL{\Gamma}{t_3}{\TList{A}}}
+%     \infer3{\TL{\Gamma}{\texttt{foldM(\(\lambda x_1 x_2\).\(t_1\), \(t_2\), \(t_3\))}}{\TM{B}}}
+%   \end{prooftree}
+% \end{center}
 
-To characterize the reduction behavior of \( \rulename{L-FoldM} \), we define yet another auxiliary relation:
-\[
-  \ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v}{u} \equiv \ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}{u} .
-\]
+% To characterize the reduction behavior of \( \rulename{L-FoldM} \), we define yet another auxiliary relation:
+% \[
+%   \ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v}{u} \equiv \ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}{u} .
+% \]
 
-\begin{lemma}
-  The following rules completely characterize \( \tfoldMZ \).
-  \begin{center}
-    \begin{prooftree}
-      \hypo{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v}{u}}
-      \infer1[\rulename{L-FoldM}]{\EL{\gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{v}}{u}}
-    \end{prooftree}
-  \end{center}\begin{center}
-    \begin{prooftree}
-      \hypo{\EL{\gamma}{t_2}{u}}
-      \infer1[\rulename{L-FoldM-Nil}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\varepsilon}{u}}
-    \end{prooftree}
-  \end{center}
-  \begin{center}
-    \begin{prooftree}
-      \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{u}}
-      \infer1[\rulename{L-FoldM-Undefined}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{u}}
-    \end{prooftree}
-  \end{center}
-  \begin{center}
-    \begin{prooftree}
-      \hypo{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{\spair{v_3}{c_1}}}
-      \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sthunk{v_2}}{t_1}{\spair{v_4}{c_2}}}
-      \infer2[\rulename{L-FoldM-Thunk}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{\spair{v_4}{c_1 + c_2}}}
-    \end{prooftree}
-  \end{center}
-\end{lemma}
-\ifextended
-\begin{proof}
-  We first prove validity.
-  \newpage
-  \begin{landscape}
-    \begin{itemize}
-    \item \textbf{\rulename{L-FoldM}.}
-      \begin{center}
-        \begin{prooftree}
-          \hypo{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}{u}}
-          \infer1[\rulename{L-Foldr}]{\EL{\gamma}{\tfoldr{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}}{u}}
-        \end{prooftree}
-      \end{center}
-    \item \textbf{\rulename{L-FoldM-Nil}.}
-      \begin{center}
-        \begin{prooftree}
-          \hypo{\EL{\gamma}{t_2}{u}}
-          \infer1[\rulename{L-Foldr-Nil}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\varepsilon}{u}}
-        \end{prooftree}
-      \end{center}
-    \item \textbf{\rulename{L-FoldM-Undefined}.}
-      \begin{center}
-        \begin{prooftree}
-          \infer0[\rulename{L-Var}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{y_2}{\bot}}
-          \infer1[\rulename{L-Transpose-Undefined}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{\ttranspose{y_2}}{\spair{\bot}{0}}}
-          \hypo{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot, x_2 \mapsto \sundefined}{t_1}{u}}
-          \infer2[\rulename{L-Bind}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{u}}
-          \infer1[\rulename{L-Foldr-Undefined}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\scons{v_1}{\sundefined}}{u}}
-        \end{prooftree}
-      \end{center}
-    \item \textbf{\rulename{L-FoldM-Thunk}.}  By induction, \( \ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v_2}{v_3} \).  Then,
-      \begin{center}
-        \begin{prooftree}
-          \hypo{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v_2}{v_3}}
-          \infer0[\rulename{L-Var}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_1}}}{y_2}{\sthunk{\spair{v_3}{c_1}}}}
-          \infer1[\rulename{L-Transpose-Thunk}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_1}}}{\ttranspose{y_2}}{\spair{\sthunk{v_3}}{c_1}}}
-          \hypo{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_2}}, x_2 \mapsto \sthunk{v_2}}{t_1}{\spair{v_4}{c_2}}}
-          \infer2[\rulename{L-Bind}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_2}}}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{\spair{v_4}{c_1 + c_2}}}
-          \infer2[\rulename{L-Foldr-Thunk}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\scons{v_1}{\sthunk{v_2}}}{\spair{v_4}{c_1 + c_2}}}
-        \end{prooftree}
-      \end{center}
-    \end{itemize}
-    To prove completeness, repeatedly apply inversion principles to find that any derivation of \( \tfoldM{x_1}{x_2}{t_1}{t_2}{v}{u} \) must have the form of one of the preceding derivations.
-  \end{landscape}
-\end{proof}
-\fi
+% \begin{lemma}
+%   The following rules completely characterize \( \tfoldMZ \).
+%   \begin{center}
+%     \begin{prooftree}
+%       \hypo{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v}{u}}
+%       \infer1[\rulename{L-FoldM}]{\EL{\gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{v}}{u}}
+%     \end{prooftree}
+%   \end{center}\begin{center}
+%     \begin{prooftree}
+%       \hypo{\EL{\gamma}{t_2}{u}}
+%       \infer1[\rulename{L-FoldM-Nil}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\varepsilon}{u}}
+%     \end{prooftree}
+%   \end{center}
+%   \begin{center}
+%     \begin{prooftree}
+%       \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{u}}
+%       \infer1[\rulename{L-FoldM-Undefined}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{u}}
+%     \end{prooftree}
+%   \end{center}
+%   \begin{center}
+%     \begin{prooftree}
+%       \hypo{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{\spair{v_3}{c_1}}}
+%       \hypo{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sthunk{v_2}}{t_1}{\spair{v_4}{c_2}}}
+%       \infer2[\rulename{L-FoldM-Thunk}]{\ELFM{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{\spair{v_4}{c_1 + c_2}}}
+%     \end{prooftree}
+%   \end{center}
+% \end{lemma}
+% \ifextended
+% \begin{proof}
+%   We first prove validity.
+%   \newpage
+%   \begin{landscape}
+%     \begin{itemize}
+%     \item \textbf{\rulename{L-FoldM}.}
+%       \begin{center}
+%         \begin{prooftree}
+%           \hypo{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}{u}}
+%           \infer1[\rulename{L-Foldr}]{\EL{\gamma}{\tfoldr{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v}}{u}}
+%         \end{prooftree}
+%       \end{center}
+%     \item \textbf{\rulename{L-FoldM-Nil}.}
+%       \begin{center}
+%         \begin{prooftree}
+%           \hypo{\EL{\gamma}{t_2}{u}}
+%           \infer1[\rulename{L-Foldr-Nil}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\varepsilon}{u}}
+%         \end{prooftree}
+%       \end{center}
+%     \item \textbf{\rulename{L-FoldM-Undefined}.}
+%       \begin{center}
+%         \begin{prooftree}
+%           \infer0[\rulename{L-Var}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{y_2}{\bot}}
+%           \infer1[\rulename{L-Transpose-Undefined}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{\ttranspose{y_2}}{\spair{\bot}{0}}}
+%           \hypo{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot, x_2 \mapsto \sundefined}{t_1}{u}}
+%           \infer2[\rulename{L-Bind}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \bot}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{u}}
+%           \infer1[\rulename{L-Foldr-Undefined}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\scons{v_1}{\sundefined}}{u}}
+%         \end{prooftree}
+%       \end{center}
+%     \item \textbf{\rulename{L-FoldM-Thunk}.}  By induction, \( \ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v_2}{v_3} \).  Then,
+%       \begin{center}
+%         \begin{prooftree}
+%           \hypo{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{v_2}{v_3}}
+%           \infer0[\rulename{L-Var}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_1}}}{y_2}{\sthunk{\spair{v_3}{c_1}}}}
+%           \infer1[\rulename{L-Transpose-Thunk}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_1}}}{\ttranspose{y_2}}{\spair{\sthunk{v_3}}{c_1}}}
+%           \hypo{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_2}}, x_2 \mapsto \sthunk{v_2}}{t_1}{\spair{v_4}{c_2}}}
+%           \infer2[\rulename{L-Bind}]{\EL{\gamma, x_1 \mapsto v_1, y_2 \mapsto \sthunk{\spair{v_3}{c_2}}}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{\spair{v_4}{c_1 + c_2}}}
+%           \infer2[\rulename{L-Foldr-Thunk}]{\ELF{\gamma}{x_1}{y_2}{\texttt{do \(x_2\) <- \ttranspose{y_2}; \(t_1\)}}{t_2}{\scons{v_1}{\sthunk{v_2}}}{\spair{v_4}{c_1 + c_2}}}
+%         \end{prooftree}
+%       \end{center}
+%     \end{itemize}
+%     To prove completeness, repeatedly apply inversion principles to find that any derivation of \( \tfoldM{x_1}{x_2}{t_1}{t_2}{v}{u} \) must have the form of one of the preceding derivations.
+%   \end{landscape}
+% \end{proof}
+% \fi
 
-\begin{center}
+\begin{figure}[t]
+  \[
+    \begin{array}{rcl}
+      \tassert{t_1}{t_2} &= &\tif{t_1}{t_2}{\tfail} \\
+      \treturn{t} &= &\tpair{t}{0} \\
+      \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
+      \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\texttt{\tdo{x_2}{\ttranspose{y_2}}{t_1}}}{t_2}{t_3}
+    \end{array}
+  \]
+\caption{Derived term constructs in \(\LL\).}
+\end{figure}
+
+%   \texttt{transpose \(t\)} = \texttt{case \(t\) of } & \texttt{thunk \(y_1\) -> do $y_2$ <- $y_1$; return (\tthunk{y_2})} \\ & \texttt{undefined -> return undefined}
+
+\begin{figure}[t]
+  \centering
+  \begin{mathpar}
+    \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}} \\
+    \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
+    \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
+    \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}}
+  \end{mathpar}
+  \caption{Typing rules for the derived constructs.}
+\end{figure}
+
+\begin{figure}[t]
   \begin{align*}
-    \floor{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}} &= \texttt{do $y_3$ <- \(\floor{t_3}\); \tfoldM{x_1}{x_2}{\floor{t_1}}{\floor{t_2}}{y_3}}
+    \transC{x} &= \treturn{x} \\
+    \transC{\tlet{x}{t_1}{t_2}} &= \tdo{x}{\transC{t_1}}{\transC{t_2}} \\
+    \transC{\ttrue{}} &= \treturn{\ttrue{}} \\
+    \transC{\tfalse{}} &= \treturn{\tfalse{}} \\
+    \transC{\tif{t_1}{t_2}{t_3}} &= \tdo{y}{t_1}{\tif{y}{\transC{t_2}}{\transC{t_3}}} \\
+    \transC{\tnil{}} &= \treturn{\tnil{}} \\
+    \transC{\tcons{t_1}{t_2}} &= \tdo{y_1}{\transC{t_1}}{\tdo{y_2}{\transC{t_2}}{\treturn{(\tcons{y_1}{y_2})}}} \\
+    \transC{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}} &= \tdo{y}{\transC{t_3}}{\tfoldM{x_1}{x_2}{\transC{t_1}}{\transC{t_2}}{y}} \\
+    \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t_1}{\treturn(\tthunk{y})}} \\
+    \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}}
   \end{align*}
-\end{center}
+  \caption{The clairvoyance translation \(\transC{-}\) from \(\LB\) to \(\LL\).}
+  \label{fig:transC}
+\end{figure}
 
-\subsubsection{Properties of the translation}
+We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended to ``behave like'' clairvoyance semantics (\cref{fig:transC}).
 
 \begin{lemma}
-  If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\floor{t}}{A} \).
+  If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).
 \end{lemma}
 
 \subsection{The Demand Translation}
 
+We now define another translation from \( \LB \) to \( \LL \) that is intended to simulate demand semantics. Given \( \TL{\Gamma}{t}{A} \), the demand translation of \( t \) must introduce new 
+logic variables with types corresponding to the types in \( \Gamma \), so \( \Gamma \) must be a parameter to the translation; we therefore denote it by \( \transD{\Gamma}{t} \).
+
 \begin{align*}
-  \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x^A_1 \) = \tfree{A_1} in} \\
-                                             &\texttt{assert \tle{x^A_1}{x_1} in} \\
+  \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x'_1 \) = \tfree{A_1} in} \\
+                                             &\texttt{assert \tle{x'_1}{x_1} in} \\
                                              &\vdots \\
-                                             &\texttt{let \( x^A_n \) = \tfree{A_n} in} \\
-                                             &\texttt{assert \tle{x^A_n}{x_n} in} \\
-                                             &\texttt{let \( c \) = \tfree{\TNat} in} \\
-                                             &\texttt{assert \teq{\transC{t}}{\tpair{y^A}{c}} in} \\
-                                             &\texttt{(\( x^A_1 \), \( \ldots \), \( x^A_n \), \( c \))}
+                                             &\texttt{let \( x'_n \) = \tfree{A_n} in} \\
+                                             &\texttt{assert \tle{x'_n}{x_n} in} \\
+                                             &\texttt{let \( u \) = \( \transC{t'} \) in} \\
+                                             &\texttt{assert \teq{x}{\tfst{u}} in} \\
+                                             &\texttt{((\( x'_1 \), \( \ldots \), \( x'_n \)), \( \tsnd{u} \))} \\
+  \text{where \( t' = t[x'_1/x_1, \ldots, x'_n/x_n] \).}
 \end{align*}
+
+Since the demand translation is intended to simulate demand semantics, it must evaluate to ``the same sort of thing'' as demand semantics, \ie an environment of approximations. To that end, we define an operation \( \verts{-} \) that turns contexts into types:
+\[
+  \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} .
+\]
+
+\begin{lemma}
+  If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma, x : A}{\transD{t}{\Gamma}}{\TM{\verts{\Gamma}}} \).
+\end{lemma}
 
 \subsection{Example: Revisiting \texttt{take}}
 

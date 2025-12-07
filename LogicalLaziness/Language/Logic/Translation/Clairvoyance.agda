@@ -146,9 +146,8 @@ import LogicalLaziness.Language.Logic.Translation.Base
 ⌈_⌉≤ᶜ {γ₁ = ∅    } {γ₂ = ∅    } ∅                       = ∅
 ⌈_⌉≤ᶜ {γ₁ = _ ⸴ _} {γ₂ = _ ⸴ _} (⌊γ₁⌋≤⌊γ₂⌋ ⸴ ⌊v₁⌋≤⌊v₂⌋) = ⌈ ⌊γ₁⌋≤⌊γ₂⌋ ⌉≤ᶜ ⸴ ⌈ ⌊v₁⌋≤⌊v₂⌋ ⌉≤ᵗ
 
-open import Data.List.Relation.Unary.All as All
 ⌊⌈_⌉⌋ᶜ : ∀ {Γ} (γ : 𝕃.⟦⌊ Γ ⌋⟧ᶜ) → ⌊ ⌈ γ ⌉ᶜ ⌋ᶜ ≡ γ
-⌊⌈_⌉⌋ᶜ {∅} ∅ = refl
+⌊⌈_⌉⌋ᶜ {∅}         ∅       = refl
 ⌊⌈_⌉⌋ᶜ {Γ = _ ⸴ _} (γ ⸴ v) = cong₂ _⸴_ (All.map⁺-map⁻ ⌈_⌉ᵗ ⌊_⌋ᵗ ⌊⌈_⌉⌋ᵗ γ) ⌊⌈ v ⌉⌋ᵗ
 
 -- Convert terms

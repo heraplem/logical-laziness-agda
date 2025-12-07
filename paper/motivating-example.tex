@@ -1,6 +1,8 @@
 \section{Motivating Example}\label{sec:motivating-example}
 
-\lai{ok fine I'll use take n xs instead...}
+\lai{Main point I want to make here is that clairvoyance semantics is impractical to compute but easier to translate into, while demand semantics is more practical to compute but hard to translate into directly. FLP lets you get the best of both worlds.}
+
+If it were simpler, one might very well want to translate between clairvoyance and demand semantics, particularly in the clairvoyance-to-demand direction. This is because translating a lazy function into clairvoyance semantics is relatively painless, while translating directly into demand semantics is much more challenging. \lai{say some more about why here, or give an example}.
 
 Let us return to the example of take n [1..]. We can define it in Curry, a lazy functional logic language which is syntactically similar to Haskell,\lai{Might need to explain this more...} as follows:
 

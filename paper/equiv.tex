@@ -1,9 +1,183 @@
 \section{Equivalence}
 
-\subsubsection{Clairvoyance semantics}
+\ly{There should be a commuting diagram outlining the relation among all our
+  semantics and theorems in the beginning of this section.}
 
-\begin{theorem}
-  \label{prop:equiv-clairvoyance}
+\paragraph{Exact values and approximations.}
+
+Each type \( A \) comes equipped with a set \( \Eval{A} \) of \emph{exact
+  values} and a set \( \Approx{A} \) of \emph{approximation values}, as defined
+in \cref{fig:exact-approx}.\footnote{These concepts are borrowed from same
+  concepts in Li et al.~\cite{forking-paths}.} The set of exact values
+\( \Eval{A} \) represents all possible values of $A$ where thunks have been
+\( \tforceZ \)d. The set of approximation values \( \Approx{A} \), on the other
+hand, additionally include values where some thunks might be simply
+``discarded''~(represented by $\sundefined$). These values represent ``smaller''
+values where certain computations are not needed, \ie~they are approximations of
+the exact values.
+
+We additionally extend $\Eval{\cdot}$ and $\Approx{\cdot}$ to typing contexts.
+We use $\Eval{\Gamma}$ to represent a typing context such that for any
+$\gamma \in \Eval{\Gamma}$, $\gamma$ contains only exact values. The definition
+of $\Approx{\Gamma}$ is similiar.
+
+\begin{figure}[t]
+\begin{center}
+  \begin{align*}
+    %\Eval{A} &\in \mathcal{P}(A) \\
+    \Eval{\TBool} &= \SBool \\
+    \Eval{\TThunk{A}} &= \Eval{A} \\
+    \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}} \\ \\
+    %\Approx{A} &\in \mathcal{P}(A) \\
+    \Approx{\TBool} &= \SBool \\
+    \Approx{\TThunk{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
+    \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{(\TList{A})}}}
+  \end{align*}
+\end{center}
+\caption{Exact values and approximation values. We use $\mathcal{P}(A)$ to
+  represent the power set of $A$.}\label{fig:exact-approx}
+\end{figure}
+
+
+\begin{lemma}[Evaluation semantics is an exact
+  semantics]\label{lem:evaluation-exact}
+  If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then \( \EE{t}{\gamma} \in \Eval{A} \).
+\end{lemma}
+
+\begin{lemma}
+  If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
+\end{lemma}
+
+
+\subsection{Clairvoyance semantics}
+
+We define the clairvoyance semantics on $B$ as a big-step operational semantics
+that has the judgment schema \( \EC{\gamma}{t}{c}{v} \). Intuitively, \( c \) is
+the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to
+\( v \). This way of defining the clairvoyance semantics is based on the
+\emph{improvement theory}~\cite{moran1999}, just like the original clairvoyance
+semantics defined by Hackett and Hutton~\cite{clairvoyant}, except that we are
+based on a typed calculus $B$ with explicit \( \tlazyZ \) and \( \tforceZ \)
+operators. 
+
+\begin{figure}[t]
+  \begin{mathpar}
+  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\tlazy{t}}{c}{\sthunk{v}}}{\textsc{C-Lazy-Result}} \qquad
+  \inferrule{\\}{\EC{\gamma}{\tlazy{t}}{0}{\sundefined}}{\textsc{C-Lazy-Undefined}} \\
+  \inferrule{\EC{\gamma}{t}{c}{\sthunk{v}}}{\EC{\gamma}{\tforce{t}}{c}{v}}{\textsc{C-Force}} \qquad
+  \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\ttick{t}}{c + 1}{v}}{\textsc{C-Tick}} \\
+   \inferrule{\EC{\gamma}{t_3}{c_1}{v_1} \\ \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{c_2}{v_2}}{\EC{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{c_1 + c_2}{v_2}}{\textsc{C-Foldr}} \\
+\inferrule{\EC{\gamma}{t_2}{c}{v}}{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{c}{v}}{\textsc{C-Foldr-Nil}} \\
+    \inferrule{\EC{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{c}{v}}{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{c}{v}}{\textsc{C-Foldr-Undefined}} \\
+    \inferrule{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v_3} \\ \EC{\gamma,
+        x_1 \mapsto v_1, x_2 \mapsto
+        \sthunk{v_3}}{t_1}{c_2}{v}}{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{c_1
+        + c_2}{v}}{\textsc{C-Foldr-Result}}
+\end{mathpar}
+\caption{A subset of the clairvoyance semantics defined on
+  $B$.}\label{fig:clairvoyance-base}
+\end{figure}
+
+We display the crucial rules of the clairvoyance semantics in
+\cref{fig:clairvoyance-base}. The \rulename{C-Lazy-Result} and
+\rulename{C-Lazy-Undefined} rules state that, to evaluate a \( \tlazyZ \) term,
+we nondeterministically evaluate its subterm and wrap it in a
+\( \sthunkZ \)~(\ie~\rulename{C-Lazy-Result}), or substitute it with an
+``empty'' value \( \sundefined \)~(\ie~\rulename{C-Lazy-Undefined}). This is the
+key for implementing clairvoyance semantics. The \rulename{C-Force} rule states
+that we can only evaluate a value of \( \TThunkZ \) type if it is in fact a
+\( \sthunkZ \),\ie~we cannot \( \tforceZ \) \( \sundefined \).
+
+One major distinction between our semantics and that of Hackett and
+Hutton~\cite{clairvoyant} is that, our base language $B$ explicitly manages
+laziness with \( \tlazyZ \) and \( \tforceZ \) operators, so we introduce
+nondeterminism at the place of \( \tlazyZ \) operator. In contrast, Hackett and
+Hutton~\cite{clairvoyant} introduce nondeterminism at \( \tletZ \) bindings:
+when evaluating \( \tlet{x}{t_1}{t_2} \), either \( x \) was immediately bound
+to the result of evaluting \( t_1 \), or else \( x \) was subtituted by
+\( \sundefined \).
+
+Note that \( \tfoldrZ \) is evaluated by first evaluting the list argument to a
+value and then iterating over that value. The iteration is expressed in the
+following auxiliary relation.\ly{TODO: explain \( \tfoldrZ \) in more details.}
+
+\begin{lemma}[Clairvoyance semantics is an approximation semantics]
+  If \( \TB{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \),
+  \( c \in \mathbb{N} \), and \( \EC{\gamma}{t}{c}{v} \), then
+  \( v \in \Approx{A} \).
+\end{lemma}
+
+\begin{lemma}[Type soundness with respect to clairvoyance semantics]
+  If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then there
+  exist \( v \in \Approx{A} \) and \( c \in \mathbb{N} \) such that
+  \( \EC{\gamma}{t}{c}{v} \).
+\end{lemma}
+
+\ly{Really? How could \cref{prop:clair-mono} be true when there is
+  nondeterminism? Clearly there can be smaller results even if $\gamma_2$ is
+  bigger?}
+\begin{lemma}[Monotonicity of clairvoyance semantics]\label{prop:clair-mono}
+  If \( \gamma_1 \le \gamma_2 \), \( \EC{\gamma_1}{t}{c_1}{v_1} \), and \( \EC{\gamma_2}{t}{c_2}{v_2} \), then \( (v_1, c_1) \le (v_2, c_2) \).
+\end{lemma}
+
+\subsection{Demand semantics}
+
+The demand semantics is a deterministic semantics that interprets a term \( t \)
+as a function \( \EDU{t} \) that takes two arguments:
+\begin{enumerate}
+\item a fully-defined evaluation context \( \gamma \), and
+\item a demand \( d \) on \( \EE{t}{\gamma} \);
+\end{enumerate}
+it produces a list of demands on \( \gamma \) and an evaluation cost. In summary, demand semantics has the ``type''
+\[
+  \EDU{-} : (t : \Gamma \vdash A) \to (\gamma : \Eval{\Gamma}) \times \Approx{A}_{\approxof{\relax}{\EE{t}{\gamma}}} \to \Approx{\Gamma}_{\approxof{\relax}{\gamma}} \times \N .
+\]
+Intuitively, demand sematics computes ``how much'' of the input \( \gamma \) must be present in order to compute a certain ``amount'' of the output \( \EE{t}{\gamma} \), and also how much it costs to perform that computation.
+
+\begin{figure}\centering
+  \begin{align*}
+    \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\
+    \ED{\tlet{x}{t_1}{t_2}}{\gamma}{a} &= (d_1, c_1) \sqcup (d_2, c_2) &\text{where } ((d_2, x \mapsto b), c_2) &= \ED{t_2}{\gamma}{x \mapsto \EE{t}{\gamma}} \\
+    &&\text{and } (d_1, c_1) &= \ED{t_1}{\gamma}{b} \\
+    \ED{\ttick{t}}{\gamma}{a} &= (d, c + 1) &\text{where } (d, c) &= \ED{t}{\gamma}{a} \\
+    \ED{\tlazy{t}}{\gamma}{\sundefined} &= (\sundefined, 0) \\
+    \ED{\tlazy{t}}{\gamma}{\sthunk{a}} &= \ED{t}{\gamma}{a} \\
+    \ED{\tforce{t}}{\gamma}{a} &= \ED{t}{\gamma}{\sthunk{a}} \\
+    \ED{\ttrue}{\gamma}{a} &= (\sundefined, 0) \\
+    \ED{\tfalse}{\gamma}{a} &= (\sundefined, 0) \\
+    \ED{\tnil}{\gamma}{a} &= (\sundefined, 0) \\
+    \ED{\tcons{t_1}{t_2}}{\gamma}{a} &= \ED{t_1}{\gamma}{a} \sqcup \ED{t_2}{\gamma}{a} \\
+    \ED{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma}{b} &= (d', c) \sqcup \ED{t}{\gamma}{b'} &\text{where } (g, b', c) &= \EDF{t_1}{t_2}{\gamma}{\EE{t_3}{\gamma}}{b}
+  \end{align*}
+\end{figure}
+
+\ly{This lemma doesn't really mention evaluation semantics. It should be a
+  different name.}
+\begin{lemma}[Demand semantics approximates evaluation
+  semantics]\label{prop:dem-approx-eval}
+  Let \( (\gamma^A, c) = \ED{t}{\gamma}{a} \).  Then \( \approxof{\gamma^A}{\gamma} \).
+\end{lemma}
+
+\ly{We haven't defined $\approxof{\relax}{\relax}$ yet, right?}
+
+\subsection{Equivalence}
+
+The following two theorems demonstrate the equivalence of clairvoyance and demand semantics. Let \( \Gamma \vdash t : A \), \( \gamma \in \Eval{\Gamma} \), and \( \approxof{a^A}{\EE{t}{\gamma}} \); and define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \).
+
+\begin{theorem}[Cost existence]
+  \label{prop:cost-existence}
+  Let \( \gamma^A \le {\gamma^A}' \prec \gamma \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EC{{\gamma^A}'}{t}{c}{{a^A}'} \).  In particular, \( \EC{\gamma^A}{t}{c}{a^A} \).
+\end{theorem}
+
+\begin{theorem}[Cost minimality]
+  \label{prop:cost-minimality}
+  Let \( \approxof{{\gamma^A}'}{\gamma}, {a^A}' \ge a^A, c' \in \N \) such that \( \EC{{\gamma^A}'}{t}{c'}{{a^A}'} \). Then \( ({\gamma^A}', c') \ge (\gamma^A, c) \).
+\end{theorem}
+
+
+\paragraph{Clairvoyance translation}
+
+\begin{theorem}\label{prop:equiv-clairvoyance}
   \( \EC{\gamma}{t}{c}{v} \) if and only if \( \EL{\gamma}{\floor{t}}{(v, c)} \).
 \end{theorem}
 \begin{proof}
@@ -68,18 +242,8 @@
   \end{proof}
 \end{proof}
 
-\subsubsection{Demand semantics}
+\paragraph{Demand translation}
 
-\begin{align*}
-  \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x^A_1 \) = \tfree{A_1} in} \\
-                                             &\texttt{assert \tle{x^A_1}{x_1} in} \\
-                                             &\vdots \\
-                                             &\texttt{let \( x^A_n \) = \tfree{A_n} in} \\
-                                             &\texttt{assert \tle{x^A_n}{x_n} in} \\
-                                             &\texttt{let \( c \) = \tfree{\TNat} in} \\
-                                             &\texttt{assert \teq{\transC{t}}{\tpair{y^A}{c}} in} \\
-                                             &\texttt{(\( x^A_1 \), \( \ldots \), \( x^A_n \), \( c \))}
-\end{align*}
 
 \begin{lemma}
   Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \) and \( \gamma \in \Eval{\Gamma} \), then \( \TL{\Gamma, y^A : B}{\transD{t}{\Gamma}}{\TM{(\texttt{\(A_1\)\ *\ \(\cdots\) *\ \(A_n\)})}} \)
@@ -87,8 +251,7 @@
 
 Define \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) \).
 
-\begin{lemma}[Semantics of the demand translation]
-  \label{prop:dem-trans-sem}
+\begin{lemma}[Semantics of the demand translation]\label{prop:dem-trans-sem}
   \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \) if and only if
   \begin{enumerate}
   \item \( \gamma^A \le \gamma \), and
@@ -114,3 +277,5 @@ Define \( \verts{x_1 \mapsto a_1, \ldots, x_n \mapsto a_n} = (a_1, \ldots, a_n) 
 \end{proof}
 
 It is slightly unsatisfying that the demand translation does not in general reduce \emph{only} to the actual result of demand semantics. Some logic languages have a built-in facility to collapse a nondeterministic computation into a deterministic one, returning either the first result found or a list of all possible results. If we can arrange for less-defined results to always be tried first, we can use such a facility to ensure that the demand translation does in fact always return the actual result of demand semantics.
+
+\subsection{Agda Implementation}

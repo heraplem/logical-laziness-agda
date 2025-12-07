@@ -1,4 +1,75 @@
-\section{The Logic Language $L$}
+\section{Lazy Cost Analysis via Functional Logic Programming}
+
+To show the relation among the clairvoyance semantics, the demand semantics, and
+functional logic programming, we first define a base language $B$ that can be
+translated into those semantics.
+
+\subsection{The Base Language $B$}
+
+We show the syntax of $B$ in \cref{fig:syntax-base}. The base language is a
+simple typed calculus with booleans, lists, and lazy thunks. Its term contains
+variables, let-bindings, conditionals, recursions based on $\tfoldrZ$. In
+addition, it contains the explicit \( \tlazyZ \) and \( \tforceZ \) for wrapping
+a computation in a lazy thunk and forcing a computation in a thunk,
+respectively. Conceptually, the thunk only evaluates the first time it is
+\( \tforceZ \)d, then it remains that value. Finally, we have an explicit
+\( \ttickZ \) term to indicate incurring one unit of computation cost. These
+explicit operators decouple our analysis from any particular evaluation model.
+
+The language does not have functions or general recursions. This is because the
+demand semantics does not support those
+features~\cite{bjerner1989,demand-semantics}.\ly{But functional logic
+  programming does not support this in general, right? (Perhaps with the
+  exception of Verse.)}
+
+\begin{figure}[t]
+\begin{center}
+\begin{bnf}
+  \( A \) ::= \TBool{} // \TList{A} // \TThunk{A} ;;
+
+  $t$ ::= $x$ // \tlet{x}{t}{t} // \ttrue{} // \tfalse{} // \tif{t}{t}{t} |
+  \tnil{} // \tcons{t}{t} // \tfoldr{x}{x}{t}{t}{t} // \tlazy{t} // \tforce{t} //
+  \ttick{t}
+\end{bnf}
+\end{center}
+\caption{The syntax of our base language B.}\label{fig:syntax-base}
+\end{figure}
+
+\begin{figure}[t]
+  \begin{center}
+    \begin{mathpar}
+      \inferrule{\Gamma \vdash^\LB t_1 : A \\ \Gamma \vdash^\LB t_2 :
+        \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}{\textsc{cons}} \\
+      \inferrule{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B \\ \Gamma
+        \vdash^\LB t_2 : B \\ \Gamma \vdash^\LB t_3 : \TList{A}}{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}{\textsc{foldr}} \\
+      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \tlazy{t} :
+        \TThunk{A}}{\textsc{lazy}} \qquad \inferrule{\Gamma \vdash^\LB t :
+        \TThunk{A}}{\Gamma \vdash^\LB \tforce{t} : A}{\textsc{force}} \qquad
+      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \ttick{t} :
+        A}{\textsc{tick}}
+    \end{mathpar}
+  \end{center}
+  \caption{Typing rules in $B$ that are related to lazy thunks and cost.}\label{fig:typing-base}
+\end{figure}
+
+Most of the typing rules in $B$ are standard, so we omit them. We show the
+typing rules for lazy thunks and the computation cost in \cref{fig:typing-base}.
+Notably, our lists are lazy: the cons of lists $t_1 :: t_2$ always takes a $t_1$
+of type $A$ and a $t_2$ of type $\TThunk{(\TList{A})}$, forcing the tail of a
+list to be in a thunk. Similarly, the function in $\tfoldrZ$ always assumes that
+the second paramter is in a thunk.
+
+\paragraph{Evaluation semantics}
+We can give language $B$ an evaluation semantics $\EE{t}{\gamma}$ for any term
+$t$ under an evaluation context $\gamma$ by simply ignoring all the operators of
+lazy evaluation or computation cost. That is:
+$$\EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma}$$
+This gives us a semantics that always return a value in the set \( \Eval{A} \),
+a fact we formalized as \cref{lem:evaluation-exact}. The evaluation semantics is
+standard, so we omit it here. We include a full description of the evaluation
+semantics in the \cref{apx:eval-semantics} and in our artifact.
+
+\subsection{The Logic Language $L$}
 
 To show the correspondence between semantics for lazy cost analysis and
 functional logic programmming, we define a simple functional logic language $L$.
@@ -42,6 +113,7 @@ $t$ ::=
 \caption{The syntax of the logic language $L$.}\label{fig:syntax-logic}
 \end{figure}
 
+
 \paragraph{Typing.}
 
 \ly{Why is there only one rule? Are other rules mostly straightforward? Or you
@@ -61,13 +133,12 @@ $t$ ::=
 \ly{TODO: Move a selected set of rules from \cref{apx:semantics-logic} here.}
 \ly{Did we refer to any papers when we define this semantics? If so, cite them.}
 
-\begin{lemma}
-  If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
-\end{lemma}
+Note that $L$ is not total because \( \tfail \) never reduces.
 
-Note that \( \tfail \) never reduces, so the language is not total.
+\subsection{The Clairvoyance Translation}
 
-\subsection{The clairvoyance translation}
+\ly{This section describes properties of the clairvoyance translation, but where
+  is the clairvoyance translation?}
 
 We now define some constructs on the terms in \( \LL \).  For each construct \( c \), we provide typing rules and a set of evaluation rules that \emph{completely characterize} \( c \).  By ``completely characterize'', we mean the following.
 
@@ -186,6 +257,7 @@ To characterize the reduction behavior of \( \rulename{L-FoldM} \), we define ye
     \end{prooftree}
   \end{center}
 \end{lemma}
+\ifextended
 \begin{proof}
   We first prove validity.
   \newpage
@@ -230,6 +302,7 @@ To characterize the reduction behavior of \( \rulename{L-FoldM} \), we define ye
     To prove completeness, repeatedly apply inversion principles to find that any derivation of \( \tfoldM{x_1}{x_2}{t_1}{t_2}{v}{u} \) must have the form of one of the preceding derivations.
   \end{landscape}
 \end{proof}
+\fi
 
 \begin{center}
   \begin{align*}
@@ -242,3 +315,21 @@ To characterize the reduction behavior of \( \rulename{L-FoldM} \), we define ye
 \begin{lemma}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\floor{t}}{A} \).
 \end{lemma}
+
+\subsection{The Demand Translation}
+
+\begin{align*}
+  \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x^A_1 \) = \tfree{A_1} in} \\
+                                             &\texttt{assert \tle{x^A_1}{x_1} in} \\
+                                             &\vdots \\
+                                             &\texttt{let \( x^A_n \) = \tfree{A_n} in} \\
+                                             &\texttt{assert \tle{x^A_n}{x_n} in} \\
+                                             &\texttt{let \( c \) = \tfree{\TNat} in} \\
+                                             &\texttt{assert \teq{\transC{t}}{\tpair{y^A}{c}} in} \\
+                                             &\texttt{(\( x^A_1 \), \( \ldots \), \( x^A_n \), \( c \))}
+\end{align*}
+
+\subsection{Example: Revisiting \texttt{take}}
+
+\ly{This section talks about how one can apply the translation to the example of
+  \texttt{take} and \texttt{append}.}

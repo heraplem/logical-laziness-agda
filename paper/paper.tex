@@ -34,6 +34,7 @@
 \newnote{nc}{violet}      % Nicholas Coltharp
 
 % If you want to set draft to true or false, go to `directive.tex`
+\newboolean{extended}
 \input{directives.tex}
 
 \usepackage{simplebnf}
@@ -381,9 +382,11 @@ Now, all we need to do is prove that this version of insertD is also correct and
 
 % worked example
 
-\subfile{base-lang}
+\subfile{translation}
 
-\subfile{logic-lang}
+%\subfile{base-lang}
+
+%\subfile{logic-lang}
 
 \subfile{equiv}
 

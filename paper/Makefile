@@ -1,7 +1,7 @@
 ## Makefile for paper
 
 BIBFILES =yao.bib ref.bib
-TEXS =paper.tex equiv.tex directives.tex appendix.tex translation.tex
+TEXS =paper.tex intro.tex motivating-example.tex translation.tex equiv.tex case-study.tex directives.tex appendix.tex 
 
 TOP=paper
 PDFS=paper.pdf 

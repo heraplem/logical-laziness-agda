@@ -230,190 +230,19 @@
 \keywords{Functional Logic Programming, Lazy Evaluation, Agda, Cost Analysis, Semantics}\lai{Too many keywords? Too few?}
 \end{abstract}
 
-\section{Introduction}
+\subfile{intro}
 
-\lai{I think we need a catchier intro paragraph (and especially opening sentence), but I'm not sure if the one below should be reworked or broken in half, with the FLP explanation in the second paragraph and the chatter about big ideas and contributions in the first. Something to consider.}
-
-In functional logic programming, one program contains two semantics: a
-``forward'' nondeterministic semantics with \emph{choices}, and a ``backward''
-demand-driven semantics with \emph{free variables}. Past research has shown the
-usefulness of this feature in different contexts.\ly{TODO: Citations.} In this
-paper, we demonstrate yet another useful application: lazy cost analysis.
-Specifically, we show that two different semantics proposed independently for
-reasoning about the computation cost of lazy functional programs, 
-clairvoyance semantics~\cite{clairvoyant,forking-paths} and demand
-semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a single functional logic program.
-
-% \subsection{what is lazy evaluation?}
-
-In lazy evaluation, a computation is driven by its demands, performing only the operations strictly required to compute its result. Computations are
-stored as \emph{thunks} which are only evaluated when their values are demanded, and only to the extent required to produce the demanded value.
-This prevents the execution of extraneous code, but results in infamously challenging cost analysis. For example\lai{Gotta start with take n xs, where xs is arbitrarily long}, suppose that we define \emph{take n xs} as a function that takes the first n prefixes from a list xs.\lai{Should we give an actual definition, or leave it abstract like this to save space?} Let \([1..]\) represent an aribtrarily long list of natural numbers indexed at 1. Then, suppose that we wished to compute the following:
-
-\lai{adding figures later because I'm just trying to get words down rn - for now, just text will do.}
-
-\(take n [1..])\)
-
-At first glance, one unfamiliar with laziness\lai{I think it's funnier to say this than the arguably more correct "one unfamiliar with lazy evaluation"} might expect this to fail to terminate, since defining [1..] would fail to terminate. However, since only n elements are demanded, so long as n is not arbitrarily long, the program will terminate in \(O(n)\) time. This is because n bounds the number of elements of [1..] that need to be computed, preventing the rest of the list from being generated. Thus, lazy programs can sometimes achieve termination when eager ones cannot.
-
-\lai{This paragraph may be extraneous, but let's see how we are on space before ripping it out. It's good to have some mention of the difficulties here.}
-
-One major drawback of laziness becomes apparent when we consider how partially executing a function call interferes with traditional cost analysis. Shortcutting (or even failing to run) functions runs counter to the concept of \(O\)-notation in particular. Technically speaking, every function takes \(O(1)\) time in a lazy language, as it is always possible to call a function and then never demand its output. For example, if we call \(take n [1..])\) as part of a larger function that never uses the resulting list of numbers, then the call would be stored in a \emph{thunk} and not further evaluated. As \emph{thunk} creation is a constant-time operation, this results in the aforementioned \(O(1)\) time cost. This is not a particularly \emph{meaningful} thing to say about a lazy function, but its truth renders much of the existing paradigm for cost analysis nearly useless for our purposes.
-
-This paper will focus on two cost models which address this problem - \emph{Demand Semantics} and \emph{Clairvoyance Semantics}. Some other models will be explored briefly in Section whatever-number-is-related-work\lai{TODO: What number is this, anyway?}, but are not the focus of our work.
-
-Clairvoyance Semantics models a lazy program as a nondeterministic tree of possible execution paths. The concept was first introduced in \cite{clairvoyant} and implemented in Rocq in \cite{forking-paths}\lai{Is this how we will do inline citations, and how we will reference them in the text?} via the Clairvoyance Monad. To analyze cost within this model, we utilize this monad to simulate nondeterministically choosing which thunks to continue forcing and which to skip, eventually resulting in a path which mimics the path of a function computing the same output. \lai{TODO: add more detail and corrections here - maybe we can use figures like those in the Forking Paths paper?}. \lai{Do we need a concrete example here?}
-
-Demand Semantics, on the other hand, models the cost lazy programs by computing how much of the input must be forced to produce a function's output, which is provably cost-equivalent to computing the same output. First described in \cite{bjerner1989} and formalized in Rocq in \cite{demand-semantics}, the idea is also relatively straightforward, but is quite different from clairvoyance semantics in imlpementation. Rather than involving nondeterminism directly, the 'choices' made in a function's execution path are abstracted away into an "outD" input, which models the output demand. outD is then fed to a separate cost-analysis function derived from the original function in a systematic way. Finally, the cost analysis function uses outD to compute the answer to a different query than the original function - how much of the input was needed to compute outD? It turns out that this computation results in the same time cost as computing the input normally, making it a helpful model for lazy cost analysis.\lai{How about here?}
-
-While clairvoyance and demand semantics provably produce equivalent cost analyses, directly translating from one to the other is challenging.\lai{Maybe two paragraphs - one outlining the problem, and another introducing the idea of using FLP to solve it.} There is certainly some amount of 'clairvoyance' occurring in demand semantics in the literal sense, as one needs to know what demands will be placed on the output before cost analysis can proceed (in order to construct a meaningful outD). However, the handling of nondeterminism is left implicit - we take as premise that one will know which sorts of output demands a user might wish to reason about, and say little about how they came to possess that information. Clairvoyance semantics has a similar issue, but in reverse\footnote{After we introduce the main ideas of the functional logic translation between the two, the fact that clairvoyance and demand semantics are inverses of each other in this way will likely seem somewhere between ironic and prophetic.}. The concept of "demand" is not explicitly mentioned in the semantics, but nondeterministically choosing a program's execution path is also, \emph{implicitly}, very similar to computing that same path using the output demand as a guide \lai{Feels like I'm not explaining this quite well enough. I'll think about it.}.
-
-\lai{Separate paragraph here explaining why one would want to do this translation, anyway?}
-
-While this conundrum left us (as researchers interested in lazy cost analysis) at an impasse\lai{too informal?}, those familiar with functional logic programming concepts may have already noticed the connection that eventually led us through it. Functional logic languages which integrate nondeterminism, like Curry\lai{What do I cite here...?}, have a notion of forward and backward execution that maps neatly onto the aforementioned relationship between demand and clairvoyance semantics. Is this mapping correct, though? Yes, we have discovered, and provably so.
-
-Our contributions are as follows:
-\begin{itemize}
-\item A conceptual link between forward and backward execution and the relationship between clairvoyance and demand semantics for cost analysis of lazy evaluation.
-\item A means by which to translate between the two models in a straightforward way using Curry as an intermediary, with examples.
-\item Proof, formalized in Agda, that the transformation between a base lazy language and a functional logic language is functionally correct and preserves time-cost estimates.
-
-\end{itemize}
-
-\lai{This is where we may want to leave a brief explanation of which sections are which, and maybe a note or two about what sections to skip to for varying levels of reader. I know that some people don't like it, but I appreciate when papers do that.}
-
-% The standard semantics for call-by-name uses a heap that binds variables to
-% expressions; evaluating a variable amounts to evaluating the expression to
-% which it is bound and then updating the heap to bind the variable to the
-% resulting value. This is attractive because it reflects a straightforward
-% implementation of call-by-name evaluation on an actual computer, but it has
-% the drawback that it is non-compositional; that is, a derivation is not
-% generally a simple composition of subterm derivations. Therefore, some have
-% tried to develop semantics that are equivalent but also compositional.
-
-% An early example is the \emph{demand semantics} of Bjerner and
-% Holmstr{\"{o}}m. In this semantics, an open term is represented as a function
-% that takes, in addition to a list of variable bindings, a \emph{demand} on the
-% value to which the term will ultimately reduce; it produces a list of demands
-% on its free variables. The demand represents, essentially, ``how much'' of the
-% result will end up being used by the rest of the program. This semantics was
-% originally presented without types; a version with types was published in
-% STORYOFYOURLAZYFUNCTIONSLIFE.
-
-% Another example of compositional semantics is the \emph{clairvoyance
-% semantics} of Hackett and Hutton. The key idea of this semantics is that, when
-% binding a variable to an expression, rather than deferring computation of the
-% bound expression until it is needed, we \emph{immediately} choose
-% nondeterministically to either evaluate the expression or discard the binding
-% entirely. This semantics is equivalent to the standard semantics in the sense
-% that, if \( t \Downarrow v \), then there is some derivation of this fact that
-% is cost-equivalent to the derivation of the same in the standard semantics;
-% and, furthermore, this derivation is the minimal such derivation.
-
-% In STORYOFYOURLAZYFUNCTIONSLIFE, the fact that demand semantics is equivalent
-% to the standard semantics was established by proving equivalence to
-% clairvoyance semantics, which had already been proven equivalent to the
-% standard semantics. However, this led to some difficulties with mechanized
-% proofs. These proofs required writing demand functions by hand, a tedious and
-% error-prone process. In fact, it required writing three versions of ``the same
-% term'': a pure version, a clairvoyance version, and a demand version. Thus, we
-% sought alternate means of expressing demand functions. In particular, we hoped
-% to be able to write a term \emph{once} and automatically obtain the
-% clairvoyance and demand versions of that term.
-
-% Eventually, we hit on the idea of using \emph{functional logic programming}.
-% Functional logic programming is a paradigm that combines the fundamental
-% computational framework of functional programming with the nondeterminism and
-% free variables found in logic programming.
-
-% Our key idea is that, in a functional logic language, we can use
-% nondeterminism to express directly the ``clairvoyance behavior'' of a term,
-% and we can then obtain the corresponding ``demand behavior'' by representing
-% the input demand as a free variable that is constrained to be an approximation
-% of some actual input. Our main technical contribution is a proof that this
-% approach does result in behavior that is equivalent to clairvoyance and demand
-% semantics, respectively. This proof has also been formalized in Agda.
-
-\section{Motivating example(s)}
-
-\lai{ok fine I'll use take n xs instead...}
-
-Let us return to the example of take n [1..]. We can define it in Curry, a lazy functional logic language which is syntactically similar to Haskell,\lai{Might need to explain this more...} as follows:
-
-[TODO: definition goes here]
-
-Suppose that we wanted to analyze the cost of this program. As explained prior, we should expect the final time cost to be \(O(n)\), despite [1..]'s naive non-termination. To do this, we can perform the transformation outlined in \cite{forking-paths} as follows, using the Tick monad to count function calls:
-
-[TODO: takeA here]
-
-Notice how takeA is structurally similar to take. [TODO: expand on this more later].
-
-Suppose now that we would prefer a method of cost analysis of our original program that [TODO: succinctly write benefit of Demand Semantics here later]. If that is the case, we would like to be able to use the method detailed in \cite{demand-semantics} instead. However, this leaves us with some unresolved issues in practice. The paper does not detail a simple and precise method for translating our source function into a demand-semantics-based cost analysis function. Indeed, this is one of the main drawbacks of the paper - the actual translation is a brittle, manual process, which is time consuming and prone to error if not mechanically proven to maintain functional correctness and time cost equivalence. It is certainly possible, but untenable for most applications.\lai{Do we need to do the work of showing insertD not defined in terms of insertA? I don't remember if we have that somewhere, and if not, that could be very annoying!}
-
-Rather than defining insertD naively through transforming insertA, suppose that we instead took full advantage of the nondeterminism [TODO: explain the Curry benefits better] that Curry offers. Indeed, it turns out that the following is equivalent to a directly translated version of insertD:
-
-[TODO: Curry insertD goes here]
-
-Now, all we need to do is prove that this version of insertD is also correct and time-cost equivalent, and we will have solved our problem. How we do so is detailed in sections 3-5. \lai{TODO: Too informal :/}
-
-\begin{itemize}
-  \item a more in-depth discussion of lazy evaluation semantics, esp.
-        clairvoyance and demand semantics
-  \item give an example that models each semantics in some programming language
-        (probably Curry)
-  \begin{itemize}
-    \item this will require displaying/explaining the basic infrastructure
-    \item what example? should be fairly small. take-append?
-  \end{itemize}
-  \item discuss how this is very annoying to write in demand semantics
-  \item show how, in a logic language, you can ``write both in one program''
-  \item this will need a discussion of what logic programming is, and probably a
-        brief explanation of the specific language we are using (probably Curry)
-\end{itemize}
-
-% In the absence of recursion, call-by-need is semantically equivalent to
-% call-by-name. However, the two semantics have different performance
-% characteristics: in particular, call-by-need is \emph{cost-optimal} in the
-% sense that a call-by-need derivation of \( t \Downarrow v \) will never be
-% larger than a call-by-name derivation of the same, and may be smaller. Thus, a
-% natural way to study call-by-name evaluation \emph{in paticular} is to augment
-% the evaluation relation with an additional parameter that tracks the cost of
-% evaluation.
-
-% worked example
+\subfile{motivating-example}
 
 \subfile{translation}
 
-%\subfile{base-lang}
-
-%\subfile{logic-lang}
-
 \subfile{equiv}
 
-\section{Case studies}
+\subfile{case-study}
 
-\begin{itemize}
-  \item various examples showing how our approach works
-  \begin{itemize}
-    \item exactly which examples will be based on experimentation: are there
-          examples that Curry has no trouble with? examples that Curry does have
-          trouble with?
-    \item some candidates:
-          \begin{itemize}
-            \item take from head of a list (discussed earlier)
-            \item insertion sort
-            \item some amortized data structure
-          \end{itemize}
-  \end{itemize}
-  \item (including at least one example using an amortized data structure)
-  \item do they work? i.e., are they functionally correct?
-  \item does Curry find all the solutions? does it ever get stuck?
-  \item (maybe) how is the performance? are there any problems?
-\end{itemize}
+\section{Related work}\label{sec:related-work}
 
-\section{Related work}
-
-\section{Conclusion}
+\section{Conclusion}\label{sec:conclusion}
 
 \bibliographystyle{splncs04}
 \bibliography{yao,ref}

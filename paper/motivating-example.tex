@@ -1,0 +1,47 @@
+\section{Motivating Example}\label{sec:motivating-example}
+
+\lai{ok fine I'll use take n xs instead...}
+
+Let us return to the example of take n [1..]. We can define it in Curry, a lazy functional logic language which is syntactically similar to Haskell,\lai{Might need to explain this more...} as follows:
+
+[TODO: definition goes here]
+
+Suppose that we wanted to analyze the cost of this program. As explained prior, we should expect the final time cost to be \(O(n)\), despite [1..]'s naive non-termination. To do this, we can perform the transformation outlined in \cite{forking-paths} as follows, using the Tick monad to count function calls:
+
+[TODO: takeA here]
+
+Notice how takeA is structurally similar to take. [TODO: expand on this more later].
+
+Suppose now that we would prefer a method of cost analysis of our original program that [TODO: succinctly write benefit of Demand Semantics here later]. If that is the case, we would like to be able to use the method detailed in \cite{demand-semantics} instead. However, this leaves us with some unresolved issues in practice. The paper does not detail a simple and precise method for translating our source function into a demand-semantics-based cost analysis function. Indeed, this is one of the main drawbacks of the paper - the actual translation is a brittle, manual process, which is time consuming and prone to error if not mechanically proven to maintain functional correctness and time cost equivalence. It is certainly possible, but untenable for most applications.\lai{Do we need to do the work of showing insertD not defined in terms of insertA? I don't remember if we have that somewhere, and if not, that could be very annoying!}
+
+Rather than defining insertD naively through transforming insertA, suppose that we instead took full advantage of the nondeterminism [TODO: explain the Curry benefits better] that Curry offers. Indeed, it turns out that the following is equivalent to a directly translated version of insertD:
+
+[TODO: Curry insertD goes here]
+
+Now, all we need to do is prove that this version of insertD is also correct and time-cost equivalent, and we will have solved our problem. How we do so is detailed in sections 3-5. \lai{TODO: Too informal :/}
+
+\begin{itemize}
+  \item a more in-depth discussion of lazy evaluation semantics, esp.
+        clairvoyance and demand semantics
+  \item give an example that models each semantics in some programming language
+        (probably Curry)
+  \begin{itemize}
+    \item this will require displaying/explaining the basic infrastructure
+    \item what example? should be fairly small. take-append?
+  \end{itemize}
+  \item discuss how this is very annoying to write in demand semantics
+  \item show how, in a logic language, you can ``write both in one program''
+  \item this will need a discussion of what logic programming is, and probably a
+        brief explanation of the specific language we are using (probably Curry)
+\end{itemize}
+
+% In the absence of recursion, call-by-need is semantically equivalent to
+% call-by-name. However, the two semantics have different performance
+% characteristics: in particular, call-by-need is \emph{cost-optimal} in the
+% sense that a call-by-need derivation of \( t \Downarrow v \) will never be
+% larger than a call-by-name derivation of the same, and may be smaller. Thus, a
+% natural way to study call-by-name evaluation \emph{in paticular} is to augment
+% the evaluation relation with an additional parameter that tracks the cost of
+% evaluation.
+
+% worked example

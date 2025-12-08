@@ -228,14 +228,11 @@
 \maketitle
 
 \begin{abstract}
-  We describe a means of representing lazy programs in functional logic
-  languages. Terms in this representation simultaneously implement two different
-  semantics for lazy programs: the demand semantics of Bjerner and
-  Holmstr{\"{o}}m and the clairvoyance semantics of Hackett and Hutton. As
-  previous implementations of clairvoyance semantics were non-executable and
-  programs that implement demand semantics are difficult to write by hand, this
-  represents an advancement in the analysis of lazy programs. All of our results
-  have been formalized in the proof assistant Agda.  \keywords{Functional Logic
+  Multiple cost models for lazy programs exist, but translating between them typically proves challenging. Two of these models, clairvoyance semantics and demand semantics, are proven to be time-cost equivalent, but a simple, provably correct translation between the two had yet to be discovered. We present a means of representing lazy programs in functional logic
+  languages which allows us to achieve that simple translation. Terms in this representation simultaneously implement both
+  semantics for lazy programs, with only a small modification needed to translate from one to the other. Our contribution enables previously unattained flexibility between the two models, and 
+  represents an advancement in cost analysis of lazy programs. All of our results
+  have been formalized in the proof assistant, Agda.  \keywords{Functional Logic
     Programming, Lazy Evaluation, Agda, Cost Analysis, Semantics}\lai{Too many
     keywords? Too few?}
 \end{abstract}

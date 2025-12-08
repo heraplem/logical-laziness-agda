@@ -80,37 +80,38 @@ We show the syntax of $L$ in \cref{fig:syntax-logic}. \ly{TODO: Talk about all
 \begin{figure}[t]
 \begin{center}
 \begin{bnf}
-\( A \) ::=
-// \TBool
-// \TProd{A}{A}
-// \TThunk{A}
-// \TNat
-// \TList{A}
-;;
+  \( A \) ::=
+  | \TUnit
+  // \TBool
+  // \TProd{A}{A}
+  // \TThunk{A}
+  // \TNat
+  // \TList{A}
+  ;;
 
-$t$ ::=
-| $x$
-// \tlet{x}{t}{t}
-// \tunit{}
-// \ttrue{}
-// \tfalse{}
-// \teq{t}{t}
-// \tle{t}{t}
-// \tif{t}{t}{t}
-| \tpair{t}{t}
-// \tfst{t}
-// \tsnd{t}
-| \tthunk{t}
-// \tundefined{}
-// \tcase{t}{x}{t}{t}
-| $n$
-// \tadd{t}{t}
-// \tnil{}
-// \tcons{t}{t}
-// \tfoldr{x}{x}{t}{t}{t}
-// \tchoose{t}{t}
-// \tfree{A}
-// \tfail{}
+  $t$ ::=
+  | $x$
+  // \tlet{x}{t}{t}
+  // \tunit{}
+  // \ttrue{}
+  // \tfalse{}
+  // \teq{t}{t}
+  // \tle{t}{t}
+  // \tif{t}{t}{t}
+  | \tpair{t}{t}
+  // \tfst{t}
+  // \tsnd{t}
+  | \tthunk{t}
+  // \tundefined{}
+  // \tcase{t}{x}{t}{t}
+  | $n$
+  // \tadd{t}{t}
+  // \tnil{}
+  // \tcons{t}{t}
+  // \tfoldr{x}{x}{t}{t}{t}
+  // \tchoose{t}{t}
+  // \tfree{A}
+  // \tfail{}
 \end{bnf}
 \end{center}
 \caption{The syntax of the logic language $L$.}\label{fig:syntax-logic}
@@ -356,8 +357,8 @@ We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended 
 
 \subsection{The Demand Translation}
 
-We now define another translation from \( \LB \) to \( \LL \) that is intended to simulate demand semantics. Given \( \TL{\Gamma}{t}{A} \), the demand translation of \( t \) must introduce new 
-logic variables with types corresponding to the types in \( \Gamma \), so \( \Gamma \) must be a parameter to the translation; we therefore denote it by \( \transD{t}{\Gamma} \).
+We now define another translation from \( \LB \) to \( \LL \) that is intended to simulate demand semantics. Given \( \TL{\Gamma}{t}{A} \), the demand translation of \( t \) introcuces new 
+logic variables with types corresponding to the types in \( \Gamma \); consequently, \( \Gamma \) must become a parameter. We therefore denote the demand translation by \( \transD{t}{\Gamma} \).
 
 \begin{align*}
   \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x'_1 \) = \tfree{A_1} in} \\
@@ -373,8 +374,9 @@ logic variables with types corresponding to the types in \( \Gamma \), so \( \Ga
 
 Since the demand translation is intended to simulate demand semantics, it must evaluate to ``the same sort of thing'' as demand semantics, \ie an environment of approximations. To that end, we define an operation \( \verts{-} \) that turns contexts into types:
 \[
-  \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} .
+  \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}}
 \]
+with the degenerate case \( \verts{\varepsilon} = \TUnit \).
 
 \begin{lemma}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma, x : A}{\transD{t}{\Gamma}}{\TM{\verts{\Gamma}}} \).

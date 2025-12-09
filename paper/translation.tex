@@ -29,11 +29,12 @@ respectively. Conceptually, the thunk only evaluates the first time it is
 \( \ttickZ \) term to indicate incurring one unit of computation cost. These
 explicit operators decouple our analysis from any particular evaluation model.
 
-The language does not have functions or general recursions. This is because the
-demand semantics does not support those
-features~\cite{bjerner1989,demand-semantics}.\ly{But functional logic
-  programming does not support this in general, right? (Perhaps with the
-  exception of Verse.)}
+The language does not have functions or general recursions. This is because
+(1)~the demand semantics does not support those
+features~\cite{bjerner1989,demand-semantics}, and (2)~most functional logic
+programming languages, with the exception of the Verse calculus~\cite{verse},
+only support higher-order functions via defunctionalization~\cite[Section
+3.3]{curry-lang}.
 
 \begin{figure}[t]
 \begin{center}
@@ -73,14 +74,10 @@ list to be in a thunk. Similarly, the function in $\tfoldrZ$ always assumes that
 the second paramter is in a thunk.
 
 \paragraph{Evaluation semantics.}
-We can give language $B$ an evaluation semantics $\EE{t}{\gamma}$ for any term
-$t$ under an evaluation context $\gamma$ by simply ignoring all the operators of
-lazy evaluation or computation cost. That is:
+We can give language $B$ a denotational semantics $\EE{t}{\gamma}$ for any term
+$t$ under an evaluation context $\gamma$ by simply ignoring all lazy-evaluation
+operators or computation cost:
 $$\EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma}$$
-This gives us a semantics that always return a value in the set \( \Eval{A} \),
-a fact we formalized as \cref{lem:evaluation-exact}. The evaluation semantics is
-standard, so we omit it here. We include a full description of the evaluation
-semantics in the \cref{apx:eval-semantics} and in our artifact.
 
 \subsection{The Logic Language $L$}\label{subsec:logic-lang}
 

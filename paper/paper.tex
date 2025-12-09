@@ -110,8 +110,10 @@
 \newcommand{\TProd}[2]{\texttt{\(#1\)\ *\ \(#2\)}}
 \newcommand{\TNat}{\texttt{Nat}}
 \newcommand{\TList}[1]{\texttt{List \({#1}\)}}
-\newcommand{\TThunkZ}{\texttt{Lazy}}  % Tentative name
+\newcommand{\TThunkZ}{\texttt{Thunk}}
 \newcommand{\TThunk}[1]{\texttt{\TThunkZ\ \(#1\)}}
+\newcommand{\TLazyZ}{\texttt{Lazy}}
+\newcommand{\TLazy}[1]{\texttt{\TLazyZ\ \(#1\)}}
 \newcommand{\TM}[1]{\texttt{M\ \(#1\)}}
 
 % terms
@@ -132,8 +134,10 @@
 \newcommand{\tcons}[2]{\texttt{\(#1\)\ ::\ \(#2\)}}
 \newcommand{\tfoldrZ}{\texttt{foldr}}
 \newcommand{\tfoldr}[5]{\tfoldrZ\texttt{(\(\lambda{#1}{#2}\).\(#3\),\ \(#4\),\ \(#5\))}}
-\newcommand{\tthunkZ}{\texttt{result}} % tentative name
+\newcommand{\tthunkZ}{\texttt{thunk}} % tentative name
 \newcommand{\tthunk}[1]{\texttt{\tthunkZ\ \({#1}\)}}
+\newcommand{\tresultZ}{\texttt{result}} % tentative name
+\newcommand{\tresult}[1]{\texttt{\tresultZ\ \({#1}\)}}
 \newcommand{\tundefined}{\texttt{undefined}}
 \newcommand{\tlazyZ}{\texttt{lazy}}
 \newcommand{\tlazy}[1]{\texttt{\tlazyZ\ \(#1\)}}

@@ -104,8 +104,9 @@ to the result of evaluting \( t_1 \), or else \( x \) was subtituted by
 
 Note that \( \tfoldrZ \) is evaluated by first evaluting its list argument to a
 value \(v\) and then iterating over \(v\) via the auxiliary relation
-\( \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v}\). Here, \( t_1 \) is a
-``function'' (term with free variables) that returns a \( \sthunkZ \) and takes as arguments:
+\( \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v} \). Here, \( t_1 \) is a
+``function'' (a term with free variables) that returns a \( \sthunkZ \) and takes
+as arguments:
 \begin{enumerate}
 \item an element of the list; and
 \item a \( \sthunkZ \) obtained by iterating over the rest of the list, or

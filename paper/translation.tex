@@ -81,8 +81,6 @@ $$\EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \E
 
 \subsection{The Logic Language $L$}\label{subsec:logic-lang}
 
-To show the correspondence between semantics for lazy cost analysis and
-functional logic programmming, we define a simple functional logic language $L$.
 We show the syntax of $L$ in \cref{fig:syntax-logic}. \ly{TODO: Talk about all
   the new types we introduced and why we introduced them; talk about all the new
   terms as well.}
@@ -127,6 +125,12 @@ We show the syntax of $L$ in \cref{fig:syntax-logic}. \ly{TODO: Talk about all
 \caption{The syntax of the logic language $L$.}\label{fig:syntax-logic}
 \end{figure}
 
+We define a simple functional logic language $L$ instead of using an existing
+formalization of one specific functional logic
+language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics}, the Verse
+calculus~\cite{verse}) to keep our approach generally applicable.\ly{Is there a
+  particular formalization from a prior work that we are similar to?}
+
 \paragraph{Typing.}
 
 \ly{Why is there only one rule? Are other rules mostly straightforward? Or you
@@ -146,7 +150,7 @@ We show the syntax of $L$ in \cref{fig:syntax-logic}. \ly{TODO: Talk about all
 \ly{TODO: Move a selected set of rules from \cref{apx:semantics-logic} here.}
 \ly{Did we refer to any papers when we define this semantics? If so, cite them.}
 
-Note that $L$ is not total because \( \tfail \) never reduces.
+Note that $L$ is not total due to \( \tfail \).
 
 \subsection{The Clairvoyance Translation}\label{subsec:clairvoyance-translation}
 

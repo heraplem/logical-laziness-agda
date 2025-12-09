@@ -92,10 +92,11 @@ need products to model evaluation contexts, and we need the unit type to model
 At the term level, \(\LL\) has the usual introduction and elimination forms for
 the new types. We have no need for arbitrary functions on natural numbers, so we
 include only literals and addition. We also have constructs for logic
-programming: logic variables \(\tfreeZ\), nondeterministic choice \(\tchooseZ\),
-and failure \(\tfail\). Finally, we have a Boolean operator \(\tleZ\), which
-indicates whether its left-hand operand lies below its right-hand operand in the
-order of approximations.
+programming: logic variables (\(\tfreeZ\)), nondeterministic choice
+(\(\tchooseZ\)), and failure (\(\tfail\)). Note that logic variables must be
+annotated with their types in order to ensure deterministic typing. Finally, we
+have a Boolean operator \(\tleZ\), which indicates whether its left-hand operand
+lies below its right-hand operand in the order of approximations.
 
 \begin{figure}[t]
 \begin{center}

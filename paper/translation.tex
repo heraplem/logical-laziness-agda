@@ -1,10 +1,23 @@
-\section{Lazy Cost Analysis via Functional Logic Programming}\label{sec:translation}
+\section{The Translation}\label{sec:translation}
 
-To show the relation among the clairvoyance semantics, the demand semantics, and
-functional logic programming, we first define a base language $B$ that can be
-translated into those semantics.
+In this section, we define two languagues, a base language $B$ that corresponds
+a simple functional language~(\cref{subsec:base-lang}) and a logic language $L$
+that corresponds to a functional logic language~(\cref{subsec:logic-lang}). We
+then develop a \emph{clairvoyance translation} strategy that translates a
+program in $B$ to a program in $L$ that models the clairvoyance
+semantics~\cite{clairvoyant,forking-paths}~(\cref{subsec:clairvoyance-translation}).
+We then develop a \emph{demand translation}, which models the demand
+semantics~\cite{bjerner1989,demand-semantics}, as a thin wrapper of the
+clairvoyance translation~(\cref{subsec:demand-translation}). Finally, we show
+how such a translation strategy works by applying it to the example of
+\texttt{take} and \texttt{append} discussed in \cref{sec:motivating-example}.
 
-\subsection{The Base Language $B$}
+We prove that this translation strategy is correct with respect to the
+clairvoyance semantics and the demand semantics in Agda, but we defer details of
+the correctness theorem, its proof, and the Adga development to
+\cref{sec:equiv}.
+
+\subsection{The Base Language $B$}\label{subsec:base-lang}
 
 We show the syntax of $B$ in \cref{fig:syntax-base}. The base language is a
 simple typed calculus with booleans, lists, and lazy thunks. Its term contains
@@ -69,7 +82,7 @@ a fact we formalized as \cref{lem:evaluation-exact}. The evaluation semantics is
 standard, so we omit it here. We include a full description of the evaluation
 semantics in the \cref{apx:eval-semantics} and in our artifact.
 
-\subsection{The Logic Language $L$}
+\subsection{The Logic Language $L$}\label{subsec:logic-lang}
 
 To show the correspondence between semantics for lazy cost analysis and
 functional logic programmming, we define a simple functional logic language $L$.
@@ -138,7 +151,7 @@ We show the syntax of $L$ in \cref{fig:syntax-logic}. \ly{TODO: Talk about all
 
 Note that $L$ is not total because \( \tfail \) never reduces.
 
-\subsection{The Clairvoyance Translation}
+\subsection{The Clairvoyance Translation}\label{subsec:clairvoyance-translation}
 
 % \ly{This section describes properties of the clairvoyance translation, but where
 %   is the clairvoyance translation?}
@@ -355,7 +368,7 @@ We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended 
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).
 \end{lemma}
 
-\subsection{The Demand Translation}
+\subsection{The Demand Translation}\label{subsec:demand-translation}
 
 We now define another translation from \( \LB \) to \( \LL \) that is intended to simulate demand semantics. Given \( \TL{\Gamma}{t}{A} \), the demand translation of \( t \) introcuces new 
 logic variables with types corresponding to the types in \( \Gamma \); consequently, \( \Gamma \) must become a parameter. We therefore denote the demand translation by \( \transD{t}{\Gamma} \).

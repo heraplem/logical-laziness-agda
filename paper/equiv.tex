@@ -44,12 +44,12 @@ formalized as \cref{lem:evaluation-exact}. The evaluation semantics is standard,
 so we omit it here. We include a full description of the evaluation semantics in
 the \cref{apx:eval-semantics} and in our artifact.
 
-\begin{lemma}[Evaluation semantics is an exact
+\begin{lemma}[Semantics of $B$ is an exact
   semantics]\label{lem:evaluation-exact}
   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then \( \EE{t}{\gamma} \in \Eval{A} \).
 \end{lemma}
 
-\begin{lemma}
+\begin{lemma}[Semantics of $L$ is an approximation semantics]
   If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
 \end{lemma}
 

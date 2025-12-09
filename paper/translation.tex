@@ -35,9 +35,8 @@ decouple our analysis from any particular evaluation model.
 The language does not have functions or general recursions. This is because
 (1)~the demand semantics does not support those
 features~\cite{bjerner1989,demand-semantics}, and (2)~most functional logic
-programming languages, with the exception of the Verse calculus~\cite{verse},
-only support higher-order functions via defunctionalization~\cite[Section
-3.3]{curry-lang}.
+programming languages (except Verse~\cite{verse}) only support higher-order
+functions via defunctionalization~\cite[Section 3.3]{curry-lang}.
 
 \begin{figure}[t]
 \begin{center}
@@ -48,25 +47,20 @@ only support higher-order functions via defunctionalization~\cite[Section
   \tnil{} // \tcons{t}{t} // \tfoldr{x}{x}{t}{t}{t} // \tlazy{t} // \tforce{t} //
   \ttick{t}
 \end{bnf}
+\begin{mathpar}
+  \inferrule{\Gamma \vdash^\LB t_1 : A \\ \Gamma \vdash^\LB t_2 :
+    \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}{\textsc{cons}} \\
+  \inferrule{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B \\ \Gamma
+    \vdash^\LB t_2 : B \\ \Gamma \vdash^\LB t_3 : \TList{A}}{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}{\textsc{foldr}} \\
+  \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \tlazy{t} :
+    \TThunk{A}}{\textsc{lazy}} \qquad \inferrule{\Gamma \vdash^\LB t :
+    \TThunk{A}}{\Gamma \vdash^\LB \tforce{t} : A}{\textsc{force}} \qquad
+  \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \ttick{t} :
+    A}{\textsc{tick}}
+\end{mathpar}
 \end{center}
-\caption{The syntax of the base language \(\LB\).}\label{fig:syntax-base}
-\end{figure}
-
-\begin{figure}[t]
-  \begin{center}
-    \begin{mathpar}
-      \inferrule{\Gamma \vdash^\LB t_1 : A \\ \Gamma \vdash^\LB t_2 :
-        \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}{\textsc{cons}} \\
-      \inferrule{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B \\ \Gamma
-        \vdash^\LB t_2 : B \\ \Gamma \vdash^\LB t_3 : \TList{A}}{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}{\textsc{foldr}} \\
-      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \tlazy{t} :
-        \TThunk{A}}{\textsc{lazy}} \qquad \inferrule{\Gamma \vdash^\LB t :
-        \TThunk{A}}{\Gamma \vdash^\LB \tforce{t} : A}{\textsc{force}} \qquad
-      \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \ttick{t} :
-        A}{\textsc{tick}}
-    \end{mathpar}
-  \end{center}
-  \caption{Typing rules in $B$ that are related to lazy thunks and cost.}\label{fig:typing-base}
+\caption{The syntax of \(\LB\) and typing rules that are related to lazy thunks
+  and cost.}\label{fig:typing-base}\label{fig:syntax-base}
 \end{figure}
 
 Most of the typing rules for \(\LB\) are standard, so we omit them. We show the
@@ -92,15 +86,6 @@ to model computation costs, and we need product types to return computation
 results along with costs. Since we are going to model demand semantics, we also
 need products to model evaluation contexts, and we need the unit type to model
 \emph{empty} contexts.
-
-At the term level, \(\LL\) has the usual introduction and elimination forms for
-the new types. We have no need for arbitrary functions on natural numbers, so we
-include only literals and addition. We also have constructs for logic
-programming: logic variables (\(\tfreeZ\)), nondeterministic choice
-(\(\tchooseZ\)), and failure (\(\tfail\)). Note that logic variables must be
-annotated with their types in order to ensure deterministic typing. Finally, we
-have a new operator \(\tleZ\) that indicates whether its left-hand operand lies
-below its right-hand operand in the order of approximations.
 
 \begin{figure}[t]
 \begin{center}
@@ -142,6 +127,15 @@ below its right-hand operand in the order of approximations.
 \caption{The syntax of the logic language \(\LL\).}\label{fig:syntax-logic}
 \end{figure}
 
+At the term level, \(\LL\) has the usual introduction and elimination forms for
+the new types. We have no need for arbitrary functions on natural numbers, so we
+include only literals and addition. We also have constructs for logic
+programming: logic variables (\(\tfreeZ\)), nondeterministic choice
+(\(\tchooseZ\)), and failure (\(\tfail\)). Note that logic variables must be
+annotated with their types in order to ensure deterministic typing. Finally, we
+have a Boolean operator \(\tleZ\), which indicates whether its left-hand operand
+lies below its right-hand operand in the order of approximations.
+
 We define a simple functional logic language \(\LL\) instead of using an
 existing formalization of one specific functional logic
 language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics}, the Verse
@@ -161,15 +155,6 @@ calculus~\cite{verse}) to keep our approach generally applicable.\ly{Is there a
     {\TB{\Gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{B}}
   \end{mathpar}
 \end{center}
-
-\paragraph{Semantics.}
-
-We show the semantic rules of $L$ that are related to the \TThunkZ{} datatype,
-the choice operator~(\texttt{?}), and free variables in
-\cref{fig:logic-semantics}.\ly{Did we refer to any papers when we define this
-  semantics? If so, cite them.}
-
-Note that $L$ is not total due to \( \tfail \).
 
 \begin{figure}[t]
 \begin{center}
@@ -195,6 +180,37 @@ Note that $L$ is not total due to \( \tfail \).
 \caption{The semantic rules of $L$ that are related to the \TThunkZ{} datatype,
   the choice operator~(\texttt{?}), and free variables.\ly{Are there too many
     rules here?}}\label{fig:logic-semantics}
+\end{figure}
+
+\paragraph{Semantics.}
+
+We show the semantic rules of $L$ that are related to the \TThunkZ{} datatype, the
+choice operator~(\texttt{?}), and free variables in
+\cref{fig:logic-semantics}.\ly{Did we refer to any papers when we define this
+  semantics? If so, cite them.}
+
+Note that $L$ is not total due to \( \tfail \).
+
+\paragraph{Derived terms in \(\LL\).}
+
+\begin{figure}[t] 
+  \[
+    \begin{array}{rcl}
+      \tassert{t_1}{t_2} &= &\tif{t_1}{t_2}{\tfail} \\
+      \treturn{t} &= &\tpair{t}{0} \\
+      \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
+      \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\ttranspose{y_2}}{t_2}{t_3} \\
+      \ttranspose{t} &= &\texttt{case \(t\) of } \\ &&\texttt{thunk \(y_1\) -> (\tdo{y_2}{y_1}{\treturn{(\tthunk{y_2})}});} \\ &&\texttt{undefined -> return undefined}
+    \end{array}
+  \]
+  \centering
+  \begin{mathpar}
+    \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}} \\
+    \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
+    \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
+    \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}}
+  \end{mathpar}
+  \caption{Derived term constructs in \(\LL\) and their typing rules.}\label{fig:logic-derived}
 \end{figure}
 
 \subsection{The Clairvoyance Translation}\label{subsec:clairvoyance-translation}
@@ -367,30 +383,6 @@ Note that $L$ is not total due to \( \tfail \).
 % \fi
 
 \begin{figure}[t]
-  \[
-    \begin{array}{rcl}
-      \tassert{t_1}{t_2} &= &\tif{t_1}{t_2}{\tfail} \\
-      \treturn{t} &= &\tpair{t}{0} \\
-      \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
-      \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\ttranspose{y_2}}{t_2}{t_3} \\
-      \ttranspose{t} &= &\texttt{case \(t\) of } \\ &&\texttt{thunk \(y_1\) -> (\tdo{y_2}{y_1}{\treturn{(\tthunk{y_2})}});} \\ &&\texttt{undefined -> return undefined}
-    \end{array}
-  \]
-\caption{Derived term constructs in \(\LL\).}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
-  \begin{mathpar}
-    \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}} \\
-    \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
-    \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
-    \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}}
-  \end{mathpar}
-  \caption{Typing rules for the derived constructs.}
-\end{figure}
-
-\begin{figure}[t]
   \begin{align*}
     \transC{x} &= \treturn{x} \\
     \transC{\tlet{x}{t_1}{t_2}} &= \tdo{x}{\transC{t_1}}{\transC{t_2}} \\
@@ -403,8 +395,7 @@ Note that $L$ is not total due to \( \tfail \).
     \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t_1}{\treturn(\tthunk{y})}} \\
     \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}}
   \end{align*}
-  \caption{The clairvoyance translation \(\transC{-}\) from \(\LB\) to \(\LL\).}
-  \label{fig:transC}
+  \caption{The clairvoyance translation \(\transC{-}\) from \(\LB\) to \(\LL\).}\label{fig:transC}
 \end{figure}
 
 We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended to ``behave like'' clairvoyance semantics (\cref{fig:transC}).

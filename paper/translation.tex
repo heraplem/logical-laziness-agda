@@ -81,9 +81,21 @@ $$\EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \E
 
 \subsection{The Logic Language $L$}\label{subsec:logic-lang}
 
-We show the syntax of $L$ in \cref{fig:syntax-logic}. \ly{TODO: Talk about all
-  the new types we introduced and why we introduced them; talk about all the new
-  terms as well.}
+We show the syntax of \(\LL\) in \cref{fig:syntax-logic}. Relative to \(\LB\),
+\(\LL\) has some new types: a unit type \(\TUnit\), product types
+\(\TProd{A}{B}\), and natural numbers \(\TNat\). We need the natural number type
+to model computation costs, and we need product types to return computation
+results along with costs. Since we are going to model demand semantics, we also
+need products to model evaluation contexts, and we need the unit type to model
+\emph{empty} contexts.
+
+At the term level, \(\LL\) has the usual introduction and elimination forms for
+the new types. We have no need for arbitrary functions on natural numbers, so we
+include only literals and addition. We also have constructs for logic
+programming: logic variables \(\tfreeZ\), nondeterministic choice \(\tchooseZ\),
+and failure \(\tfail\). Finally, we have a Boolean operator \(\tleZ\), which
+indicates whether its left-hand operand lies below its right-hand operand in the
+order of approximations.
 
 \begin{figure}[t]
 \begin{center}

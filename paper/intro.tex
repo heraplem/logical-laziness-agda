@@ -8,25 +8,54 @@ demand-driven semantics with \emph{free variables}. Past research has shown the
 usefulness of this feature in different contexts.\ly{TODO: Citations.} In this
 paper, we demonstrate yet another useful application: lazy cost analysis.
 Specifically, we show that two different semantics proposed independently for
-reasoning about the computation cost of lazy functional programs, 
-clairvoyance semantics~\cite{clairvoyant,forking-paths} and demand
-semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a single functional logic program.
+reasoning about the computation cost of lazy functional programs, clairvoyance
+semantics~\cite{clairvoyant,forking-paths} and demand
+semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a
+single functional logic program.
 
 % \subsection{what is lazy evaluation?}
 
-In lazy evaluation, a computation is driven by its demands, performing only the operations strictly required to compute a final result. Computations are
-stored as \emph{thunks} which are only evaluated when their values are demanded, and only to the extent required to produce the demanded value.
-This prevents the execution of extraneous code, but results in infamously challenging cost analysis. For example\lai{Gotta start with take n xs, where xs is arbitrarily long}, suppose that we define \emph{take n xs} as a function that takes the first n prefixes from a list xs.\lai{Should we give an actual definition, or leave it abstract like this to save space?} Let \([1..]\) represent an arbitrarily long list of natural numbers indexed at 1. Then, suppose that we wished to compute the following:
+In lazy evaluation, a computation is driven by its demands, performing only the
+operations strictly required to compute a final result. Computations are stored
+as \emph{thunks} which are only evaluated when their values are demanded, and
+only to the extent required to produce the demanded value.  This prevents the
+execution of extraneous code, but results in infamously challenging cost
+analysis. For example\lai{Gotta start with take n xs, where xs is arbitrarily
+  long}, suppose that we define \emph{take n xs} as a function that takes the
+first n prefixes from a list xs.\lai{Should we give an actual definition, or
+  leave it abstract like this to save space?} Let \([1..]\) represent an
+arbitrarily long list of natural numbers indexed at 1. Then, suppose that we
+wished to compute the following:
 
-\lai{adding figures later because I'm just trying to get words down rn - for now, just text will do.}
+\lai{adding figures later because I'm just trying to get words down rn - for
+  now, just text will do.}
 
 \(take n [1..])\)
 
-At first glance, one unfamiliar with laziness\lai{I think it's funnier to say this than the arguably more correct "one unfamiliar with lazy evaluation"} might expect this to fail to terminate, since defining [1..] would fail to terminate. However, since only n elements are demanded, so long as n is not arbitrarily long, the program will terminate in \(O(n)\) time. This is because n bounds the number of elements of [1..] that need to be computed, preventing the rest of the list from being generated. Thus, lazy programs can sometimes achieve termination when eager ones cannot.
+At first glance, one unfamiliar with laziness\lai{I think it's funnier to say
+  this than the arguably more correct "one unfamiliar with lazy evaluation"}
+might expect this to fail to terminate, since defining [1..] would fail to
+terminate. However, since only n elements are demanded, so long as n is not
+arbitrarily long, the program will terminate in \(O(n)\) time. This is because n
+bounds the number of elements of [1..] that need to be computed, preventing the
+rest of the list from being generated. Thus, lazy programs can sometimes achieve
+termination when eager ones cannot.
 
-\lai{This paragraph may be extraneous, but let's see how we are on space before ripping it out. It's good to have some mention of the difficulties here.}
+\lai{This paragraph may be extraneous, but let's see how we are on space before
+  ripping it out. It's good to have some mention of the difficulties here.}
 
-One major drawback of laziness becomes apparent when we consider how partially executing a function call interferes with traditional cost analysis. Shortcutting (or even failing to run) functions runs counter to the concept of \(O\)-notation in particular. Technically speaking, every function takes \(O(1)\) time in a lazy language, as it is always possible to call a function and then never demand its output. For example, if we call \(take n [1..])\) as part of a larger function that never uses the resulting list of numbers, then the call would be stored in a \emph{thunk} and not further evaluated. As \emph{thunk} creation is a constant-time operation, this results in the aforementioned \(O(1)\) time cost. This is not a particularly \emph{meaningful} thing to say about a lazy function, but its truth renders much of the existing paradigm for cost analysis nearly useless for our purposes.
+One major drawback of laziness becomes apparent when we consider how partially
+executing a function call interferes with traditional cost
+analysis. Shortcutting (or even failing to run) functions runs counter to the
+concept of \(O\)-notation in particular. Technically speaking, every function
+takes \(O(1)\) time in a lazy language, as it is always possible to call a
+function and then never demand its output. For example, if we call
+\(take n [1..])\) as part of a larger function that never uses the resulting
+list of numbers, then the call would be stored in a \emph{thunk} and not further
+evaluated. As \emph{thunk} creation is a constant-time operation, this results
+in the aforementioned \(O(1)\) time cost. This is not a particularly
+\emph{meaningful} thing to say about a lazy function, but its truth renders much
+of the existing paradigm for cost analysis nearly useless for our purposes.
 
 This paper will focus on two cost models which address this problem - \emph{Demand Semantics} and \emph{Clairvoyance Semantics}. Some other models will be explored briefly in Section whatever-number-is-related-work\lai{TODO: What number is this, anyway?}, but are not the focus of our work.
 

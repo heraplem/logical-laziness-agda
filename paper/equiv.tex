@@ -50,9 +50,9 @@ the \cref{apx:eval-semantics} and in our artifact.
 \end{lemma}
 
 \begin{lemma}[Semantics of $L$ is an approximation semantics]
-  If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
+  If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and
+  \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
 \end{lemma}
-
 
 \subsection{Clairvoyance semantics}
 
@@ -63,7 +63,7 @@ the number of \( \texttt{tick} \)s encountered while evaluating \( t \) to
 \emph{improvement theory}~\cite{moran1999}, just like the original clairvoyance
 semantics defined by Hackett and Hutton~\cite{clairvoyant}, except that we are
 based on a typed calculus $B$ with explicit \( \tlazyZ \) and \( \tforceZ \)
-operators. 
+operators.
 
 \begin{figure}[t]
   \begin{mathpar}
@@ -94,7 +94,7 @@ that we can only evaluate a value of \( \TThunkZ \) type if it is in fact a
 \( \sthunkZ \),\ie~we cannot \( \tforceZ \) \( \sundefined \).
 
 One major distinction between our semantics and that of Hackett and
-Hutton~\cite{clairvoyant} is that, our base language $B$ explicitly manages
+Hutton~\cite{clairvoyant} is that, our base language \(\LB\) explicitly manages
 laziness with \( \tlazyZ \) and \( \tforceZ \) operators, so we introduce
 nondeterminism at the place of \( \tlazyZ \) operator. In contrast, Hackett and
 Hutton~\cite{clairvoyant} introduce nondeterminism at \( \tletZ \) bindings:
@@ -105,29 +105,29 @@ to the result of evaluting \( t_1 \), or else \( x \) was subtituted by
 Note that \( \tfoldrZ \) is evaluated by first evaluting its list argument to a
 value \(v\) and then iterating over \(v\) via the auxiliary relation
 \( \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v} \). Here, \( t_1 \) is a
-``function'' (a term with free variables) that returns a \( \sthunkZ \) and takes
-as arguments:
+``function'' (a term with free variables) that returns a \( \sthunkZ \) and
+takes as arguments:
 \begin{enumerate}
 \item an element of the list; and
 \item a \( \sthunkZ \) obtained by iterating over the rest of the list, or
   \( \sundefined \) if the rest of the list is itself \( \sundefined \).
 \end{enumerate}
 
-\begin{lemma}[Clairvoyance semantics is an approximation semantics]
-  If \( \TB{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \),
-  \( c \in \mathbb{N} \), and \( \EC{\gamma}{t}{c}{v} \), then
-  \( v \in \Approx{A} \).
-\end{lemma}
+% \begin{lemma}[Clairvoyance semantics is an approximation semantics]
+%   If \( \TB{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \),
+%   \( c \in \mathbb{N} \), and \( \EC{\gamma}{t}{c}{v} \), then
+%   \( v \in \Approx{A} \).
+% \end{lemma}
 
-\begin{lemma}[Type soundness with respect to clairvoyance semantics]
-  If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then there
-  exist \( v \in \Approx{A} \) and \( c \in \mathbb{N} \) such that
-  \( \EC{\gamma}{t}{c}{v} \).
-\end{lemma}
+% \begin{lemma}[Type soundness with respect to clairvoyance semantics]
+%   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then there
+%   exist \( v \in \Approx{A} \) and \( c \in \mathbb{N} \) such that
+%   \( \EC{\gamma}{t}{c}{v} \).
+% \end{lemma}
 
-\ly{Really? How could \cref{prop:clair-mono} be true when there is
-  nondeterminism? Clearly there can be smaller results even if $\gamma_2$ is
-  bigger?}
+% \ly{Really? How could \cref{prop:clair-mono} be true when there is
+%   nondeterminism? Clearly there can be smaller results even if $\gamma_2$ is
+%   bigger?}
 
 \subsection{Demand semantics}
 
@@ -137,11 +137,14 @@ as a function \( \EDU{t} \) that takes two arguments:
 \item a fully-defined evaluation context \( \gamma \), and
 \item a demand \( d \) on \( \EE{t}{\gamma} \);
 \end{enumerate}
-it produces a list of demands on \( \gamma \) and an evaluation cost. In summary, demand semantics has the ``type''
+it produces a list of demands on \( \gamma \) and an evaluation cost. In
+summary, demand semantics has the ``type''
 \[
   \EDU{-} : (t : \Gamma \vdash A) \to (\gamma : \Eval{\Gamma}) \times \Approx{A}_{\approxof{\relax}{\EE{t}{\gamma}}} \to \Approx{\Gamma}_{\approxof{\relax}{\gamma}} \times \N .
 \]
-Intuitively, demand sematics computes ``how much'' of the input \( \gamma \) must be present in order to compute a certain ``amount'' of the output \( \EE{t}{\gamma} \), and also how much it costs to perform that computation.
+Intuitively, demand sematics computes ``how much'' of the input \( \gamma \)
+must be present in order to compute a certain ``amount'' of the output
+\( \EE{t}{\gamma} \), and also how much it costs to perform that computation.
 
 \begin{figure}\centering
   \begin{align*}
@@ -192,7 +195,10 @@ The following two theorems demonstrate the equivalence of clairvoyance and deman
 \paragraph{Demand translation}
 
 \begin{lemma}
-  Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \) and \( \gamma \in \Eval{\Gamma} \), then \( \TL{\Gamma, y^A : B}{\transD{t}{\Gamma}}{\TM{(\texttt{\(A_1\)\ *\ \(\cdots\) *\ \(A_n\)})}} \),
+  Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \)
+  and \( \gamma \in \Eval{\Gamma} \), then
+  \( \TL{\Gamma, y^A : B}{\transD{t}{\Gamma}}{\TM{(\texttt{\(A_1\)\ *\
+        \(\cdots\) *\ \(A_n\)})}} \),
 \end{lemma}
 
 \begin{lemma}[Semantics of the demand translation]\label{prop:dem-trans-sem}
@@ -220,7 +226,13 @@ The following two theorems demonstrate the equivalence of clairvoyance and deman
   By \cref{prop:dem-trans-sem} and \cref{prop:cost-minimality}.
 \end{proof}
 
-\nc{Have Stephen review this paragraph.}
-It is slightly unsatisfying that the demand translation does not in general reduce \emph{only} to the actual result of demand semantics. Some logic languages have a built-in facility to collapse a nondeterministic computation into a deterministic one, returning either the first result found or a list of all possible results. If we can arrange for less-defined results to always be tried first, we can use such a facility to ensure that the demand translation does in fact always return the actual result of demand semantics.
+\nc{Have Stephen review this paragraph.}  It is slightly unsatisfying that the
+demand translation does not in general reduce \emph{only} to the actual result
+of demand semantics. Some logic languages have a built-in facility to collapse a
+nondeterministic computation into a deterministic one, returning either the
+first result found or a list of all possible results. If we can arrange for
+less-defined results to always be tried first, we can use such a facility to
+ensure that the demand translation does in fact always return the actual result
+of demand semantics.
 
 \subsection{Agda Implementation}

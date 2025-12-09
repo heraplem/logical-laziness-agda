@@ -8,19 +8,40 @@ Let us return to the example of take n [1..]. We can define it in Curry, a lazy 
 
 [TODO: definition goes here]
 
-Suppose that we wanted to analyze the cost of this program. As explained prior, we should expect the final time cost to be \(O(n)\), despite [1..]'s naive non-termination. To do this, we can perform the transformation outlined in \cite{forking-paths} as follows, using the Tick monad to count function calls:
+Suppose that we wanted to analyze the cost of this program. As explained prior,
+we should expect the final time cost to be \(O(n)\), despite [1..]'s naive
+non-termination. To do this, we can perform the transformation outlined
+in~\cite{forking-paths} as follows, using the Tick monad to count function
+calls:
 
 [TODO: takeA here]
 
 Notice how takeA is structurally similar to take. [TODO: expand on this more later].
 
-Suppose now that we would prefer a method of cost analysis of our original program that [TODO: succinctly write benefit of Demand Semantics here later]. If that is the case, we would like to be able to use the method detailed in \cite{demand-semantics} instead. However, this leaves us with some unresolved issues in practice. The paper does not detail a simple and precise method for translating our source function into a demand-semantics-based cost analysis function. Indeed, this is one of the main drawbacks of the paper - the actual translation is a brittle, manual process, which is time consuming and prone to error if not mechanically proven to maintain functional correctness and time cost equivalence. It is certainly possible, but untenable for most applications.\lai{Do we need to do the work of showing insertD not defined in terms of insertA? I don't remember if we have that somewhere, and if not, that could be very annoying!}
+Suppose now that we would prefer a method of cost analysis of our original
+program that [TODO: succinctly write benefit of Demand Semantics here later]. If
+that is the case, we would like to be able to use the method detailed
+in~\cite{demand-semantics} instead. However, this leaves us with some unresolved
+issues in practice. The paper does not detail a simple and precise method for
+translating our source function into a demand-semantics-based cost analysis
+function. Indeed, this is one of the main drawbacks of the paper - the actual
+translation is a brittle, manual process, which is time consuming and prone to
+error if not mechanically proven to maintain functional correctness and time
+cost equivalence. It is certainly possible, but untenable for most
+applications.\lai{Do we need to do the work of showing insertD not defined in
+  terms of insertA? I don't remember if we have that somewhere, and if not, that
+  could be very annoying!}
 
-Rather than defining insertD naively through transforming insertA, suppose that we instead took full advantage of the nondeterminism [TODO: explain the Curry benefits better] that Curry offers. Indeed, it turns out that the following is equivalent to a directly translated version of insertD:
+Rather than defining insertD naively through transforming insertA, suppose that
+we instead took full advantage of the nondeterminism [TODO: explain the Curry
+benefits better] that Curry offers. Indeed, it turns out that the following is
+equivalent to a directly translated version of insertD:
 
 [TODO: Curry insertD goes here]
 
-Now, all we need to do is prove that this version of insertD is also correct and time-cost equivalent, and we will have solved our problem. How we do so is detailed in sections 3-5. \lai{TODO: Too informal :/}
+Now, all we need to do is prove that this version of insertD is also correct and
+time-cost equivalent, and we will have solved our problem. How we do so is
+detailed in sections 3-5. \lai{TODO: Too informal :/}
 
 \begin{itemize}
   \item a more in-depth discussion of lazy evaluation semantics, esp.

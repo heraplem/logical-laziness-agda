@@ -1,10 +1,11 @@
 \section{The Translation}\label{sec:translation}
 
-In this section, we define two languagues, a base language $B$ that corresponds
-a simple functional language~(\cref{subsec:base-lang}) and a logic language $L$
-that corresponds to a functional logic language~(\cref{subsec:logic-lang}). We
-then develop a \emph{clairvoyance translation} strategy that translates a
-program in $B$ to a program in $L$ that models the clairvoyance
+In this section, we define two languagues, a base language \(\LB\) that
+corresponds a simple functional language~(\cref{subsec:base-lang}) and a logic
+language $L$ that corresponds to a functional logic
+language~(\cref{subsec:logic-lang}). We then develop a \emph{clairvoyance
+  translation} strategy that translates a program in \(\LB\) to a program in
+\(\LL\) that models the clairvoyance
 semantics~\cite{clairvoyant,forking-paths}~(\cref{subsec:clairvoyance-translation}).
 We then develop a \emph{demand translation}, which models the demand
 semantics~\cite{bjerner1989,demand-semantics}, as a thin wrapper of the
@@ -98,8 +99,8 @@ include only literals and addition. We also have constructs for logic
 programming: logic variables (\(\tfreeZ\)), nondeterministic choice
 (\(\tchooseZ\)), and failure (\(\tfail\)). Note that logic variables must be
 annotated with their types in order to ensure deterministic typing. Finally, we
-have a Boolean operator \(\tleZ\), which indicates whether its left-hand operand
-lies below its right-hand operand in the order of approximations.
+have a new operator \(\tleZ\) that indicates whether its left-hand operand lies
+below its right-hand operand in the order of approximations.
 
 \begin{figure}[t]
 \begin{center}
@@ -138,11 +139,11 @@ lies below its right-hand operand in the order of approximations.
   // \tfail{}
 \end{bnf}
 \end{center}
-\caption{The syntax of the logic language $L$.}\label{fig:syntax-logic}
+\caption{The syntax of the logic language \(\LL\).}\label{fig:syntax-logic}
 \end{figure}
 
-We define a simple functional logic language $L$ instead of using an existing
-formalization of one specific functional logic
+We define a simple functional logic language \(\LL\) instead of using an
+existing formalization of one specific functional logic
 language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics}, the Verse
 calculus~\cite{verse}) to keep our approach generally applicable.\ly{Is there a
   particular formalization from a prior work that we are similar to?}
@@ -373,7 +374,6 @@ Note that $L$ is not total due to \( \tfail \).
       \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
       \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\ttranspose{y_2}}{t_2}{t_3} \\
       \ttranspose{t} &= &\texttt{case \(t\) of } \\ &&\texttt{thunk \(y_1\) -> (\tdo{y_2}{y_1}{\treturn{(\tthunk{y_2})}});} \\ &&\texttt{undefined -> return undefined}
-      % \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\texttt{\tdo{x_2}{\ttranspose{y_2}}{t_1}}}{t_2}{t_3}
     \end{array}
   \]
 \caption{Derived term constructs in \(\LL\).}
@@ -409,7 +409,13 @@ Note that $L$ is not total due to \( \tfail \).
 
 We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended to ``behave like'' clairvoyance semantics (\cref{fig:transC}).
 
-\ly{In the lemma below, should the two $\Gamma$s be the identical?}
+\ly{In the lemma below, should the two $\Gamma$s be the identical?}\nc{Yes: as
+  we've defined the semantics, the set of types in \(\LL\) is a superset of the
+  set of types in \(\LB\), so any typing context for \(\LB\) is also a valid
+  typing context for \(\LL\). Likewise, the set of values in \(\LL\) is a
+  superset of the set of partial values in \(\LB\), so any evaluation context
+  that is valid for clairvoyance semantics is also a valid evaluation context
+  for \(\LL\).}
 
 \begin{lemma}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).
@@ -417,10 +423,12 @@ We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended 
 
 \subsection{The Demand Translation}\label{subsec:demand-translation}
 
-We now define another translation from \( \LB \) to \( \LL \) that is intended to simulate demand semantics. Given
-\( \TB{\Gamma}{t}{A} \), the demand translation of \( t \) introcuces new logic variables with types corresponding to
-the types in \( \Gamma \); consequently, \( \Gamma \) must become a parameter to the translation. We therefore denote the demand
-translation by \( \transD{t}{\Gamma} \).
+We now define another translation from \( \LB \) to \( \LL \) that is intended
+to simulate demand semantics. Given \( \TB{\Gamma}{t}{A} \), the demand
+translation of \( t \) introcuces new logic variables with types corresponding
+to the types in \( \Gamma \); consequently, \( \Gamma \) must become a parameter
+to the translation. We therefore denote the demand translation by
+\( \transD{t}{\Gamma} \).
 
 \begin{figure}[t]
   \[
@@ -439,7 +447,10 @@ translation by \( \transD{t}{\Gamma} \).
   \caption{The demand translation.}
 \end{figure}
 
-Since the demand translation is intended to simulate demand semantics, it must evaluate to ``the same sort of thing'' as demand semantics, \ie an environment of approximations. To that end, we define an operation \( \verts{-} \) that turns contexts into types:
+Since the demand translation is intended to simulate demand semantics, it must
+evaluate to ``the same sort of thing'' as demand semantics, \ie an environment
+of approximations. To that end, we define an operation \( \verts{-} \) that
+turns contexts into types:
 \[
   \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} ,
 \]

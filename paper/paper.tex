@@ -228,13 +228,22 @@
 \maketitle
 
 \begin{abstract}
-  Multiple cost models for lazy programs exist, but translating between them typically proves challenging. Two of these models, clairvoyance semantics and demand semantics, are proven to be time-cost equivalent, but a simple, provably correct translation between the two had yet to be discovered. We present a means of representing lazy programs in functional logic
-  languages which allows us to achieve that simple translation. Terms in this representation simultaneously implement both
-  semantics for lazy programs, with only a small modification needed to translate from one to the other. Our contribution enables previously unattained flexibility between the two models, and 
-  represents an advancement in cost analysis of lazy programs. All of our results
-  have been formalized in the proof assistant, Agda.  \keywords{Functional Logic
-    Programming, Lazy Evaluation, Agda, Cost Analysis, Semantics}\lai{Too many
-    keywords? Too few?}
+  In functional logic programming, one program contains two semantics: a
+  ``forward'' nondeterministic semantics with choices, and a ``backward''
+  demand-driven semantics with free variables. But why is that useful? In this
+  paper, we show that two independently discovered semantics that model the
+  computation cost of lazy functional programs, namely the clairvoyance
+  semantics of Hackett and Hutton and the demand semantics of Bjerner and
+  Holmstr{\"{o}}m, correspond exactly to these two semantics of one functional
+  logic program. We propose and formalize a mechanical translation strategy
+  based on a simple typed calculus that produces a clairvoyance translation
+  based on a simple logic language, and a demand translation that is a simple
+  wrapper of the clairvoyance translation. We prove the translation strategy to
+  be correct in Agda. We also conduct case studies based on common lazy
+  functional programs to demonstrate how this approach can be applied to
+  Curry/PEKCS.
+
+  \keywords{Functional Logic Programming, Lazy Evaluation, Cost Analysis}
 \end{abstract}
 
 \subfile{intro}

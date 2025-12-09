@@ -1,0 +1,13 @@
+In functional logic programming, one program contains two semantics: a "forward"
+nondeterministic semantics with choices, and a "backward" demand-driven
+semantics with free variables. But why is that useful? In this paper, we show
+that two independently discovered semantics that model the computation cost of
+lazy functional programs, namely the clairvoyance semantics of Hackett and
+Hutton and the demand semantics of Bjerner and Holmström, correspond exactly to
+these two semantics of one functional logic program. We propose and formalize a
+mechanical translation strategy based on a simple typed calculus that produces a
+clairvoyance translation based on a simple logic language, and a demand
+translation that is a simple wrapper of the clairvoyance translation. We prove
+the translation strategy to be correct in Agda. We also conduct case studies
+based on common lazy functional programs to demonstrate how this approach can be
+applied to Curry/PEKCS.

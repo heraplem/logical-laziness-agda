@@ -1,75 +1,176 @@
 \section{Introduction}
 
-\lai{I think we need a catchier intro paragraph (and especially opening sentence), but I'm not sure if the one below should be reworked or broken in half, with the FLP explanation in the second paragraph and the chatter about big ideas and contributions in the first. Something to consider.}
+% \lai{I think we need a catchier intro paragraph (and especially opening
+%   sentence), but I'm not sure if the one below should be reworked or broken in
+%   half, with the FLP explanation in the second paragraph and the chatter about
+%   big ideas and contributions in the first. Something to consider.}
 
 In functional logic programming, one program contains two semantics: a
 ``forward'' nondeterministic semantics with \emph{choices}, and a ``backward''
 demand-driven semantics with \emph{free variables}. Past research has shown the
 usefulness of this feature in different contexts.\ly{TODO: Citations.} In this
-paper, we demonstrate yet another useful application: lazy cost analysis.
-Specifically, we show that two different semantics proposed independently for
-reasoning about the computation cost of lazy functional programs, clairvoyance
-semantics~\cite{clairvoyant,forking-paths} and demand
-semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a
-single functional logic program.
+paper, we demonstrate yet another useful application that has not been discussed
+before: lazy cost analysis. Specifically, we show that two different semantics
+proposed independently for reasoning about the computation cost of lazy
+functional programs, clairvoyance semantics~\cite{clairvoyant,forking-paths} and
+demand semantics~\cite{bjerner1989,demand-semantics}, can both be represented
+using a single functional logic program.
+
+\paragraph{Lazy cost analysis.}
+In lazy evaluation, a computation is driven by its demands, performing only when
+the operations required to compute a final result~\cite{launchbury1993}. Lazy
+evaluation enables functional programmers to write compositional code with
+comparable or potentially better performance~\cite{fp-matters}. However, because
+computations in lazy evaluation are on demand, out of order, and interleaved
+with other computations, analyzing the ``performance'' of a lazy functional
+program becomes much more challenging, as the analyzer needs to reason about
+mutable heaps and cannot consider a function in isolation.
+
+Various works have been proposed to deal with this challenge. We can roughly
+divide these works into three different approaches. The first approach,
+represented by works on Iris$^{\$}$~\cite{iris-credit,iris-thunk}, deal with
+mutable heaps directly using tools like separation
+logic~\cite{separation-logic}. The second approach, represented by
+LiquidHaskell~\cite{liquidate,liquid-okasaki}, uses a graded monad proposed by
+Danielsson~\cite{danielsson-08} to track computation cost. However, this
+approach needs to deal with sharing manually. The last approach instead proposes
+and utilizes alternative semantics that are are equivalent to lazy evaluation in
+terms of computation
+cost~\cite{bjerner1989,clairvoyant,forking-paths,demand-semantics}. In contrast
+to the natural semantics of lazy evaluation~\cite{launchbury1993}, these
+semantics reify computation cost in pure and eager semantics, so one do not need
+to be concerned with mutable heaps, sharing, or our-of-order executions.
 
 % \subsection{what is lazy evaluation?}
 
-In lazy evaluation, a computation is driven by its demands, performing only the
-operations strictly required to compute a final result. Computations are stored
-as \emph{thunks} which are only evaluated when their values are demanded, and
-only to the extent required to produce the demanded value.  This prevents the
-execution of extraneous code, but results in infamously challenging cost
-analysis. For example\lai{Gotta start with take n xs, where xs is arbitrarily
-  long}, suppose that we define \emph{take n xs} as a function that takes the
-first n prefixes from a list xs.\lai{Should we give an actual definition, or
-  leave it abstract like this to save space?} Let \([1..]\) represent an
-arbitrarily long list of natural numbers indexed at 1. Then, suppose that we
-wished to compute the following:
+% In lazy evaluation, a computation is driven by its demands, performing only the
+% operations strictly required to compute a final result. Computations are stored
+% as \emph{thunks} which are only evaluated when their values are demanded, and
+% only to the extent required to produce the demanded value.  This prevents the
+% execution of extraneous code, but results in infamously challenging cost
+% analysis. For example\lai{Gotta start with take n xs, where xs is arbitrarily
+%   long}, suppose that we define \emph{take n xs} as a function that takes the
+% first n prefixes from a list xs.\lai{Should we give an actual definition, or
+%   leave it abstract like this to save space?} Let \([1..]\) represent an
+% arbitrarily long list of natural numbers indexed at 1. Then, suppose that we
+% wished to compute the following:
 
-\lai{adding figures later because I'm just trying to get words down rn - for
-  now, just text will do.}
+% \lai{adding figures later because I'm just trying to get words down rn - for
+%   now, just text will do.}
+% 
+% \(take n [1..])\)
+% 
+% At first glance, one unfamiliar with laziness\lai{I think it's funnier to say
+%   this than the arguably more correct "one unfamiliar with lazy evaluation"}
+% might expect this to fail to terminate, since defining [1..] would fail to
+% terminate. However, since only n elements are demanded, so long as n is not
+% arbitrarily long, the program will terminate in \(O(n)\) time. This is because n
+% bounds the number of elements of [1..] that need to be computed, preventing the
+% rest of the list from being generated. Thus, lazy programs can sometimes achieve
+% termination when eager ones cannot.
+% 
+% \lai{This paragraph may be extraneous, but let's see how we are on space before
+%   ripping it out. It's good to have some mention of the difficulties here.}
+% 
+% One major drawback of laziness becomes apparent when we consider how partially
+% executing a function call interferes with traditional cost
+% analysis. Shortcutting (or even failing to run) functions runs counter to the
+% concept of \(O\)-notation in particular. Technically speaking, every function
+% takes \(O(1)\) time in a lazy language, as it is always possible to call a
+% function and then never demand its output. For example, if we call
+% \(take n [1..])\) as part of a larger function that never uses the resulting
+% list of numbers, then the call would be stored in a \emph{thunk} and not further
+% evaluated. As \emph{thunk} creation is a constant-time operation, this results
+% in the aforementioned \(O(1)\) time cost. This is not a particularly
+% \emph{meaningful} thing to say about a lazy function, but its truth renders much
+% of the existing paradigm for cost analysis nearly useless for our purposes.
+% 
+% This paper will focus on two cost models which address this problem -
+% \emph{Demand Semantics} and \emph{Clairvoyance Semantics}. Some other models
+% will be explored briefly in Section whatever-number-is-related-work\lai{TODO:
+%   What number is this, anyway?}, but are not the focus of our work.
+% 
+% Clairvoyance Semantics models a lazy program as a nondeterministic tree of
+% possible execution paths. The concept was first introduced in \cite{clairvoyant}
+% and implemented in Rocq in \cite{forking-paths}\lai{Is this how we will do
+%   inline citations, and how we will reference them in the text?} via the
+% Clairvoyance Monad. To analyze cost within this model, we utilize this monad to
+% simulate nondeterministically choosing which thunks to force and which to skip,
+% eventually resulting in a path which mimics that of a function computing the
+% desired output. \lai{TODO: add more detail and corrections here - maybe we can
+%   use figures like those in the Forking Paths paper?} \lai{Do we need a concrete
+%   example here? Or do we need to mention that computing the actual tree is
+%   impractical because of path explosion?}
+% 
+% Demand Semantics, on the other hand, models the cost lazy programs by computing
+% how much of the input must be forced to produce a function's output, which is
+% provably cost-equivalent to computing the same output. First described in
+% \cite{bjerner1989} and formalized in Rocq in \cite{demand-semantics}, the idea
+% is also relatively straightforward, but is quite different from clairvoyance
+% semantics in implementation. Rather than involving nondeterminism directly, the
+% 'choices' made in a function's execution path are abstracted away into an "outD"
+% input, which models the output which will ultimately be demanded from that
+% function. outD is then fed to a separate cost-analysis function derived from the
+% original function in a systematic way. Finally, the cost analysis function uses
+% outD to compute the answer to a new query - how much of the original function's
+% input would be needed to compute outD? It turns out that this computation
+% results in the same time cost as computing the input normally.\lai{How about
+%   here?}
+% 
+% While clairvoyance and demand semantics provably produce equivalent cost
+% analyses, directly translating from one to the other is challenging.\lai{Maybe
+%   two paragraphs - one outlining the problem, and another introducing the idea
+%   of using FLP to solve it.} There is certainly some amount of 'clairvoyance'
+% occurring in demand semantics in the literal sense, as one needs to know what
+% demands will be placed on the output before cost analysis can proceed in order
+% to construct a meaningful outD. However, the handling of nondeterminism is left
+% implicit - we take as premise that one will know which sorts of output demands a
+% user might wish to reason about, and say little about how they came to possess
+% that information. Clairvoyance semantics has a similar issue, but in
+% reverse\footnote{After we introduce the main ideas of the functional logic
+%   translation between the two, the fact that clairvoyance and demand semantics
+%   are inverses of each other in this way will likely seem somewhere between
+%   ironic and prophetic.}. The concept of "demand" is not explicitly mentioned in
+% the semantics, but nondeterministically choosing a program's execution path is
+% also, \emph{implicitly}, very similar to computing that same path using the
+% output demand as a guide \lai{Feels like I'm not explaining this quite well
+%   enough. I'll think about it.}.
+% 
+% While this conundrum left us (as researchers interested in lazy cost analysis)
+% at an impasse\lai{too informal?}, those familiar with functional logic
+% programming concepts may have already noticed the connection that eventually led
+% us through it. Functional logic languages which integrate nondeterminism, like
+% Curry\lai{What do I cite here...?}, have a notion of forward and backward
+% execution that maps neatly onto the aforementioned relationship between demand
+% and clairvoyance semantics. Is this mapping correct, though? Yes, we have
+% discovered, and provably so.
 
-\(take n [1..])\)
+\paragraph{Clairvoyance semantics and demand semantics.}
+In this paper, we look at two alternative semantics studied in the third
+approach, namely the clairvoyance semantics proposed by Hackett and
+Hutton~\cite{clairvoyant}, and the demand semantics proposed by Bjerner and
+Holmstr{\"{o}}m~\cite{bjerner1989}.
 
-At first glance, one unfamiliar with laziness\lai{I think it's funnier to say
-  this than the arguably more correct "one unfamiliar with lazy evaluation"}
-might expect this to fail to terminate, since defining [1..] would fail to
-terminate. However, since only n elements are demanded, so long as n is not
-arbitrarily long, the program will terminate in \(O(n)\) time. This is because n
-bounds the number of elements of [1..] that need to be computed, preventing the
-rest of the list from being generated. Thus, lazy programs can sometimes achieve
-termination when eager ones cannot.
+The clairvoyance semantics buils on the observation that, for the sake of
+analyzing computation cost, it only matters \emph{if} a computation cost is
+incurred, not \emph{when}. Therefore, the clairvoyance semantics evaluates terms
+eagerly, but every time it runs into a lazy operation, it makes a
+\emph{nondeterministic} choice of evaluating a computation or skipping it.
 
-\lai{This paragraph may be extraneous, but let's see how we are on space before
-  ripping it out. It's good to have some mention of the difficulties here.}
+The demand semantics, on the other hand, assumes that the demand on the output
+of a function is known as a paratemeter, in addition to the function's input.
+The demand semantics can then run ``backward'' to calculate the minimal input
+demand.
 
-One major drawback of laziness becomes apparent when we consider how partially
-executing a function call interferes with traditional cost
-analysis. Shortcutting (or even failing to run) functions runs counter to the
-concept of \(O\)-notation in particular. Technically speaking, every function
-takes \(O(1)\) time in a lazy language, as it is always possible to call a
-function and then never demand its output. For example, if we call
-\(take n [1..])\) as part of a larger function that never uses the resulting
-list of numbers, then the call would be stored in a \emph{thunk} and not further
-evaluated. As \emph{thunk} creation is a constant-time operation, this results
-in the aforementioned \(O(1)\) time cost. This is not a particularly
-\emph{meaningful} thing to say about a lazy function, but its truth renders much
-of the existing paradigm for cost analysis nearly useless for our purposes.
+These two semantics were proposed independently, but it turns out that they
+correspond to the two semantics of the same functional logic program. Indeed,
+given a lazy functional program, we can translate this program to a functional
+logic program that uses \emph{choice} to simulate the clairvoyance semantics. If
+we then add some input demands as \emph{free variables}, the new functional
+logic program simulates the demand semantics. In this paper, we exhibit this
+connection both in theory and in practice.
 
-This paper will focus on two cost models which address this problem - \emph{Demand Semantics} and \emph{Clairvoyance Semantics}. Some other models will be explored briefly in Section whatever-number-is-related-work\lai{TODO: What number is this, anyway?}, but are not the focus of our work.
-
-Clairvoyance Semantics models a lazy program as a nondeterministic tree of possible execution paths. The concept was first introduced in \cite{clairvoyant} and implemented in Rocq in \cite{forking-paths}\lai{Is this how we will do inline citations, and how we will reference them in the text?} via the Clairvoyance Monad. To analyze cost within this model, we utilize this monad to simulate nondeterministically choosing which thunks to force and which to skip, eventually resulting in a path which mimics that of a function computing the desired output. \lai{TODO: add more detail and corrections here - maybe we can use figures like those in the Forking Paths paper?} \lai{Do we need a concrete example here? Or do we need to mention that computing the actual tree is impractical because of path explosion?}
-
-Demand Semantics, on the other hand, models the cost lazy programs by computing how much of the input must be forced to produce a function's output, which is provably cost-equivalent to computing the same output. First described in \cite{bjerner1989} and formalized in Rocq in \cite{demand-semantics}, the idea is also relatively straightforward, but is quite different from clairvoyance semantics in implementation. Rather than involving nondeterminism directly, the 'choices' made in a function's execution path are abstracted away into an "outD" input, which models the output which will ultimately be demanded from that function. outD is then fed to a separate cost-analysis function derived from the original function in a systematic way. Finally, the cost analysis function uses outD to compute the answer to a new query - how much of the original function's input would be needed to compute outD? It turns out that this computation results in the same time cost as computing the input normally.\lai{How about here?}
-
-While clairvoyance and demand semantics provably produce equivalent cost analyses, directly translating from one to the other is challenging.\lai{Maybe two paragraphs - one outlining the problem, and another introducing the idea of using FLP to solve it.} There is certainly some amount of 'clairvoyance' occurring in demand semantics in the literal sense, as one needs to know what demands will be placed on the output before cost analysis can proceed in order to construct a meaningful outD. However, the handling of nondeterminism is left implicit - we take as premise that one will know which sorts of output demands a user might wish to reason about, and say little about how they came to possess that information. Clairvoyance semantics has a similar issue, but in reverse\footnote{After we introduce the main ideas of the functional logic translation between the two, the fact that clairvoyance and demand semantics are inverses of each other in this way will likely seem somewhere between ironic and prophetic.}. The concept of "demand" is not explicitly mentioned in the semantics, but nondeterministically choosing a program's execution path is also, \emph{implicitly}, very similar to computing that same path using the output demand as a guide \lai{Feels like I'm not explaining this quite well enough. I'll think about it.}.
-
-
-
-While this conundrum left us (as researchers interested in lazy cost analysis) at an impasse\lai{too informal?}, those familiar with functional logic programming concepts may have already noticed the connection that eventually led us through it. Functional logic languages which integrate nondeterminism, like Curry\lai{What do I cite here...?}, have a notion of forward and backward execution that maps neatly onto the aforementioned relationship between demand and clairvoyance semantics. Is this mapping correct, though? Yes, we have discovered, and provably so.
-
-We make the following contributions:
+In particular, we make the following contributions:
 
 \begin{itemize}
   \item We propose and formalize a mechanical way of translating a functional
@@ -80,8 +181,8 @@ We make the following contributions:
         and proofs are mechanized in Agda~(\cref{sec:equiv}).
   \item We conduct a number of case studies by manually translating classical
         lazy Haskell programs\ly{TODO:\ replace these with exact names when we
-        have the case study section.} to Curry/PEKCS programs based on our
-        translation strategy~(\cref{sec:case-study}).
+        have the case study section.} to Curry/PAKCS~\cite{curry-lang,pakcs}
+        programs based on our translation strategy~(\cref{sec:case-study}).
 \end{itemize}
 
 In addition, we provide a motivating example in \cref{sec:motivating-example},

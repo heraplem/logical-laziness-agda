@@ -147,10 +147,39 @@ calculus~\cite{verse}) to keep our approach generally applicable.\ly{Is there a
 
 \paragraph{Semantics.}
 
-\ly{TODO: Move a selected set of rules from \cref{apx:semantics-logic} here.}
-\ly{Did we refer to any papers when we define this semantics? If so, cite them.}
+We show the semantic rules of $L$ that are related to the \TThunkZ{} datatype, the
+choice operator~(\texttt{?}), and free variables in
+\cref{fig:logic-semantics}.\ly{Did we refer to any papers when we define this
+  semantics? If so, cite them.}
 
 Note that $L$ is not total due to \( \tfail \).
+
+\begin{figure}[t]
+\begin{center}
+  \begin{mathpar}
+    \inferrule{\EL{\gamma}{t}{v}}{\EL{\gamma}{\tthunk{t}}{\sthunk{v}}}{\rulename{L-Result}}
+    \qquad
+    \inferrule{\\}{\EL{\gamma}{\tundefined}{\sundefined}}{\rulename{L-Undefined}} \\
+    \inferrule{\EL{\gamma}{t_1}{\sthunk{v_1}} \\ \EL{\gamma, x \mapsto v_1}{t_2}{v_2}}{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v_2}}{\rulename{L-Case-Result}} \\
+    \inferrule{\EL{\gamma}{t_1}{\sundefined} \\ \EL{\gamma}{t_3}{v}}{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v}}{\rulename{L-Case-Undefined}}\\
+    \inferrule{v : A}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}} \qquad
+    \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}}
+    \qquad
+    \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \\
+    \inferrule{\EL{\gamma}{t_3}{v_1} \\
+      \ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{v_2}}{\EL{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{v_2}}{\rulename{L-Foldr}} \\
+    \inferrule{\EL{\gamma}{t_2}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{v}}{\rulename{L-Foldr-Nil}} \qquad
+    \inferrule{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{v}}{\rulename{L-Foldr-Undefined}} \\
+    \inferrule{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\sthunk{v_2}}{v_3} \\
+      \EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto
+        \sthunk{v_3}}{t_1}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{v_2}}{v}}{\rulename{L-Foldr-Result}}
+  \end{mathpar}
+\end{center}
+\caption{The semantic rules of $L$ that are related to the \TThunkZ{} datatype,
+  the choice operator~(\texttt{?}), and free
+  variables.}\label{fig:logic-semantics}
+\end{figure}
+
 
 \subsection{The Clairvoyance Translation}\label{subsec:clairvoyance-translation}
 
@@ -364,6 +393,8 @@ Note that $L$ is not total due to \( \tfail \).
 \end{figure}
 
 We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended to ``behave like'' clairvoyance semantics (\cref{fig:transC}).
+
+\ly{In the lemma below, should the two $\Gamma$s be the identical?}
 
 \begin{lemma}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).

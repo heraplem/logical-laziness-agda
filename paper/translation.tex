@@ -374,17 +374,22 @@ We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that is intended 
 We now define another translation from \( \LB \) to \( \LL \) that is intended to simulate demand semantics. Given \( \TL{\Gamma}{t}{A} \), the demand translation of \( t \) introcuces new 
 logic variables with types corresponding to the types in \( \Gamma \); consequently, \( \Gamma \) must become a parameter. We therefore denote the demand translation by \( \transD{t}{\Gamma} \).
 
-\begin{align*}
-  \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\texttt{let \( x'_1 \) = \tfree{A_1} in} \\
-                                             &\texttt{assert \tle{x'_1}{x_1} in} \\
-                                             &\vdots \\
-                                             &\texttt{let \( x'_n \) = \tfree{A_n} in} \\
-                                             &\texttt{assert \tle{x'_n}{x_n} in} \\
-                                             &\texttt{let \( u \) = \( \transC{t'} \) in} \\
-                                             &\texttt{assert \teq{x}{\tfst{u}} in} \\
-                                             &\texttt{((\( x'_1 \), \( \ldots \), \( x'_n \)), \( \tsnd{u} \))} \\
-  \text{where \( t' = t[x'_1/x_1, \ldots, x'_n/x_n] \).}
-\end{align*}
+\begin{figure}[t]
+  \[
+    \begin{array}{rl}
+      \transD{t}{x_1 : A_1, \ldots, x_n : A_n} = &\tlet{x'_1}{\tfree{A_1}}{\relax} \\
+                                                 &\tassert{\tle{x'_1}{x_1}}{\relax} \\
+                                                 &\multicolumn{1}{c}{\vdots} \\
+                                                 &\tlet{x'_n}{\tfree{A_n}}{\relax} \\
+                                                 &\tassert{\tle{x'_n}{x_n}}{\relax} \\
+                                                 &\tlet{u}{\transC{t'}}{\relax} \\
+                                                 &\tassert{\teq{x}{\tfst{u}}}{\relax} \\
+                                                 &\tpair{\texttt{(\( x'_1 \),\ \( \ldots \),\ \( x'_n \))}}{\tsnd{u}} \\
+      \multicolumn{2}{c}{\text{where \( t' = t[x'_1/x_1, \ldots, x'_n/x_n] \).}}
+    \end{array}
+  \]
+  \caption{The demand translation.}
+\end{figure}
 
 Since the demand translation is intended to simulate demand semantics, it must evaluate to ``the same sort of thing'' as demand semantics, \ie an environment of approximations. To that end, we define an operation \( \verts{-} \) that turns contexts into types:
 \[

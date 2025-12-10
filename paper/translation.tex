@@ -137,6 +137,7 @@ if a computation is demanded in the demand translation.
   // \tfree{A}
   // \tfail{}
 \end{bnf}
+\ly{TODO: typing rules.}
   \begin{mathpar}
     \inferrule{\EL{\gamma}{t}{v}}{\EL{\gamma}{\tresult{t}}{\sthunk{v}}}{\rulename{L-Result}}
     \qquad
@@ -176,20 +177,19 @@ language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics}, the Verse
 calculus~\cite{verse}) to keep our approach generally applicable.\ly{Is there a
   particular formalization from a prior work that we are similar to?}
 
-\ly{Why is there only one rule? Are other rules mostly straightforward? Or you
-  haven't got the time to write them down?}
-
-\begin{center}
-  \begin{mathpar}
-    \inferrule{\TB{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{B} \\
-      \TB{\Gamma}{t_2}{B} \\
-      \TB{\Gamma}{t_3}{\TList{A}}}
-    {\TB{\Gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{B}}
-  \end{mathpar}
-\end{center}
+% \ly{Why is there only one rule? Are other rules mostly straightforward? Or you
+%   haven't got the time to write them down?}
+% 
+% \begin{center}
+%   \begin{mathpar}
+%     \inferrule{\TB{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{B} \\
+%       \TB{\Gamma}{t_2}{B} \\
+%       \TB{\Gamma}{t_3}{\TList{A}}}
+%     {\TB{\Gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{B}}
+%   \end{mathpar}
+% \end{center}
 
 \paragraph{Semantics.}
-
 We show the semantic rules of $L$ that are related to the \TLazyZ{} datatype,
 the choice operator~(\texttt{?}), and free variables in
 \cref{fig:logic-semantics}.\ly{Did we refer to any papers when we define this
@@ -405,6 +405,25 @@ recognize that \texttt{M} is a writer's monad~\cite{moggi-monad,wadler-monad}.
 % \end{proof}
 % \fi
 
+We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that simulates
+the clairvoyance semantics in \cref{fig:transC}. The translation is essentially
+a monadic translation~\cite{moggi-monad,malias,wadler-monad} and is inspired by
+Li \textit{et al.}'s work on the clairvoyance monad~\cite{forking-paths}: values
+and variables are translated using \texttt{return}. The \texttt{let}-bindings
+and \texttt{if} expressions are translated using \tdo{\cdot}{\cdot}{\cdot}. When
+the term in \(\LB\) is a \tfoldrZ, we translate it to the derived term construct
+\tfoldMZ.
+
+The key for implementing clairvoyance semantics is in $\transC{\tlazy{t}}$ and
+$\transC{\tforce{t}}$. When the orginal term is $\tlazy{t}$, we use the
+nondeterministic operator \texttt{?} to either skip the inner term's
+evaluation~(\(\treturn{\tundefined}\)), or compute the inner term and wraps the
+result inside \tresultZ. When the term is $\tforce{t}$, we first evaluate \(t\)
+and pattern match of the result $y_1$. If $y_1$ contains a $\tresult{y_2}$, we
+return it; otherwise, we directly fail this computation branch---note that
+\tfail{} only terminates the current nondeterministic branch, so other branches
+that contain a \tresultZ{} will continue.\ly{What about ticks?}
+
 \begin{figure}[t]
   \begin{align*}
     \transC{x} &= \treturn{x} \\
@@ -415,34 +434,25 @@ recognize that \texttt{M} is a writer's monad~\cite{moggi-monad,wadler-monad}.
     \transC{\tnil{}} &= \treturn{\tnil{}} \\
     \transC{\tcons{t_1}{t_2}} &= \tdo{y_1}{\transC{t_1}}{\tdo{y_2}{\transC{t_2}}{\treturn{(\tcons{y_1}{y_2})}}} \\
     \transC{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}} &= \tdo{y}{\transC{t_3}}{\tfoldM{x_1}{x_2}{\transC{t_1}}{\transC{t_2}}{y}} \\
-    \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t}{\treturn(\tthunk{y})}} \\
+    \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t}{\treturn(\tresult{y})}} \\
     \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}}
   \end{align*}
   \caption{The clairvoyance translation \(\transC{-}\) from \(\LB\) to \(\LL\).}\label{fig:transC}
 \end{figure}
 
-We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that simulates
-the clairvoyance semantics~(\cref{fig:transC}).
-
-\ly{In the lemma below, should the two $\Gamma$s be the identical?}\nc{Yes: as
-  we've defined the semantics, the set of types in \(\LL\) is a superset of the
-  set of types in \(\LB\), so any typing context for \(\LB\) is also a valid
-  typing context for \(\LL\). Likewise, the set of values in \(\LL\) is a
-  superset of the set of partial values in \(\LB\), so any evaluation context
-  that is valid for clairvoyance semantics is also a valid evaluation context
-  for \(\LL\).}
-
+We show that the clairvoyance translation preserves the types of the original
+terms in \(\LB\) and wraps them inside \texttt{M}:\ly{TODO: Fix $\Gamma$.}
 \begin{theorem}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).
 \end{theorem}
 
 \subsection{The Demand Translation}\label{subsec:demand-translation}
 
-We now define another translation from \( \LB \) to \( \LL \) that is intended
-to simulate demand semantics. Given \( \TB{\Gamma}{t}{A} \), the demand
-translation of \( t \) introcuces new logic variables with types corresponding
-to the types in \( \Gamma \); consequently, \( \Gamma \) must become a parameter
-to the translation. We therefore denote the demand translation by
+We now define another translation from \( \LB \) to \( \LL \) that simulates the
+demand semantics. Given \( \TB{\Gamma}{t}{A} \), the demand translation of
+\( t \) introcuces new logic variables with types corresponding to the types in
+\( \Gamma \); consequently, \( \Gamma \) must become a parameter to the
+translation. We therefore denote the demand translation by
 \( \transD{t}{\Gamma} \).
 
 \begin{figure}[t]

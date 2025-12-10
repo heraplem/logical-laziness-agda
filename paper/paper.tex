@@ -32,6 +32,7 @@
 \newnote{ly}{red}      % Li Yao
 \newnote{lai}{cyan}    % Laura Israel
 \newnote{nc}{violet}      % Nicholas Coltharp
+\newnote{stl}{blue}    % Steven Libby
 
 % If you want to set draft to true or false, go to `directive.tex`
 \newboolean{extended}
@@ -262,34 +263,13 @@
 
 \subfile{case-study}
 
-\section{Related work}\label{sec:related-work}
-
-There are many other semantics for lazy programming languages. The best known of
-these is the natural semantics of Launchbury,~\cite{launchbury1993} which models
-the state of a lazy program as a heap of variable bindings that is updated
-whenever a variable is evaluated. This semantics has the advantage of being easy
-to understand intuitively, as it closely reflects a na{\"{i}}ve implementation
-of lazy evaluation on an actual computer.
-
-Clairvoyance semantics was first studied by Hackett and
-Hutton~\cite{clairvoyant}, who proved its equivalence with Launchbury's
-semantics. Li \emph{et al.} developed a model of this semantics in Rocq, along
-with a framework for automating proofs about the behavior of
-programs.~\cite{forking-paths}
-
-Demand semantics was first studied by Bjerner and
-Holmstr{\"{o}}m.~\cite{bjerner1989} Their semantics was untyped; a typed version
-was first published in Xia \emph{et al.}~\cite{demand-semantics} Our demand
-semantics is essentially the same as the semantics found there. That work was
-also the first to demonstrate that demand semantics is equivalent to other
-semantics for lazy languages; in particular, it contains the theorems of cost
-existence and cost minimality, which amount to equivalence with clairvoyance
-semantics.
+%\section{Related work}\label{sec:related-work}
+\subfile{related-work}
 
 \section{Conclusion}\label{sec:conclusion}
 
 \bibliographystyle{splncs04}
-\bibliography{yao,ref}
+\bibliography{yao,ref,steven}
 
 \newpage
 \subfile{appendix}

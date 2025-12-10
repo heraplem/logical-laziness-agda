@@ -448,12 +448,13 @@ terms in \(\LB\) and wraps them inside \texttt{M}:\ly{TODO: Fix $\Gamma$.}
 
 \subsection{The Demand Translation}\label{subsec:demand-translation}
 
-We now define another translation from \( \LB \) to \( \LL \) that simulates the
-demand semantics. Given \( \TB{\Gamma}{t}{A} \), the demand translation of
-\( t \) introcuces new logic variables with types corresponding to the types in
-\( \Gamma \); consequently, \( \Gamma \) must become a parameter to the
-translation. We therefore denote the demand translation by
-\( \transD{t}{\Gamma} \).
+We now define another translation \( \transD{t}{\Gamma} \) from \( \LB \) to
+\( \LL \) that simulates the demand semantics, shown in
+\cref{fig:demand-translation}. Unlike the clairvoyance translation, the typing
+context \(\Gamma\) in \( \LB \) is also a parameter to the translation. This is
+because we need to introduce new free variables with types corresponding to
+types in \( \Gamma \). This is consistent to the demand translation of Xia
+\textit{et al.}~\cite{demand-semantics}.
 
 \begin{figure}[t]
   \[
@@ -469,13 +470,13 @@ translation. We therefore denote the demand translation by
       \multicolumn{2}{c}{\text{where \( t' = t[x'_1/x_1, \ldots, x'_n/x_n] \).}}
     \end{array}
   \]
-  \caption{The demand translation.}
+  \caption{The demand translation.}\label{fig:demand-translation}
 \end{figure}
 
-Since the demand translation is intended to simulate demand semantics, it must
-evaluate to ``the same sort of thing'' as demand semantics, \ie an environment
-of approximations. To that end, we define an operation \( \verts{-} \) that
-turns contexts into types:
+\ly{TODO: describe the demand translation in a bit more details.}
+
+In addition, we define an operation \( \verts{-} \) that turns contexts into
+product types:
 \[
   \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} ,
 \]

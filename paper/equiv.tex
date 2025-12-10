@@ -177,13 +177,13 @@ must be present in order to compute a certain ``amount'' of the output
 
 The following two theorems demonstrate the equivalence of clairvoyance and demand semantics. Let \( \Gamma \vdash t : A \), \( \gamma \in \Eval{\Gamma} \), and \( \approxof{a^A}{\EE{t}{\gamma}} \); and define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \).
 
-\begin{theorem}[Cost existence]\label{prop:cost-existence}
+\begin{proposition}[Cost existence]\label{prop:cost-existence}
   Let \( \gamma^A \le {\gamma^A}' \prec \gamma \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EC{{\gamma^A}'}{t}{c}{{a^A}'} \).  In particular, \( \EC{\gamma^A}{t}{c}{a^A} \).
-\end{theorem}
+\end{proposition}
 
-\begin{theorem}[Cost minimality]\label{prop:cost-minimality}
+\begin{proposition}[Cost minimality]\label{prop:cost-minimality}
   Let \( \approxof{{\gamma^A}'}{\gamma}, {a^A}' \ge a^A, c' \in \N \) such that \( \EC{{\gamma^A}'}{t}{c'}{{a^A}'} \). Then \( ({\gamma^A}', c') \ge (\gamma^A, c) \).
-\end{theorem}
+\end{proposition}
 
 \paragraph{Clairvoyance translation}
 

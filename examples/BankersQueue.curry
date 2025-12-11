@@ -20,14 +20,25 @@ mkQueueM frontLen front backLen back = do
     then return (Queue frontLen front backLen back)
     else do
       back' <- withForced back reverseM
-      front' <- withForced front (`appendM` back')
-      back'' <- thunk (return NilA)
+      front' <- withForced front (`toListM'` back')
+      back'' <- nilM
       return (Queue (frontLen + backLen) front' 0 back'')
+
+toListM :: Queue a -> Tick (T (List a))
+toListM q = do
+  tick
+  withForced (front q) (`toListM'` back q)
+
+toListM' :: List a -> T (List a) -> Tick (List a)
+toListM' front back = do
+  tick
+  back' <- withForced back reverseM
+  front `appendM` back'
 
 emptyM :: Tick (Queue a)
 emptyM = do
-  front <- thunk (return NilA)
-  back <- thunk (return NilA)
+  front <- nilM
+  back <- nilM
   return (Queue 0 front 0 back)
 
 pushM :: a -> Queue a -> Tick (Queue a)
@@ -41,7 +52,7 @@ popM q = do
   tick
   front <- force (front q)
   case front of
-    NilA -> return Nothing
+    Nil -> return Nothing
     x :~ front' -> do
       q' <- mkQueueM (frontLen q - 1) front' (backLen q) (back q)
       return (Just (x, q'))

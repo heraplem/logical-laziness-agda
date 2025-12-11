@@ -1,20 +1,138 @@
 \section{Case Studies}\label{sec:case-study}
 
-\begin{itemize}
-  \item various examples showing how our approach works
-  \begin{itemize}
-    \item exactly which examples will be based on experimentation: are there
-          examples that Curry has no trouble with? examples that Curry does have
-          trouble with?
-    \item some candidates:
-          \begin{itemize}
-            \item take from head of a list (discussed earlier)
-            \item insertion sort
-            \item some amortized data structure
-          \end{itemize}
-  \end{itemize}
-  \item (including at least one example using an amortized data structure)
-  \item do they work? i.e., are they functionally correct?
-  \item does Curry find all the solutions? does it ever get stuck?
-  \item (maybe) how is the performance? are there any problems?
-\end{itemize}
+In this section, we briefly outline an implementation of our translation in the logic programming language Curry.
+
+We begin by building a framework for representing lazy computations.
+
+\begin{verbatim}
+data T a = Thunk a | Undefined
+
+thunk :: Applicative f => f a -> f (T a)
+thunk f = pure Undefined ? fmap Thunk f
+
+forcing :: T a -> (a -> b) -> b
+forcing (Thunk v) f = f v
+
+under :: Applicative f => T a -> (a -> f b) -> f (T b)
+under t k = thunk (forcing t k)
+\end{verbatim}
+
+\texttt{T} is the type of computations that may or may not occur.  The \texttt{thunk} combinator nondeterministically chooses between an effectful computation and one that simply does nothing, which amounts to marking the computation as lazy. The \texttt{forcing} combinator applies a function to a lazily-computed value, provided that is has in fact been computed. The \texttt{under} combinator passes an effectful computation under a \texttt{T}, yielding \texttt{Undefined} if no value is present.
+
+\begin{verbatim}
+infix 4 <~
+class Approx a where
+  (<~) :: a -> a -> Bool
+
+instance Approx a => Approx (T a) where
+  Undefined <~ _         = True
+  Thunk _   <~ Undefined = False
+  Thunk x   <~ Thunk y   = x <~ y
+\end{verbatim}
+
+\texttt{Approx} is the class of approximation types. The operator \texttt{<~} indicates whether its left-hand operand lies below its right-hand operand.
+
+\begin{verbatim}
+data Nat = Z | S Nat
+newtype Tick a = Tick { runTick :: (a, Nat) }
+\end{verbatim}
+
+The \texttt{Tick} type is essentially a writer monad over the additive monoid of natural numbers. Curry usually evaluates via narrowing; however, when asked to instantiate a logic variable of primitive type, it residuates. To avoid this, we define an inductive type \texttt{Nat} of natural numbers and use it wherever we would otherwise use the primitive \texttt{Int} type.
+
+\begin{verbatim}
+infixr 5 :~
+data List a = Nil | (:~) a (T (List a))
+\end{verbatim}
+
+\texttt{List} is the type of lists whose tails may be \texttt{Undefined}; \ie\ they are computed lazily.
+
+These types have all of the expected typeclass instances; \eg\ \texttt{Num} for \texttt{Nat} and \texttt{Monad} for \texttt{Tick}. The typeclass definitions are standard; we omit them for brevity.
+
+\begin{verbatim}
+takeC :: Nat -> T (List a) -> Tick (List a)
+takeC n xsT = do
+  tick
+  fcase n of
+    Z -> return Nil
+    S n' -> do
+      xs <- force xsT
+      fcase xs of
+        Nil -> return Nil
+        x :~ xsT' -> do
+          ysT' <- thunk (takeC n' xsT')
+          return (x :~ ysT')
+\end{verbatim}
+
+\texttt{takeC} is the clairvoyance translation of the standard \texttt{take} function, which computes the length-\(n\) prefix of a list. The second argument is wrapped in a \texttt{T} because it need not be demanded at all if \(n = 0\). The case analysis construct \texttt{case} residuates on logic variables, so we instead use Curry's ``flexible'' case analysis construct \texttt{fcase}, which evaluates by narrowing.
+
+Finally, following the construction previously described, we can implement the demand function \texttt{takeD} in terms of \texttt{takeC}.
+
+\begin{verbatim}
+takeD :: (Approx a, Data a) => Nat -> T (List a) -> List a -> Tick (T (List a))
+takeD n xsT ysD |  xsTD <~ xs
+                && takeC n xsTD =:= Tick (ysD, c)
+                =  Tick (xsTD, c)
+  where xsTD, c free
+\end{verbatim}
+
+In English: \texttt{takeD n xs ysD} finds some \texttt{xsD}, \texttt{c} such that \texttt{xsD} approximates \texttt{xs} and \texttt{takeC n xsD} evaluates to \texttt{(ysD, c)}. Strictly speaking, \texttt{takeD} ought to also return an demand on the argument \texttt{n}; however, we have defined ``approximation'' in \texttt{Nat} to just be equality, so this would serve no practical purpose.
+
+We can exercise our implementation by verifying that taking a length-\(0\) prefix places no demand on the input list.
+
+\begin{verbatim}
+>takeD 0 Undefined (Nil :: List Nat)
+(Undefined,S Z)
+\end{verbatim}
+
+By contrast, taking a length-\(1\) prefix places \emph{some} demand on the input list, even if it is empty.
+
+\begin{verbatim}
+>takeD 1 (Thunk Nil) (Nil :: List Nat)
+(Thunk Nil,S Z)
+\end{verbatim}
+
+What else? A classic fact about lazy evaluation is that taking a length-\(p\) prefix of two concatenated lists has complexity \(O(\min(p, m+n))\), whereas it has complexity \(O(m+n)\) in a strict language.
+
+\begin{verbatim}
+appendC :: List a -> T (List a) -> Tick (List a)
+appendC xs ysT = do
+  tick
+  fcase xs of
+    Nil -> force ysT
+    x :~ xsT' -> do
+      zsT <- under xsT' (`appendC` ysT)
+      return (x :~ zsT)
+\end{verbatim}
+
+\begin{verbatim}
+> appendC (fromList [1] :: List Nat) (Thunk (fromList [2])) >>= (\xs -> takeD 1 (Thunk xs) (fromList [1]))
+(Thunk ((S Z) :~ Undefined),S (S Z))
+(Thunk ((S Z) :~ Undefined),S (S (S Z)))
+(Thunk ((S Z) :~ Undefined),S (S (S Z)))
+(Thunk ((S Z) :~ Undefined),S (S (S (S Z))))
+(Thunk ((S Z) :~ (Thunk ((S (S Z)) :~ Undefined))),S (S (S Z)))
+(Thunk ((S Z) :~ (Thunk ((S (S Z)) :~ Undefined))),S (S (S (S Z))))
+(Thunk ((S Z) :~ (Thunk ((S (S Z)) :~ (Thunk Nil)))),S (S (S Z)))
+(Thunk ((S Z) :~ (Thunk ((S (S Z)) :~ (Thunk Nil)))),S (S (S (S Z))))
+\end{verbatim}
+
+The first result is the smallest one, hence it is the result that we are interested in. The other results represent execution paths that perform more computation than necessary. Note that the first execution path incurs the least cost; in particular, it does not incur the full cost of concatenating the two lists.
+
+% \begin{itemize}
+%   \item various examples showing how our approach works
+%   \begin{itemize}
+%     \item exactly which examples will be based on experimentation: are there
+%           examples that Curry has no trouble with? examples that Curry does have
+%           trouble with?
+%     \item some candidates:
+%           \begin{itemize}
+%             \item take from head of a list (discussed earlier)
+%             \item insertion sort
+%             \item some amortized data structure
+%           \end{itemize}
+%   \end{itemize}
+%   \item (including at least one example using an amortized data structure)
+%   \item do they work? i.e., are they functionally correct?
+%   \item does Curry find all the solutions? does it ever get stuck?
+%   \item (maybe) how is the performance? are there any problems?
+% \end{itemize}

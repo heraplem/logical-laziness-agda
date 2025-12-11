@@ -7,21 +7,21 @@ data T a = Thunk a | Undefined
 
 instance Functor T where
   fmap f (Thunk x) = Thunk (f x)
-  fmap f Undefined = Undefined
+  fmap _ Undefined = Undefined
 
 instance Approx a => Approx (T a) where
-  _       <~ Undefined = True
-  Thunk x <~ Thunk y   = x <~ y
+  Undefined <~ _         = True
+  Thunk _   <~ Undefined = False
+  Thunk x   <~ Thunk y   = x <~ y
 
--- XXX Should probably only need two of these at most.
--- And need better names.
-
-fork :: a -> T a
-fork x = Thunk x ? Undefined
-
--- -- In fact, only needs "Pointed", not Applicative.
+-- In fact, only needs "Pointed", not Applicative.
 thunk :: Applicative f => f a -> f (T a)
-thunk m = fmap Thunk m ? pure Undefined
+thunk m = pure Undefined ? fmap Thunk m
+
+-- Suspiciously similar...
+transpose :: Applicative f => T (f a) -> f (T a)
+transpose Undefined = pure Undefined
+transpose (Thunk m) = fmap Thunk m
 
 forcing :: T a -> (a -> b) -> b
 forcing (Thunk v) f = f v
@@ -30,5 +30,5 @@ forcing (Thunk v) f = f v
 force :: Applicative f => T a -> f a
 force t = forcing t pure
 
-withForced :: Monad m => T a -> (a -> m b) -> m (T b)
-withForced t k = thunk (force t >>= k)
+under :: Applicative f => T a -> (a -> f b) -> f (T b)
+under t k = thunk (forcing t k)

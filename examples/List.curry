@@ -6,45 +6,77 @@ import Nat
 import Tick
 
 infixr 5 :~
-data List a = NilA | (:~) a (T (List a))
+data List a = Nil | (:~) a (T (List a))
   deriving (Eq, Ord, Read, Show)
 
+foldrA :: (a -> T b -> b) -> b -> List a -> b
+foldrA _ e Nil         = e
+foldrA f e (x :~ xsT') = x `f` (foldrA f e <$> xsT')
+
 instance Approx a => Approx (List a) where
-  NilA      <~ NilA      = True
-  NilA      <~ _ :~ _    = False
-  _ :~ _    <~ NilA      = False
-  x :~ xsT' <~ y :~ ysT' = x <~ y && xsT' <~ ysT'
+  Nil         <~ Nil         = True
+  Nil         <~ (_ :~ _   ) = False
+  (_ :~ _   ) <~ Nil         = False
+  (x :~ xsT') <~ (y :~ ysT') = x <~ y && xsT' <~ ysT'
 
 fromList :: [a] -> List a
-fromList = foldr (\x xs -> x :~ Thunk xs) NilA
+fromList = foldr (\x xs -> x :~ (Undefined ? Thunk xs)) Nil
 
-takeM :: Nat -> List a -> List a
-takeM n xs = do
+nilC :: Tick (T (List a))
+nilC = do
   tick
-  fcase (n, xs) of
-    (Z  , NilA     ) -> return NilA
-    (Z  , _ :~ _   ) -> return NilA
-    (S _, NilA     ) -> return NilA
-    (S n, x :~ xsT ) -> do
-      xsT' <- withForced xsT' (takeM n)
-      return (x :~ xsT')
+  thunk (return Nil)
 
-appendM :: List a -> T (List a) -> Tick (List a)
-appendM xs ysT = do
+undefined :: a
+undefined = undefined
+
+takeC :: Nat -> T (List a) -> Tick (List a)
+takeC n xsT = do
+  tick
+  fcase n of
+    Z -> return Nil
+    S n' -> do
+      xs <- force xsT
+      fcase xs of
+        Nil -> return Nil
+        x :~ xsT' -> do
+          ysT' <- thunk (takeC n' xsT')
+          return (x :~ ysT')
+
+takeD :: (Approx a, Data a) => Nat -> T (List a) -> List a -> Tick (T (List a))
+takeD n xsT ysD |  xsTD <~ xsT
+                && takeC n xsTD =:= Tick (ysD, c)
+                =  Tick (xsTD, c)
+  where xsTD, c free
+
+appendC :: List a -> T (List a) -> Tick (List a)
+appendC xs ysT = do
   tick
   fcase xs of
-    NilA -> force ysT
+    Nil -> force ysT
     x :~ xsT' -> do
-      zsT <- withForced xsT' (`appendM` ysT)
+      zsT <- under xsT' (`appendC` ysT)
       return (x :~ zsT)
 
-reverseM :: List a -> Tick (List a)
-reverseM = go NilA where
+reverseC :: List a -> Tick (List a)
+reverseC = go Nil where
   go ys xs = do
     tick
     fcase xs of
-      NilA -> return ys
+      Nil -> return ys
       x :~ xsT' -> do
         ysT <- thunk (return ys)
         xs' <- force xsT'
         go (x :~ ysT) xs'
+
+takeAppendC :: Nat -> List a -> T (List a) -> Tick (List a)
+takeAppendC n xs1 xs2T = do
+  ysT <- thunk (appendC xs1 xs2T)
+  takeC n ysT
+
+takeAppendD :: (Approx a, Data a) => Nat -> List a -> T (List a) -> List a -> Tick (List a, T (List a))
+takeAppendD n xs ysT zsD |  xsD <~ xs
+                         && ysTD <~ ysT
+                         && takeAppendC n xsD ysTD =:= Tick (zsD, c)
+                         =  Tick ((xsD, ysTD), c)
+  where xsD, ysTD, c free

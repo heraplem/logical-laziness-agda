@@ -4,6 +4,7 @@ import Util
 import Nat
 
 newtype Tick a = Tick { runTick :: (a, Nat) }
+  deriving (Show)
 
 instance Functor Tick where
   fmap f (Tick (x, n)) = Tick (f x, n)

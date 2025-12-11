@@ -163,11 +163,12 @@ computation is demanded in the \transDname.
 Terms of \(\LL\) include introduction and elimination forms for all new types.
 We have no need for arbitrary functions on natural numbers, so we include only
 literals and addition. We also have constructs for logic programming: free
-variables~(\(\tfreeZ\), also known as logical variables), nondeterministic
-choice~(\(\tchooseZ\)), and failure~(\(\tfail\)). Note that free variables must
-be annotated with their types in order to ensure deterministic typing. Finally,
-we have a Boolean operator \(\tleZ\), which indicates whether its left-hand
-operand lies below its right-hand operand in the order of approximations.
+variables~(\(\tfreeZ\), also known as logical variables; not to be confused with
+free variables in a term), nondeterministic choice~(\(\tchooseZ\)), and
+failure~(\(\tfail\)). Note that free variables must be annotated with their
+types in order to ensure deterministic typing. Finally, we have a Boolean
+operator \(\tleZ\), which indicates whether its left-hand operand lies below its
+right-hand operand in the order of approximations.
 
 We define a simple functional logic language \(\LL\) instead of using an
 existing formalization of one specific functional logic
@@ -438,8 +439,7 @@ that contain a \tresultZ{} will continue.\ly{What about ticks?}
   \caption{The \transCname{} \(\transC{-}\) from \(\LB\) to \(\LL\).}\label{fig:transC}
 \end{figure}
 
-We show that the \transCname{} preserves the types of the original terms in
-\(\LB\) and wraps them inside \texttt{M}:\ly{TODO: Fix $\Gamma$.}
+The \transCname{} preserves well-typedness of the original term in \(\LB\):
 \begin{theorem}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).
 \end{theorem}
@@ -471,18 +471,27 @@ we need to introduce new free variables with types corresponding to types in
   \caption{The \transDname.}\label{fig:demand-translation}
 \end{figure}
 
-\ly{TODO: describe the demand translation in a bit more details.}
+The \transDname{} \( \transD{t}{\Gamma} \) walks through \(\Gamma\), declares a
+free variable for every variable in \(\Gamma\), and asserts that the free
+variable approximates (\texttt{<=}) the corresponding variable in \(\Gamma\). It
+then substitues all the original variables in \(t\) with newly declared free
+variables to obtain a new term \(t'\), and passes \(t'\) to the \transCname{}
+\(\transC{-}\).
 
-In addition, we define an operation \( \verts{-} \) that turns contexts into
-product types:
+Intuitively, the \transDname{} \emph{inverses} the translated code obtained from
+the \transCname{} using free variables, but additionally constrains the context
+of \(\transC{t'}\) to approximate the original \(\Gamma\).\ly{TODO: I don't like
+  this explanation. Find a better one later.}
+
+The \transDname{} preserves well-typedness of the original term in \(\LB\):
+\begin{theorem}
+  If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma, x : A}{\transD{t}{\Gamma}}{\TM{\verts{\Gamma}}} \).
+\end{theorem}
+where the operation \( \verts{-} \) turns contexts into product types:
 \[
   \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} ,
 \]
 with the degenerate case \( \verts{\varepsilon} = \TUnit \).
-
-\begin{theorem}
-  If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma, x : A}{\transD{t}{\Gamma}}{\TM{\verts{\Gamma}}} \).
-\end{theorem}
 
 \subsection{Example: Revisiting \texttt{take}}
 

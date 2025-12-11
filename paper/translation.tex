@@ -405,6 +405,7 @@ recognize that \texttt{M} is a writer's monad~\cite{moggi-monad,wadler-monad}.
 % \end{proof}
 % \fi
 
+<<<<<<< Updated upstream
 We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that simulates
 the clairvoyance semantics in \cref{fig:transC}. The translation is essentially
 a monadic translation~\cite{moggi-monad,malias,wadler-monad} and is inspired by
@@ -423,6 +424,32 @@ and pattern match of the result $y_1$. If $y_1$ contains a $\tresult{y_2}$, we
 return it; otherwise, we directly fail this computation branch---note that
 \tfail{} only terminates the current nondeterministic branch, so other branches
 that contain a \tresultZ{} will continue.\ly{What about ticks?}
+=======
+\begin{figure}[t]
+  \[
+    \begin{array}{rcl}
+      \tassert{t_1}{t_2} &= &\tif{t_1}{t_2}{\tfail} \\
+      \treturn{t} &= &\tpair{t}{0} \\
+      \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
+      \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\tdo{x_2}{\ttranspose{y_2}}{t_1}}{t_2}{t_3} \\
+      \ttranspose{t} &= &\texttt{case \(t\) of } \\ &&\texttt{thunk \(y_1\) -> (\tdo{y_2}{y_1}{\treturn{(\tthunk{y_2})}});} \\ &&\texttt{undefined -> return undefined}
+    \end{array}
+  \]
+\caption{Derived term constructs in \(\LL\).}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \begin{mathpar}
+    \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}} \\
+    \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
+    \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
+    \inferrule{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}{\TL{\Gamma}{\ttranspose{t}}{\TM{(\TThunk{A})}}} \\
+    \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \\ \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}}
+  \end{mathpar}
+  \caption{Typing rules for the derived constructs.}
+\end{figure}
+>>>>>>> Stashed changes
 
 \begin{figure}[t]
   \begin{align*}

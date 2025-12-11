@@ -35,7 +35,9 @@ We do not have functions or general recursions in \(\LB\). This is because
 (1)~the demand semantics does not support those
 features~\cite{bjerner1989,demand-semantics}, and (2)~most functional logic
 programming languages (except Verse~\cite{verse}) only support higher-order
-functions via defunctionalization~\cite[Section 3.3]{curry-lang}.
+functions via defunctionalization~\cite[Section 3.3]{curry-lang}.\stl{PAKCS uses
+defunctionalization, kics2, mcc, rice, curry2go, and sprite do not.
+There's nothing inherently in functional logic programming that prevents us from using closures.}
 
 \begin{figure}[t]
 \begin{center}

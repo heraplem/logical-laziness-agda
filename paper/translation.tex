@@ -3,15 +3,15 @@
 In this section, we define two languagues, a base language \(\LB\) that
 corresponds a simple functional language~(\cref{subsec:base-lang}) and a logic
 language $L$ that corresponds to a functional logic
-language~(\cref{subsec:logic-lang}). We first develop a \emph{clairvoyance
-  translation} strategy that translates a program in \(\LB\) to a program in
-\(\LL\) that models the clairvoyance
+language~(\cref{subsec:logic-lang}). We first develop a \emph{\transCname}
+strategy that translates a program in \(\LB\) to a program in \(\LL\) that
+models the clairvoyance
 semantics~\cite{clairvoyant,forking-paths}~(\cref{subsec:clairvoyance-translation}).
-We then develop a \emph{demand translation}, which models the demand
+We then develop a \emph{\transDname}, which models the demand
 semantics~\cite{bjerner1989,demand-semantics}, as a thin wrapper of the
-clairvoyance translation~(\cref{subsec:demand-translation}). Finally, we show
-how such a translation strategy works by applying it to the example of
-\texttt{take} and \texttt{append} discussed in \cref{sec:motivating-example}.
+\transCname~(\cref{subsec:demand-translation}). Finally, we show how such a
+translation strategy works by applying it to the example of \texttt{take} and
+\texttt{append} discussed in \cref{sec:motivating-example}.
 
 We prove that this translation strategy is correct with respect to the
 clairvoyance semantics and the demand semantics in Agda, but we defer details of
@@ -31,13 +31,9 @@ value. Finally, we have an explicit \( \ttickZ \) term to indicate incurring one
 unit of computation cost. These explicit operators decouple our analysis from
 any particular evaluation model.
 
-We do not have functions or general recursions in \(\LB\). This is because
-(1)~the demand semantics does not support those
-features~\cite{bjerner1989,demand-semantics}, and (2)~most functional logic
-programming languages (except Verse~\cite{verse}) only support higher-order
-functions via defunctionalization~\cite[Section 3.3]{curry-lang}.\stl{PAKCS uses
-defunctionalization, kics2, mcc, rice, curry2go, and sprite do not.
-There's nothing inherently in functional logic programming that prevents us from using closures.}
+We do not have functions or general recursions in \(\LB\). This is because the
+demand semantics does not support those
+features~\cite{bjerner1989,demand-semantics}.
 
 \begin{figure}[t]
 \begin{center}
@@ -86,9 +82,9 @@ more details of those semantics in \cref{sec:equiv}.
 
 \subsection{The Logic Language $L$}\label{subsec:logic-lang}
 
-We show the syntax of \(\LL\) in \cref{fig:syntax-logic}. Relative to \(\LB\),
-\(\LL\) has some new types: a unit type \(\TUnit\), natural numbers \(\TNat\),
-and product types \(\TProd{A}{B}\). 
+We show the syntax of \(\LL\) in \cref{fig:syntax-logic}. Compared with \(\LB\),
+language \(\LL\) has some new types: a unit type \(\TUnit\), natural numbers
+\(\TNat\), and product types \(\TProd{A}{B}\).
 \ifextended
 We need the natural number type to model
 computation costs, and we need product types to return computation results along
@@ -100,8 +96,8 @@ We need natural numbers and products to represent computation costs.
 \fi
 In addition, we replace the \(\TThunkZ\) type with a \(\TLazyZ\) type, which can
 be either \(\tundefined\) or a \(\tresult{v}\) for some \(v\). We use this type
-to represent if a computation is evaluated in the clairvoyance translation and
-if a computation is demanded in the demand translation.
+to represent if a computation is evaluated in the \transCname{} and if a
+computation is demanded in the \transDname.
 
 \begin{figure}[t]
 \begin{center}
@@ -166,18 +162,19 @@ if a computation is demanded in the demand translation.
 
 Terms of \(\LL\) include introduction and elimination forms for all new types.
 We have no need for arbitrary functions on natural numbers, so we include only
-literals and addition. We also have constructs for logic programming: logic
-variables~(\(\tfreeZ\)), nondeterministic choice~(\(\tchooseZ\)), and
-failure~(\(\tfail\)). Note that logic variables must be annotated with their
-types in order to ensure deterministic typing. Finally, we have a Boolean
-operator \(\tleZ\), which indicates whether its left-hand operand lies below its
-right-hand operand in the order of approximations.
+literals and addition. We also have constructs for logic programming: free
+variables~(\(\tfreeZ\), also known as logical variables), nondeterministic
+choice~(\(\tchooseZ\)), and failure~(\(\tfail\)). Note that free variables must
+be annotated with their types in order to ensure deterministic typing. Finally,
+we have a Boolean operator \(\tleZ\), which indicates whether its left-hand
+operand lies below its right-hand operand in the order of approximations.
 
 We define a simple functional logic language \(\LL\) instead of using an
 existing formalization of one specific functional logic
 language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics}, the Verse
-calculus~\cite{verse}) to keep our approach generally applicable.\ly{Is there a
-  particular formalization from a prior work that we are similar to?}
+calculus~\cite{verse}) to keep our approach generally applicable.\ly{TODO:
+  changes this claim. Steven pointed out that the language is more specific to
+  Curry.}
 
 % \ly{Why is there only one rule? Are other rules mostly straightforward? Or you
 %   haven't got the time to write them down?}
@@ -195,10 +192,8 @@ calculus~\cite{verse}) to keep our approach generally applicable.\ly{Is there a
 We show the semantic rules of $L$ that are related to the \TLazyZ{} datatype,
 the choice operator~(\texttt{?}), and free variables in
 \cref{fig:logic-semantics}.\ly{Did we refer to any papers when we define this
-  semantics? If so, cite them.}
-
-Unlike \(\LB\), Language \(\LL\) is eager. \(\LL\) is also partial due to
-\( \tfail \).
+  semantics? If so, cite them.} Unlike \(\LB\), Language \(\LL\) is eager.
+\(\LL\) is also partial due to \( \tfail \).
 
 \begin{figure}[t] 
   \[
@@ -238,7 +233,7 @@ holds. We show all the typing rules related to these derived terms in
 \cref{fig:logic-derived} as well. Readers who are familiar with monads might
 recognize that \texttt{M} is a writer's monad~\cite{moggi-monad,wadler-monad}.
 
-\subsection{The Clairvoyance Translation}\label{subsec:clairvoyance-translation}
+\subsection{The \TransCname}\label{subsec:clairvoyance-translation}
 
 % \ly{This section describes properties of the clairvoyance translation, but where
 %   is the clairvoyance translation?}
@@ -407,15 +402,15 @@ recognize that \texttt{M} is a writer's monad~\cite{moggi-monad,wadler-monad}.
 % \end{proof}
 % \fi
 
-<<<<<<< Updated upstream
 We define a translation \(\transC{-}\) from \(\LB\) to \(\LL\) that simulates
-the clairvoyance semantics in \cref{fig:transC}. The translation is essentially
-a monadic translation~\cite{moggi-monad,malias,wadler-monad} and is inspired by
-Li \textit{et al.}'s work on the clairvoyance monad~\cite{forking-paths}: values
-and variables are translated using \texttt{return}. The \texttt{let}-bindings
-and \texttt{if} expressions are translated using \tdo{\cdot}{\cdot}{\cdot}. When
-the term in \(\LB\) is a \tfoldrZ, we translate it to the derived term construct
-\tfoldMZ.
+the clairvoyance semantics in \cref{fig:transC}. Values and variables are
+translated using \texttt{return}. The \texttt{let}-bindings and \texttt{if}
+expressions are translated using \tdo{\cdot}{\cdot}{\cdot}. When the term in
+\(\LB\) is a \tfoldrZ, we translate it to the derived term construct \tfoldMZ.
+Readers familiar with monads might recognize that the translation is essentially
+a monadic translation~\cite{moggi-monad,malias,wadler-monad}, with adaptations
+for the \TLazyZ{} type borrowed from the clairvoyance
+monad~\cite{forking-paths}.
 
 The key for implementing clairvoyance semantics is in $\transC{\tlazy{t}}$ and
 $\transC{\tforce{t}}$. When the orginal term is $\tlazy{t}$, we use the
@@ -426,32 +421,6 @@ and pattern match of the result $y_1$. If $y_1$ contains a $\tresult{y_2}$, we
 return it; otherwise, we directly fail this computation branch---note that
 \tfail{} only terminates the current nondeterministic branch, so other branches
 that contain a \tresultZ{} will continue.\ly{What about ticks?}
-=======
-\begin{figure}[t]
-  \[
-    \begin{array}{rcl}
-      \tassert{t_1}{t_2} &= &\tif{t_1}{t_2}{\tfail} \\
-      \treturn{t} &= &\tpair{t}{0} \\
-      \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
-      \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\tdo{x_2}{\ttranspose{y_2}}{t_1}}{t_2}{t_3} \\
-      \ttranspose{t} &= &\texttt{case \(t\) of } \\ &&\texttt{thunk \(y_1\) -> (\tdo{y_2}{y_1}{\treturn{(\tthunk{y_2})}});} \\ &&\texttt{undefined -> return undefined}
-    \end{array}
-  \]
-\caption{Derived term constructs in \(\LL\).}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
-  \begin{mathpar}
-    \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}} \\
-    \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
-    \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
-    \inferrule{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}{\TL{\Gamma}{\ttranspose{t}}{\TM{(\TThunk{A})}}} \\
-    \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \\ \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}}
-  \end{mathpar}
-  \caption{Typing rules for the derived constructs.}
-\end{figure}
->>>>>>> Stashed changes
 
 \begin{figure}[t]
   \begin{align*}
@@ -466,24 +435,24 @@ that contain a \tresultZ{} will continue.\ly{What about ticks?}
     \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t}{\treturn(\tresult{y})}} \\
     \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}}
   \end{align*}
-  \caption{The clairvoyance translation \(\transC{-}\) from \(\LB\) to \(\LL\).}\label{fig:transC}
+  \caption{The \transCname{} \(\transC{-}\) from \(\LB\) to \(\LL\).}\label{fig:transC}
 \end{figure}
 
-We show that the clairvoyance translation preserves the types of the original
-terms in \(\LB\) and wraps them inside \texttt{M}:\ly{TODO: Fix $\Gamma$.}
+We show that the \transCname{} preserves the types of the original terms in
+\(\LB\) and wraps them inside \texttt{M}:\ly{TODO: Fix $\Gamma$.}
 \begin{theorem}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).
 \end{theorem}
 
-\subsection{The Demand Translation}\label{subsec:demand-translation}
+\subsection{The \TransDname}\label{subsec:demand-translation}
 
-We now define another translation \( \transD{t}{\Gamma} \) from \( \LB \) to
+We now define the \transDname{} \( \transD{t}{\Gamma} \) from \( \LB \) to
 \( \LL \) that simulates the demand semantics, shown in
-\cref{fig:demand-translation}. Unlike the clairvoyance translation, the typing
-context \(\Gamma\) in \( \LB \) is also a parameter to the translation. This is
-because we need to introduce new free variables with types corresponding to
-types in \( \Gamma \). This is consistent to the demand translation of Xia
-\textit{et al.}~\cite{demand-semantics}.
+\cref{fig:demand-translation}. Unlike the \transCname, the typing context
+\(\Gamma\) in \( \LB \) is also a parameter to the translation. This is because
+we need to introduce new free variables with types corresponding to types in
+\( \Gamma \). This is consistent to the demand translation of Xia \textit{et
+  al.}~\cite{demand-semantics}
 
 \begin{figure}[t]
   \[
@@ -499,7 +468,7 @@ types in \( \Gamma \). This is consistent to the demand translation of Xia
       \multicolumn{2}{c}{\text{where \( t' = t[x'_1/x_1, \ldots, x'_n/x_n] \).}}
     \end{array}
   \]
-  \caption{The demand translation.}\label{fig:demand-translation}
+  \caption{The \transDname.}\label{fig:demand-translation}
 \end{figure}
 
 \ly{TODO: describe the demand translation in a bit more details.}

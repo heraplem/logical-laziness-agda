@@ -5,43 +5,58 @@
 %   half, with the FLP explanation in the second paragraph and the chatter about
 %   big ideas and contributions in the first. Something to consider.}
 
-In functional logic programming, one can represent a
-``forward'' nondeterministic program with \emph{choices}, and a ``backward''
-demand-driven program with \emph{free variables} with a single term using function inversion. Past research has shown the
-usefulness of this feature in different contexts.\ly{TODO: Citations.}
-\stl{This isn't entirely correct.  You can do forwards or backwards computation
-with either choices or free variables.  Also one program doesn't contain two semantics.
-Programs are always evaluated the same way.  I think it'd be better to say that
-we can use techniques like function inversion to run computations backwards.}
-\lai{Is this more accurate? Less?}
-In this
-paper, we demonstrate yet another useful application that has not been discussed
-before: lazy cost analysis. Specifically, we show that two different semantics
-proposed independently for reasoning about the computation cost of lazy
-functional programs, clairvoyance semantics~\cite{clairvoyant,forking-paths} and
-demand semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a single program in a functional logic language.
+\iffalse
+  In functional logic programming, one can represent a ``forward''
+  nondeterministic program with \emph{choices}, and a ``backward'' demand-driven
+  program with \emph{free variables} with a single term using function
+  inversion. Past research has shown the usefulness of this feature in different
+  contexts.\ly{TODO: Citations.} \stl{This isn't entirely correct. You can do
+    forwards or backwards computation with either choices or free variables.
+    Also one program doesn't contain two semantics. Programs are always
+    evaluated the same way. I think it'd be better to say that we can use
+    techniques like function inversion to run computations backwards.} \lai{Is
+    this more accurate? Less?} In this paper, we demonstrate yet another useful
+  application that has not been discussed before: lazy cost analysis.
+  Specifically, we show that two different semantics proposed independently for
+  reasoning about the computation cost of lazy functional programs, clairvoyance
+  semantics~\cite{clairvoyant,forking-paths} and demand
+  semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a
+  single program in a functional logic language.
+\fi
 
-\paragraph{Lazy cost analysis.}
-In lazy evaluation, a computation is driven by its demands, performing only
-the operations required to compute a final result~\cite{launchbury1993}. Lazy
+In lazy evaluation, a computation is driven by its demands, performing only the
+operations required to compute a final result~\cite{launchbury1993}. Lazy
 evaluation enables functional programmers to write compositional code with
 comparable or potentially better performance~\cite{fp-matters}. However, because
 computations in lazy evaluation are on demand, out of order, and interleaved
 with other computations, analyzing the ``performance'' of a lazy functional
-program becomes much more challenging, as the analyzer needs to reason about
-mutable heaps and cannot consider a function in isolation.
+program becomes much more challenging.
+% as the analyzer needs to reason about mutable heaps and cannot consider a
+% function in isolation.
 
-Various ideas have been proposed to tackle this challenge, which we can divide into roughly three different approaches. The first approach,
-represented by work on Iris$^{\$}$~\cite{iris-credit,iris-thunk}, deal with
-mutable heaps directly using tools like separation
-logic~\cite{separation-logic}. \lai{Need a comment here to mirror the comment about Liquid Haskell} The second approach, represented by
+Our goal is to develop a way to analyze the \emph{computation cost} of a lazy
+functional program, so that the analysis is \emph{simple} and
+\emph{compositional}. By simplicity, we mean that we should be able to use
+simple tools like equational reasoning for simple properties about cost. By
+compositionality, we mean that we can reason about each lazy function
+individually, and compose properties about each function's cost when reaosning
+about the whole program.
+
+\paragraph{Other closely related approaches.}
+Existing research that tackles this challenge can be divided into roughly three
+different approaches. The first approach, represented by work on
+Iris$^{\$}$~\cite{iris-credit,iris-thunk}, deals with mutable heaps directly,
+but requires using special programming logics like the separation
+logic~\cite{separation-logic}. The second approach, represented by
 LiquidHaskell~\cite{liquidate,liquid-okasaki}, uses a graded monad proposed by
 Danielsson~\cite{danielsson-08} to track computation cost. However, this
-approach needs to deal with sharing manually \lai{Should state why this is an issue, or else the thought feels unfinished}. The third and final approach instead utilizes alternative semantics that are equivalent to lazy evaluation in
-terms of computation
-cost~\cite{bjerner1989,clairvoyant,forking-paths,demand-semantics}. In contrast
-to the natural semantics of lazy evaluation~\cite{launchbury1993}, these
-semantics reify computation cost in pure and eager semantics, so one needs not be concerned with mutable heaps, sharing, or our-of-order executions.
+approach needs to deal with sharing manually. The third approach utilizes
+alternative semantics that are equivalent to lazy evaluation in terms of
+computation cost~\cite{bjerner1989,clairvoyant,forking-paths,demand-semantics}.
+In contrast to the natural semantics of lazy evaluation~\cite{launchbury1993},
+these semantics reify computation cost in pure and eager semantics, so we can
+use them to reason about lazy computation cost without being concerned with
+mutable heaps, sharing, or our-of-order executions.
 
 % \subsection{what is lazy evaluation?}
 
@@ -147,10 +162,11 @@ semantics reify computation cost in pure and eager semantics, so one needs not b
 % and clairvoyance semantics. Is this mapping correct, though? Yes, we have
 % discovered, and provably so.
 
-\paragraph{Clairvoyance semantics and demand semantics.}
-In this paper, we examine two semantics studied in the third
-approach, namely the clairvoyance semantics proposed by Hackett and
-Hutton~\cite{clairvoyant}, and the demand semantics proposed by Bjerner and
+Semantics studied in the third approach provides simpler models 
+
+In this paper, we examine two semantics studied in the third approach, namely
+the clairvoyance semantics proposed by Hackett and Hutton~\cite{clairvoyant},
+and the demand semantics proposed by Bjerner and
 Holmstr{\"{o}}m~\cite{bjerner1989}.
 
 The clairvoyance semantics builds on the observation that, for the sake of

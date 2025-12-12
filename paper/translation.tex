@@ -169,6 +169,16 @@ failure~(\(\tfail\)). Note that free variables must be annotated with their
 types in order to ensure deterministic typing. Finally, we have a Boolean
 operator \(\tleZ\), which indicates whether its left-hand operand lies below its
 right-hand operand in the order of approximations.
+\stl{
+So, any eager functional logic language is equivalent to a pure logic language
+(From Logic to Functional Logic Programs) I'll get the citation later.
+So our language isn't equivalent to Curry (there are computations in L that would fail,
+but the corresponding equation in Curry would return a result.
+For example \texttt{(foldr (\textbackslash x z. z) 3 [head []])}.
+In curry we wouldn't evaluate the inside of the list, so we'd get the result 3 back,
+but since we fully evaluate the list in L, we don't get anything back.
+Really we're using the functional logic part for the convenience.
+It already has the form of a functional language, but it can also do function inversion.}
 
 We define a simple functional logic language \(\LL\) instead of using an
 existing formalization of one specific functional logic

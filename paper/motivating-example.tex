@@ -32,6 +32,22 @@ cost equivalence. It is certainly possible, but untenable for most
 applications.\lai{Do we need to do the work of showing insertD not defined in
   terms of insertA? I don't remember if we have that somewhere, and if not, that
   could be very annoying!}
+\stl{Maybe something like: 
+Demand semantics can be thought of as the inversion of clairvoyant semantics.
+In clairvoyant semantics we provide a context and a term, and we compute
+all of the possible ways that term could reduce.
+Demand semantics can be seen as the inversion of this process
+We provide an expression and its reduction, and we want to find all possible contexts
+that would cause that expression to reduce to that reduction.
+In a purely functional language this is a challenging process, because we have to compute the
+inverse manually.
+On the other hand, functional inversion is an old trick in logic programming.
+If we were to represent our terms in a logic language, then there is a very simple translation
+from clairvoyant semantics to demand semantics,
+but we are then faced with translating a functional language into a logic language representation.
+If we instead use a functional logic language like Curry,
+we can keep the correspondence to familiar functional languages,
+and we have a simple translation to demand semantics.}
 
 Rather than defining insertD naively through transforming insertA, we can instead take full advantage of the nondeterminism \lai{Need to link this more clearly to the forward and backward thing from the intro} that Curry offers. Indeed, it turns out that the following is
 equivalent to a directly translated version of insertD:

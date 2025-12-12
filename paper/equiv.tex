@@ -238,6 +238,8 @@ and \( \approxof{a^A}{\EE{t}{\gamma}} \); and define
 \begin{proof}
   By \cref{prop:dem-trans-sem} and \cref{prop:cost-existence}.
 \end{proof}
+\stl{I don't understand what $A'$ is doing here.  It seems like we could just say
+\( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\gamma^A, c)} \)}
 
 \begin{theorem}[Soundness of the demand translation]
   If \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \), then \( \ED{t}{\gamma}{a^A} \le (\gamma^A, c) \).
@@ -255,5 +257,14 @@ first result found or a list of all possible results. If we can arrange for
 less-defined results to always be tried first, we can use such a facility to
 ensure that the demand translation does in fact always return the actual result
 of demand semantics.
+\stl{
+Isn't the point of the demand translation that sometimes we'll get unevaluated thunks
+which translate to undefined?
+In that case it matches up with the fact that flp programs will fail.
+That's kind of what we want.
+I think it's better to say that with a complete search strategy we get all results.
+We don't need to rely on tools like set functions or findall that way.
+Unless we're saying that demand semantics evaluates to an incomparable term.}
+
 
 \subsection{Agda Implementation}

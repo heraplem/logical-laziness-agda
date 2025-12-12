@@ -1,0 +1,77 @@
+%%% inconsolata-slanted.sty -- Enable a fake slanted version of Inconsolata
+
+% From Heiko Oberdiek's answer to Greg Wilson's question "Inconsolata italics?",
+% available at <https://tex.stackexchange.com/a/183220/1425>.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{inconsolata-slanted}[2017/07/26 v1.0 Slanted Inconsolata]
+
+\newif\ifslanted@inconsolata
+\DeclareOption{inconsolata}{\slanted@inconsolatatrue}
+\DeclareOption{zi4}{\slanted@inconsolatafalse}
+
+\ExecuteOptions{inconsolata}
+\ProcessOptions\relax
+
+\ifslanted@inconsolata
+  \RequirePackage{inconsolata}
+\else
+  \RequirePackage{zi4}
+\fi
+
+\pdfmapfile{+zi4-sl.map}
+
+\sbox0{\ttfamily x}% load .fd file
+\expandafter\ifx\csname zifour@scaled\endcsname\relax
+  \let\zifour@scaled\@empty
+\fi
+\expandafter\ifx\csname zifour@opt\endcsname\relax
+  \def\zifour@opt{\z@}\def\zifour@altopt{\tw@}
+\fi
+\DeclareFontShape{\f@encoding}{zi4}{m}{sl}{%
+  <-> \zifour@scaled ot1-zi4r-sl-\zifour@opt}{}%
+\DeclareFontShape{\f@encoding}{zi4}{m}{it}{%
+  <-> ssub * zi4/m/sl}{}
+\DeclareFontShape{\f@encoding}{zi4}{b}{sl}{%
+  <-> \zifour@scaled ot1-zi4b-sl-\zifour@opt}{}
+\DeclareFontShape{\f@encoding}{zi4}{bx}{sl}{%
+  <-> ssub * zi4/b/sl}{}
+\DeclareFontShape{\f@encoding}{zi4}{b}{it}{%
+  <-> ssub * zi4/b/sl}{}
+\DeclareFontShape{\f@encoding}{zi4}{bx}{it}{%
+  <-> ssub * zi4/b/sl}{}
+
+% To create:
+%
+% 1. Run the following Perl script
+% 
+%         #!/usr/bin/env perl
+%          
+%         use strict;
+%         $^W=1;
+%          
+%         my $outfile = 'zi4-sl.map';
+%         my $infile = `kpsewhich zi4.map`;
+%         chomp $infile;
+%          
+%         open(IN, '<', $infile) or die "!!! Error: Cannot open `zi4.map': $!";
+%         open(OUT, '>', $outfile) or die "!!! Error: Cannot write `$outfile': $!";
+%          
+%         while (<IN>) {
+%             next if /^\s*$/;
+%             s/^([^- ]+)-([^- ]+)/$1-$2-sl/ or die "!!! Error: Cannot parse TFM name!\n";
+%             s/ " / " .167 SlantFont / or die "!!! Error: Cannot insert SlantFont!\n";
+%         } continue {
+%             print OUT;
+%         }
+%          
+%         close(IN);
+%         close(OUT);
+%         __END__
+%
+% 2. Copy the TFM files:
+%
+%         for i in {0..7}; do
+%             cp $(kpsewhich ot1-zi4r-$i.tfm) ot1-zi4r-sl-$i.tfm
+%             cp $(kpsewhich ot1-zi4b-$i.tfm) ot1-zi4b-sl-$i.tfm
+%         done

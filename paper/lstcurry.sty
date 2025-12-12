@@ -1,0 +1,40 @@
+% lstlisting coq style (partly inspired from a file of Assia Mahboubi)
+
+\newcommand*\colorPessim{\color{magenta}}
+\newcommand*\colorOptim{\color{blue}}
+
+\lstdefinelanguage{Curry}{
+literate=
+  {\{\{}{{\colorPessim\{\{}}2
+  {\}\}}{{\colorPessim\}\}}}2
+  {[[}{{\colorOptim{[[}}}2
+  {]]}{{\colorOptim{]]}}}2,
+%
+  morekeywords=[1]{data, instance, class, infix, infixr},
+%
+morekeywords=[2]{where, fcase, free},
+%
+% Sorts
+morekeywords=[3]{Type, True, False},
+%
+comment=[s]{(*}{*)},
+%
+% String delimiters
+morestring=[b]",
+% Case sensitivity
+sensitive=true,
+%
+keywordstyle=[1]{\bfseries\codestyle\color{Keyword1Color}},
+%
+keywordstyle=[2]{\codestyle\color{Keyword2Color}},
+%
+keywordstyle=[3]{\codestyle\color{Keyword2Color}},
+%
+keywordstyle=[4]{\codestyle\color{TacticColor}},
+%
+keywordstyle=[5]{\codestyle\color{TerminatorTacticColor}},
+%
+keywordstyle=[6]{\bfseries\codestyle\color{IteratorTacticColor}}
+}
+
+\lstnewenvironment{Curry}{\lstset{language=Haskell}}{}

@@ -5,24 +5,24 @@
 %   half, with the FLP explanation in the second paragraph and the chatter about
 %   big ideas and contributions in the first. Something to consider.}
 
-In functional logic programming, one program contains two semantics: a
-``forward'' nondeterministic semantics with \emph{choices}, and a ``backward''
-demand-driven semantics with \emph{free variables}. Past research has shown the
+In functional logic programming, one can represent a
+``forward'' nondeterministic program with \emph{choices}, and a ``backward''
+demand-driven program with \emph{free variables} with a single term using function inversion. Past research has shown the
 usefulness of this feature in different contexts.\ly{TODO: Citations.}
 \stl{This isn't entirely correct.  You can do forwards or backwards computation
 with either choices or free variables.  Also one program doesn't contain two semantics.
 Programs are always evaluated the same way.  I think it'd be better to say that
 we can use techniques like function inversion to run computations backwards.}
+\lai{Is this more accurate? Less?}
 In this
 paper, we demonstrate yet another useful application that has not been discussed
 before: lazy cost analysis. Specifically, we show that two different semantics
 proposed independently for reasoning about the computation cost of lazy
 functional programs, clairvoyance semantics~\cite{clairvoyant,forking-paths} and
-demand semantics~\cite{bjerner1989,demand-semantics}, can both be represented
-using a single functional logic program.
+demand semantics~\cite{bjerner1989,demand-semantics}, can both be represented using a single program in a functional logic language.
 
 \paragraph{Lazy cost analysis.}
-In lazy evaluation, a computation is driven by its demands, performing only when
+In lazy evaluation, a computation is driven by its demands, performing only
 the operations required to compute a final result~\cite{launchbury1993}. Lazy
 evaluation enables functional programmers to write compositional code with
 comparable or potentially better performance~\cite{fp-matters}. However, because
@@ -31,20 +31,17 @@ with other computations, analyzing the ``performance'' of a lazy functional
 program becomes much more challenging, as the analyzer needs to reason about
 mutable heaps and cannot consider a function in isolation.
 
-Various works have been proposed to deal with this challenge. We can roughly
-divide these works into three different approaches. The first approach,
-represented by works on Iris$^{\$}$~\cite{iris-credit,iris-thunk}, deal with
+Various ideas have been proposed to tackle this challenge, which we can divide into roughly three different approaches. The first approach,
+represented by work on Iris$^{\$}$~\cite{iris-credit,iris-thunk}, deal with
 mutable heaps directly using tools like separation
-logic~\cite{separation-logic}. The second approach, represented by
+logic~\cite{separation-logic}. \lai{Need a comment here to mirror the comment about Liquid Haskell} The second approach, represented by
 LiquidHaskell~\cite{liquidate,liquid-okasaki}, uses a graded monad proposed by
 Danielsson~\cite{danielsson-08} to track computation cost. However, this
-approach needs to deal with sharing manually. The last approach instead proposes
-and utilizes alternative semantics that are are equivalent to lazy evaluation in
+approach needs to deal with sharing manually \lai{Should state why this is an issue, or else the thought feels unfinished}. The third and final approach instead utilizes alternative semantics that are equivalent to lazy evaluation in
 terms of computation
 cost~\cite{bjerner1989,clairvoyant,forking-paths,demand-semantics}. In contrast
 to the natural semantics of lazy evaluation~\cite{launchbury1993}, these
-semantics reify computation cost in pure and eager semantics, so one do not need
-to be concerned with mutable heaps, sharing, or our-of-order executions.
+semantics reify computation cost in pure and eager semantics, so one needs not be concerned with mutable heaps, sharing, or our-of-order executions.
 
 % \subsection{what is lazy evaluation?}
 
@@ -151,38 +148,38 @@ to be concerned with mutable heaps, sharing, or our-of-order executions.
 % discovered, and provably so.
 
 \paragraph{Clairvoyance semantics and demand semantics.}
-In this paper, we look at two alternative semantics studied in the third
+In this paper, we examine two semantics studied in the third
 approach, namely the clairvoyance semantics proposed by Hackett and
 Hutton~\cite{clairvoyant}, and the demand semantics proposed by Bjerner and
 Holmstr{\"{o}}m~\cite{bjerner1989}.
 
-The clairvoyance semantics buils on the observation that, for the sake of
+The clairvoyance semantics builds on the observation that, for the sake of
 analyzing computation cost, it only matters \emph{if} a computation cost is
 incurred, not \emph{when}. Therefore, the clairvoyance semantics evaluates terms
 eagerly, but every time it runs into a lazy operation, it makes a
-\emph{nondeterministic} choice of evaluating a computation or skipping it.
+\emph{nondeterministic} choice of evaluating a computation or skipping it. Thus, a lazy program's cost is represented as a walk through the resultant tree of possible execution paths, mimicking the choices to evaluate or choose not to evaluate terms in the original program.
 
 The demand semantics, on the other hand, assumes that the demand on the output
-of a function is known as a paratemeter, in addition to the function's input.
+of a function is given as a parameter, in addition to the function's input.
 The demand semantics can then run ``backward'' to calculate the minimal input
-demand.
+demand. In this semantics, then, a lazy program's cost is represented by this ``backward'' function, which calculates the amount of the input consumed to compute the output demand. \lai{Not 100\% complete - the second function is cost-equivalent, and that cost is the lazy function's cost. I need to change this later, but we do need a little more explanation than we had here originally...}
 
 These two semantics were proposed independently, but it turns out that they
-correspond to the two semantics of the same functional logic program. Indeed,
-given a lazy functional program, we can translate this program to a functional
+correspond to two directions of the same functional logic program. Indeed,
+we can translate a given lazy functional program into a functional
 logic program that uses \emph{choice} to simulate the clairvoyance semantics. If
-we then add some input demands as \emph{free variables}, the new functional
-logic program simulates the demand semantics. In this paper, we exhibit this
+we then add the desired input\lai{Did we mean output here?} demand(s) as \emph{free variables}, the new functional
+logic program simulates the demand semantics. In this paper, we demonstrate this
 connection both in theory and in practice.
 
 In particular, we make the following contributions:
 
 \begin{itemize}
-  \item We propose and formalize a mechanical way of translating a functional
-        program to a functional logic program to obtain the clairvoyance
-        semantics and the demand semantics~(\cref{sec:translation}).
-  \item We formally prove that such translation is correct with respect to both
-        the clairvoyance semantics and the demand semnatics. All the theorems
+  \item We propose and formalize a mechanical way of translating functional
+        programs to functional logic programs, producing the clairvoyance
+        and demand semantics~(\cref{sec:translation}).
+  \item We formally prove that our translation is correct with respect to both
+        the clairvoyance semantics and the demand semnatics. All theorems
         and proofs are mechanized in Agda~(\cref{sec:equiv}).
   \item We conduct a number of case studies by manually translating classical
         lazy Haskell programs\ly{TODO:\ replace these with exact names when we

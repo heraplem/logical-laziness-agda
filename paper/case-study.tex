@@ -42,7 +42,12 @@ instance Approx a => Approx (T a) where
   Thunk _   <~ Undefined = False
   Thunk x   <~ Thunk y   = x <~ y
 \end{lstlisting}
-\texttt{Approx} is the class of approximation types. The operator \texttt{<\char`\~} indicates whether its left-hand operand approximates its-hand operand. The function \texttt{approx} nondeterministically returns some value that approximates its argument. \texttt{approx} has a default implementation in terms of \texttt{free}, but specialized implementations can be much faster. We need the \texttt{Data} constraint in order to generate free variables.
+\texttt{Approx} is the class of approximation types. The operator
+\texttt{<\char`\~} indicates whether its left-hand operand approximates its-hand
+operand. The function \texttt{approx} nondeterministically returns some value
+that approximates its argument. \texttt{approx} has a default implementation in
+terms of \texttt{free}, but specialized implementations can be much faster. We
+need the \texttt{Data} constraint in order to generate free variables.
 
 \begin{lstlisting}[language=Curry]
 newtype Tick a = Tick { runTick :: (a, Int) }
@@ -193,15 +198,20 @@ The resulting computation only costs \(9\) ticks.
     \cdc{insertionSortD}.}\label{fig:insertionSortD_runtime}
 \end{figure}
 
+\ly{Write about your testing environment. What compiler are you using? Which
+  version? What machine are you running the experiments on? What tools did you
+  use to measure time?}
+
 Although our translation provides a convenient way to compute demands, a
 question remains about how it performs relative to hand-written demand
 functions. To test this, we ran \texttt{insertionSortD} on completely
-out-of-orders lists with sizes ranging from \(1\) to \(100\), demanding the full
-result each time (\cref{fig:insertionSortD_runtime}).
+out-of-orders lists\ly{does this mean \cdh{[n..1]}?} with sizes ranging from
+\(1\) to \(100\), demanding the full result each time
+(\cref{fig:insertionSortD_runtime}).
 
-Asymptotically, \texttt{insertionSortD} appears to run in \(O(n^3)\) time. This
-is equivalent to the hand-written version, which, in the worst case, must call
-the pure \texttt{insertionSort} function \(n\) times. However, the constants are
-much worse: \texttt{insertionSortD} takes more than \(6\) seconds on a
-\(100\)-element list, while the hand-written version is fast enough that its
-runtime cannot be reliably measured.
+Asymptotically, \texttt{insertionSortD} appears\ly{appears?} to run in
+\(O(n^3)\) time. This is equivalent to the hand-written version, which, in the
+worst case, must call the pure \texttt{insertionSort} function \(n\) times.
+However, the constants are much worse: \texttt{insertionSortD} takes more than
+\(6\) seconds on a \(100\)-element list, while the hand-written version is fast
+enough that its runtime cannot be reliably measured.

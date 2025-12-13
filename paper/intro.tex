@@ -27,13 +27,58 @@
 In lazy evaluation, a computation is driven by its demands, performing only the
 operations required to compute a final result~\cite{launchbury1993}. Lazy
 evaluation enables functional programmers to write compositional code with
-comparable or potentially better performance~\cite{fp-matters}. However, because
-computations in lazy evaluation are on demand, out of order, and interleaved
-with other computations, analyzing the ``performance'' of a lazy functional
-program becomes much more challenging.
+comparable or potentially better performance~\cite{fp-matters}. However, lazy
+evaluation also makes analyzing ``performance'' very challenging.
 % as the analyzer needs to reason about mutable heaps and cannot consider a
 % function in isolation.
 
+\begin{figure}[t]
+\begin{minipage}[b]{0.5\textwidth}
+\begin{lstlisting}[language=Haskell]
+take :: Int -> [a] -> [a]
+take 0 _  = []
+take _ [] = []
+take n (x:xs) = x : take (n - 1) xs
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}[b]{0.45\textwidth}
+\begin{lstlisting}[language=Haskell]
+(++) :: [a] -> [a] -> [a]
+[]     ++ ys = ys
+(x:xs) ++ ys = x : (xs ++ ys)
+\end{lstlisting}
+\end{minipage}
+\caption{The definitions of \cdh{take} and \cdh{(++)} in
+  Haskell.}\label{fig:hs-example}
+\end{figure}
+
+For concreteness, let's consider the Haskell functions \cdh{take} and \cdh{(++)}
+defined in \cref{fig:hs-example}. Suppose that we are going to evaluate the
+following piece of code:
+\begin{lstlisting}[language=Haskell]
+  take 2 ([1,2,3] ++ [4,5]) 
+\end{lstlisting}
+This program only evaluates when its result is demanded, \eg~when we print the
+result. When there is a demand, say on the first element, we will run \cdh{take}
+and \cdh{append} once to obtain the first element \cdh{1}. However, suppose that
+there is a point in the future, we demand the entire result list. We will then
+evaluate \cdh{take} and \cdh{append} ``one level deeper'' to obtain the second
+element \cdh{2}, and \cdh{take} again to obtain the end of the result list:
+\cdh{[]}. This example shows that computations in a lazy program are evaluated
+on demand, out of order, and interleaved with other computations. These
+characteristics make analyzing the ``performance'' of a lazy functional program
+challenging.
+
+How can we bring order, simplicity, and compositionality to lazy computation
+cost? Some recent works proposed that, instead of dealing with the stateful
+natural semantics of lazy evaluation~\cite{launchbury1993}, we can utilize
+simpler \emph{alternative semantics} that are equivalent to lazy evaluation in
+terms of computation cost. Two notable semantics in this approach are the
+clairvoyance semantics\cite{clairvoyant,forking-paths} and the demand
+semantics~\cite{bjerner1989,demand-semantics}.
+
+\iffalse
+  
 Our goal is to develop a way to analyze the \emph{computation cost} of a lazy
 functional program, so that the analysis is \emph{simple} and
 \emph{compositional}. By simplicity, we mean that we should be able to use
@@ -41,6 +86,8 @@ simple tools like equational reasoning for simple properties about cost. By
 compositionality, we mean that we can reason about each lazy function
 individually, and compose properties about each function's cost when reaosning
 about the whole program.
+
+
 
 \paragraph{Other closely related approaches.}
 Existing research that tackles this challenge can be divided into roughly three
@@ -57,6 +104,8 @@ In contrast to the natural semantics of lazy evaluation~\cite{launchbury1993},
 these semantics reify computation cost in pure and eager semantics, so we can
 use them to reason about lazy computation cost without being concerned with
 mutable heaps, sharing, or our-of-order executions.
+
+\fi
 
 % \subsection{what is lazy evaluation?}
 
@@ -162,31 +211,65 @@ mutable heaps, sharing, or our-of-order executions.
 % and clairvoyance semantics. Is this mapping correct, though? Yes, we have
 % discovered, and provably so.
 
-Semantics studied in the third approach provides simpler models 
+% In this paper, we examine two semantics studied in the third approach, namely
+% the clairvoyance semantics proposed by Hackett and Hutton~\cite{clairvoyant},
+% and the demand semantics proposed by Bjerner and
+% Holmstr{\"{o}}m~\cite{bjerner1989}.
 
-In this paper, we examine two semantics studied in the third approach, namely
-the clairvoyance semantics proposed by Hackett and Hutton~\cite{clairvoyant},
-and the demand semantics proposed by Bjerner and
-Holmstr{\"{o}}m~\cite{bjerner1989}.
+\paragraph{The clairvoyance semantics,}
+or the clairvoyance call-by-value semantics, builds on the observation that, for
+the sake of analyzing computation cost, it only matters \emph{if} a computation
+cost is incurred, not \emph{when}. Therefore, the clairvoyance semantics
+evaluates terms eagerly, but every time it runs into a lazy operation, it makes
+a \emph{nondeterministic} choice of evaluating a computation or skipping it.
 
-The clairvoyance semantics builds on the observation that, for the sake of
-analyzing computation cost, it only matters \emph{if} a computation cost is
-incurred, not \emph{when}. Therefore, the clairvoyance semantics evaluates terms
-eagerly, but every time it runs into a lazy operation, it makes a
-\emph{nondeterministic} choice of evaluating a computation or skipping it. Thus, a lazy program's cost is represented as a walk through the resultant tree of possible execution paths, mimicking the choices to evaluate or choose not to evaluate terms in the original program.
+In our example of \cdh{take 2 ([1,2,3] ++ [4,5])}, we first evaluate
+\cdh{[1,2,3] ++ [4,5]}, but every time there is a functional application, we
+nondetermistically evaluate it or skip it, as illustrated in
+\cref{fig:forking-paths}. Afterwards, we run \cdh{take 2} in the same way over
+all the nondeterministic results of \cdh{[1,2,3] ++ [4,5]}. When it is not
+possible to evaluate, \eg~we want the second element from
+\lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)}, we
+discard the current nondeterministic branch. Eventually, one of the
+nondeterministic results represents the cost of lazy evaluation.
 
-The demand semantics, on the other hand, assumes that the demand on the output
-of a function is given as a parameter, in addition to the function's input.
-The demand semantics can then run ``backward'' to calculate the minimal input
-demand. In this semantics, then, a lazy program's cost is represented by this ``backward'' function, which calculates the amount of the input consumed to compute the output demand. \lai{Not 100\% complete - the second function is cost-equivalent, and that cost is the lazy function's cost. I need to change this later, but we do need a little more explanation than we had here originally...}
+Li \textit{et al.} showed that we can use the clairvoyance semantics to formally
+reason about computation cost of lazy evaluation~\cite{forking-paths}. However,
+a major drawback of the clairvoyance semantics is that it is nondeterministic,
+which makes it hard to execute the clairvoyance semantics, \eg~for testing.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[trim={0 7em 0 1em}, page=1,width=0.7\textwidth]{Figs/forking-paths.pdf}
+  \caption{An illustration of the clairvoyance evaluation of \cdh{[1,2,3] ++
+      [4,5]}. We use $\bot$ to represent skipped
+    values.}\label{fig:forking-paths}
+\end{figure}
+
+\paragraph{The demand semantics} builds on the observation that, given the input
+and a demand on the output, we can compute the minimal demand on the input
+required for such output demand. This process is \emph{deterministic}.
+
+In our example of \cdh{take 2 ([1,2,3] ++ [4,5])}, we additionally consider the
+two functions that are similar to function inversions of \cdh{take} and
+\cdh{(++)}. Their type signatures are as follows: 
+\begin{lstlisting}[language=Haskell,mathescape]
+takeD   :: Int -> [a] -> [a]$^D$ -> ((Int, [a]$^D$), Int)
+appendD :: [a] -> [a] -> [a]$^D$ -> (([a]$^D$, [a]$^D$), Int)
+\end{lstlisting}
+\ly{TODO: write more explanations. The drawback of the demand semantics.}
+
+\iffalse
 These two semantics were proposed independently, but it turns out that they
-correspond to two directions of the same functional logic program. Indeed,
-we can translate a given lazy functional program into a functional
-logic program that uses \emph{choice} to simulate the clairvoyance semantics. If
-we then add the desired input\lai{Did we mean output here?} demand(s) as \emph{free variables}, the new functional
-logic program simulates the demand semantics. In this paper, we demonstrate this
+correspond to two directions of the same functional logic program. Indeed, we
+can translate a given lazy functional program into a functional logic program
+that uses \emph{choice} to simulate the clairvoyance semantics. If we then add
+the desired input demand(s) as \emph{free variables}, the new functional logic
+program simulates the demand semantics. In this paper, we demonstrate this
 connection both in theory and in practice.
+\fi
+
+\ly{TODO: introduce our work.}
 
 In particular, we make the following contributions:
 

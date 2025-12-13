@@ -25,20 +25,24 @@ infix 4 <~
 class Approx a where
   (<~) :: a -> a -> Bool
 
+  approx :: a -> a
+  approx x | y <~ x = y
+    where y free
+
 instance Approx a => Approx (T a) where
   Undefined <~ _         = True
   Thunk _   <~ Undefined = False
   Thunk x   <~ Thunk y   = x <~ y
 \end{lstlisting}
 
-\texttt{Approx} is the class of approximation types. The operator \texttt{<~} indicates whether its left-hand operand lies below its right-hand operand.
+\texttt{Approx} is the class of approximation types. The operator \texttt{<~} indicates whether its left-hand operand lies below its right-hand operand. The function \texttt{approx} nondeterministically returns some value that approximates its argument. \texttt{approx} has a default implementation in terms of \texttt{free}, but specialized implementations can be much faster.
 
 \begin{lstlisting}[language=Curry]
 data Nat = Z | S Nat
 newtype Tick a = Tick { runTick :: (a, Nat) }
 \end{lstlisting}
 
-The \texttt{Tick} type is essentially a writer monad over the additive monoid of natural numbers. Curry usually evaluates via narrowing; however, when asked to instantiate a logic variable of primitive type, it residuates. To avoid this, we define an inductive type \texttt{Nat} of natural numbers and use it wherever we would otherwise use the primitive \texttt{Int} type.
+The \texttt{Tick} type is essentially a writer monad over the additive monoid of natural numbers. Using \texttt{Int} as our natural number type is somewhat fraught, because some Curry compilers residuate when asked to instantiate free variables of primitive type; however, we have not encountered any such problems when using the KiCS2 compiler.
 
 \begin{lstlisting}[language=Curry]
 infixr 5 :~

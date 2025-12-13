@@ -1,9 +1,8 @@
 module Tick where
 
-import Util
 import Nat
 
-newtype Tick a = Tick { runTick :: (a, Nat) }
+newtype Tick a = Tick { runTick :: (a, Int) }
   deriving (Show)
 
 instance Functor Tick where

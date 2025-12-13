@@ -8,8 +8,11 @@ import Nat
 import Tick
 import List
 
--- pakcs :l Insert :a T
--- kics2 and curry2go both have Docker images
+--------------------
+-- Insertion sort --
+--------------------
+
+-- Pure
 
 insert :: Ord a => a -> [a] -> [a]
 insert x [] = [x]
@@ -19,6 +22,8 @@ insert x ys@(y : ys')
 
 insertionSort :: Ord a => [a] -> [a]
 insertionSort = foldr insert []
+
+-- Clairvoyance
 
 insertC :: Ord a => a -> List a -> Tick (List a)
 insertC x ys = do
@@ -35,48 +40,6 @@ insertC x ys = do
         ysT'' <- under ysT' (insertC x)
         return (y :~ ysT'')
 
--- insertC :: Ord a => a -> List a -> Tick (List a)
--- insertC x xs = do
---   tick
---   fcase xs of
---     y :~ ys ->
---       if x >= y then
---         forcing ys (\ys' -> do
---           t <- thunk (insertC x ys')
---           return (y :~ t))
---       else return (x :~ Thunk (y :~ ys))
---     Nil -> return (x :~ Thunk Nil)
-
-insertD :: (Ord a, Data a, Approx a) => a -> List a -> List a -> Tick (a, List a)
-insertD x xs ysD |  xD  <~ x
-                 && xsD <~ xs
-                 && insertC xD xsD =:= Tick (ysD, c)
-                 =  Tick ((xD, xsD), c)
-  where xD, xsD, c free
-
--- insertionSortC' :: Ord a => T (List a) -> Tick (T (List a))
--- insertionSortC' xsT = under xsT $ \xs -> do
---   tick
---   fcase xs of
---     Nil -> return Nil
---     x :~ xsT' -> do
---       ysT' <- insertionSortC' xsT'
---       ys' <- force ysT'
---       insertC x ys'
-
--- insertionSortC :: Ord a => List a -> Tick (List a)
--- insertionSortC xs = do
---   ysT <- insertionSortC' (Thunk xs)
---   force ysT
-
-foldrC :: (a -> T b -> Tick b) -> Tick b -> List a -> Tick b
-foldrC f = foldrA (\aT b -> transpose b >>= f aT)
-
--- insertionSortC :: Ord a => List a -> Tick (List a)
--- insertionSortC = foldrC (\x xsT -> tick >> forcing xsT (insertC x)) (return Nil)
-
--- insertionSort [
-
 insertionSortC :: Ord a => List a -> Tick (List a)
 insertionSortC xs = do
   tick
@@ -87,20 +50,86 @@ insertionSortC xs = do
       ys' <- force ysT'
       insertC x ys'
 
-insertionSortD :: (Ord a, Data a, Approx a) => List a -> List a -> Tick (List a)
+-- Demand (constraints)
+
+insertD :: (Ord a, Approx a) => a -> List a -> List a -> Tick (a, List a)
+insertD x xs ysD |  xD  <~ x
+                 && xsD <~ xs
+                 && insertC xD xsD =:= Tick (ysD, c)
+                 =  Tick ((xD, xsD), c)
+  where xD, xsD, c free
+
+insertionSortD :: (Ord a, Approx a) => List a -> List a -> Tick (List a)
 insertionSortD xs ysD |  xsD <~ xs
                       && insertionSortC xsD =:= Tick (ysD, c)
                       =  Tick (xsD, c)
   where xsD, c free
 
-firstC :: Ord a => Nat -> T (List a) -> Tick (List a)
-firstC n xsT = do
-  tick
-  ysT <- under xsT insertionSortC
-  takeC n ysT
+-- Demand (generators)
 
--- firstD :: (Ord a, Data a, Approx a) => Nat -> T (List a) -> T (List a) -> Tick (T (List a))
--- firstD n xs ysD |  xsD <~ xs
---                 && firstC n xsD =:= Tick (ysD, c)
---                 =  Tick (xsD, c)
---   where xsD, c free
+insertDG :: (Ord a, Approx a) => a -> List a -> List a -> Tick (a, List a)
+insertDG x xs ysD | insertC xD xsD =:= Tick (ysD, c)
+                  = Tick ((xD, xsD), c)
+  where xD = approx x
+        xsD = approx xs
+        c free
+
+insertionSortDG :: (Ord a, Approx a) => List a -> List a -> Tick (List a)
+insertionSortDG xs ysD | insertionSortC xsD =:= Tick (ysD, c)
+                       = Tick (xsD, c)
+  where xsD = approx xs
+        c free
+
+-- Demand (manual)
+
+insertDM :: Ord a => a -> [a] -> List a -> Tick (List a)
+insertDM x ys zsD = do
+  tick
+  case (ys, zsD) of
+    ([], _) -> return Nil
+    (y : ys', zD :~ zsTD') ->
+       if y <= x
+       then do
+         ysTD' <- transpose (insertDM x ys' <$> zsTD')
+         return (y :~ ysTD')
+       else return (fromThunk zsTD')
+
+insertionSortDM :: Ord a => [a] -> List a -> Tick (List a)
+insertionSortDM xs ysD = do
+  tick
+  case xs of
+    [] -> return Nil
+    x : xs' -> do
+      let ys' = insertionSort xs'
+      ysD' <- insertDM x ys' ysD
+      xsD' <- insertionSortDM xs' ysD'
+      return (x :~ Thunk xsD')
+
+---------------------
+-- First (n-least) --
+---------------------
+
+-- Clairvoyance
+firstC :: Ord a => Nat -> T (List a) -> Tick (List a)
+firstC n xsT = takeC n =<< under xsT insertionSortC
+
+-- Demand (constraints)
+firstD :: (Ord a, Approx a) => Nat -> T (List a) -> List a -> Tick (T (List a))
+firstD n xsT ysTD |  xsTD <~ xsT
+                  && firstC n xsTD =:= Tick (ysTD, c)
+                 =  Tick (xsTD, c)
+  where xsTD, c free
+
+-- Demand (generators)
+firstDG :: (Ord a, Approx a) => Nat -> T (List a) -> List a -> Tick (T (List a))
+firstDG n xsT ysTD | firstC n xsTD =:= Tick (ysTD, c)
+                   = Tick (xsTD, c)
+  where xsTD = approx xsT
+        c free
+
+-- Demand (manual)
+firstDM :: Ord a => Nat -> [a] -> T (List a) -> Tick (T (List a))
+firstDM n xs ysTD = do
+  let zs = insertionSort xs
+  zsTD <- takeD' n zs ysTD
+  transpose (insertionSortDM xs <$> zsT)

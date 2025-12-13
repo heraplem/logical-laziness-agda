@@ -144,12 +144,12 @@
 \newcommand{\tthunk}[1]{\texttt{\tthunkZ\ \({#1}\)}}
 \newcommand{\tresultZ}{\texttt{result}} % tentative name
 \newcommand{\tresult}[1]{\texttt{\tresultZ\ \({#1}\)}}
-\newcommand{\tundefined}{\texttt{undefined}}
+\newcommand{\tundefined}{\texttt{skipped}}
 \newcommand{\tlazyZ}{\texttt{lazy}}
 \newcommand{\tlazy}[1]{\texttt{\tlazyZ\ \(#1\)}}
 \newcommand{\tforceZ}{\texttt{force}}
 \newcommand{\tforce}[1]{\texttt{\tforceZ\ \({#1}\)}}
-\newcommand{\tcase}[4]{\texttt{case \(#1\) of \tresult{#2} => \(#3\); undefined => \(#4\)}}
+\newcommand{\tcase}[4]{\texttt{case \(#1\) of \tresult{#2} => \(#3\); \tundefined{} => \(#4\)}}
 \newcommand{\ttickZ}{\texttt{tick}}
 \newcommand{\ttick}[1]{\texttt{\ttickZ\ \({#1}\)}}
 \newcommand{\tchooseZ}{\texttt{?}}

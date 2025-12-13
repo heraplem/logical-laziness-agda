@@ -211,7 +211,7 @@ the choice operator~(\texttt{?}), and free variables in
     \begin{array}{rcl}
       \treturn{t} &= &\tpair{t}{0} \\
       \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
-      \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\tdo{x}{\ttranspose{y_2}}}{t_2}{t_3} \\
+      \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\tdo{x_2}{\ttranspose{y_2}}{t_1}}{t_2}{t_3} \\
       \ttranspose{t} &= &\texttt{case \(t\) of } \\ &&\texttt{thunk \(y_1\) -> (\tdo{y_2}{y_1}{\treturn{(\tthunk{y_2})}});} \\ &&\texttt{undefined -> return undefined} \\
       \tassert{t_1}{t_2} &= &\tif{t_1}{t_2}{\tfail} \\
     \end{array}
@@ -221,6 +221,7 @@ the choice operator~(\texttt{?}), and free variables in
     \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
     \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}} \\
+    \inferrule{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}{\TL{\Gamma}{t}{\TM{(\TThunk{A})}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}}
   \end{mathpar}
   \caption{Derived term constructs in \(\LL\) and their typing rules. Readers

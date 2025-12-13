@@ -28,9 +28,7 @@ fromList :: [a] -> List a
 fromList = foldr (\x xs -> x :~ Thunk xs) Nil
 
 nilC :: Tick (T (List a))
-nilC = do
-  tick
-  thunk (return Nil)
+nilC = thunk (return Nil)
 
 ----------
 -- take --
@@ -41,7 +39,6 @@ takeC :: Int -> T (List a) -> Tick (List a)
 takeC n xsT = do
   tick
   fcase n `compare` 0 of
-  -- fcase n of
     EQ -> return Nil
     GT -> do
       let n' = n - 1

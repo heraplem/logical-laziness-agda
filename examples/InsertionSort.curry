@@ -4,7 +4,6 @@ import Control.Monad
 
 import Approx
 import T
-import Nat
 import Tick
 import List
 
@@ -110,26 +109,26 @@ insertionSortDM xs ysD = do
 ---------------------
 
 -- Clairvoyance
-firstC :: Ord a => Nat -> T (List a) -> Tick (List a)
+firstC :: Ord a => Int -> T (List a) -> Tick (List a)
 firstC n xsT = takeC n =<< with xsT insertionSortC
 
 -- Demand (constraints)
-firstD :: (Ord a, Approx a) => Nat -> T (List a) -> List a -> Tick (T (List a))
+firstD :: (Ord a, Approx a) => Int -> T (List a) -> List a -> Tick (T (List a))
 firstD n xsT ysTD |  xsTD <~ xsT
                   && firstC n xsTD =:= Tick (ysTD, c)
                  =  Tick (xsTD, c)
   where xsTD, c free
 
 -- Demand (generators)
-firstDG :: (Ord a, Approx a) => Nat -> T (List a) -> List a -> Tick (T (List a))
+firstDG :: (Ord a, Approx a) => Int -> T (List a) -> List a -> Tick (T (List a))
 firstDG n xsT ysTD | firstC n xsTD =:= Tick (ysTD, c)
                    = Tick (xsTD, c)
   where xsTD = approx xsT
         c free
 
 -- Demand (manual)
-firstDM :: Ord a => Nat -> [a] -> T (List a) -> Tick (T (List a))
+firstDM :: Ord a => Int -> [a] -> T (List a) -> Tick (T (List a))
 firstDM n xs ysTD = do
   let zs = insertionSort xs
-  zsTD <- takeD' n zs ysTD
-  transpose (insertionSortDM xs <$> zsT)
+  zsTD <- takeDM n zs ysTD
+  transpose (insertionSortDM xs <$> zsTD)

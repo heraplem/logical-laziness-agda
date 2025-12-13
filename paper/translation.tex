@@ -135,7 +135,14 @@ computation is demanded in the \transDname.
   // \tfree{A}
   // \tfail{}
 \end{bnf}
-\ly{TODO: typing rules.}
+\begin{mathpar}
+  \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\tresult{t}}{\TLazy{A}}} \qquad
+  \inferrule{\\}{\TL{\Gamma}{\tundefined}{\TLazy{A}}} \\
+  \inferrule{\TL{\Gamma}{t_1}{\TLazy{A}} \\ \TL{\Gamma, x : A}{t_2}{B} \\ \TL{\Gamma}{t_3}{B}}{\TL{\Gamma}{\tcase{t_1}{x}{t_2}{t_3}}{B}} \\
+  \inferrule{\\}{\TL{\Gamma}{\tfree{A}}{A}} \qquad
+  \inferrule{\TL{\Gamma}{t_1}{A} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tchoose{t_1}{t_2}}{A}} \qquad
+  \inferrule{\\}{\TL{\Gamma}{\tfail}{A}}
+\end{mathpar}
   \begin{mathpar}
     \inferrule{\EL{\gamma}{t}{v}}{\EL{\gamma}{\tresult{t}}{\sthunk{v}}}{\rulename{L-Result}}
     \qquad
@@ -155,9 +162,10 @@ computation is demanded in the \transDname.
         \sthunk{v_3}}{t_1}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{v_2}}{v}}{\rulename{L-Foldr-Result}}
   \end{mathpar}
 \end{center}
-\caption{The syntax of the logic language \(\LL\) and the semantic rules that
-  are related to the \TLazyZ{} datatype, the choice operator~(\texttt{?}), and
-  free variables.}\label{fig:syntax-logic}\label{fig:logic-semantics}
+\caption{The syntax of the logic language \(\LL\) and the semantic and typing
+  rules that are related to the \TLazyZ{} datatype, the choice
+  operator~(\texttt{?}), and free
+  variables.}\label{fig:syntax-logic}\label{fig:logic-semantics}
 \end{figure}
 
 Terms of \(\LL\) include introduction and elimination forms for all new types.
@@ -209,6 +217,7 @@ the choice operator~(\texttt{?}), and free variables in
 \begin{figure}[t] 
   \[
     \begin{array}{rcl}
+      \TM{A} &= &\TProd{A}{\TNat} \\
       \treturn{t} &= &\tpair{t}{0} \\
       \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
       \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\tdo{x_2}{\ttranspose{y_2}}{t_1}}{t_2}{t_3} \\
@@ -224,10 +233,9 @@ the choice operator~(\texttt{?}), and free variables in
     \inferrule{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}{\TL{\Gamma}{t}{\TM{(\TThunk{A})}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}}
   \end{mathpar}
-  \caption{Derived term constructs in \(\LL\) and their typing rules. Readers
-    who are familiar with monads might recognize that \texttt{M} is a writer's
-    monad~\cite{moggi-monad,wadler-monad}.\ly{TODO: define
-      \texttt{M}?}}\label{fig:logic-derived}
+  \caption{Derived constructs in \(\LL\) and their typing rules. Readers who are
+    familiar with monads might recognize that \texttt{M} is a writer's
+    monad~\cite{moggi-monad,wadler-monad}.}\label{fig:logic-derived}
 \end{figure}
 
 \paragraph{Derived terms in \(\LL\).}
@@ -266,7 +274,8 @@ result inside \tresultZ. When the term is $\tforce{t}$, we first evaluate \(t\)
 and pattern match of the result $y_1$. If $y_1$ contains a $\tresult{y_2}$, we
 return it; otherwise, we directly fail this computation branch---note that
 \tfail{} only terminates the current nondeterministic branch, so other branches
-that contain a \tresultZ{} will continue.\ly{What about ticks?}
+that contain a \tresultZ{} will continue. To \ttickZ a computation, we simply
+run it and then increment its accumulated cost by \(1\).
 
 \begin{figure}[t]
   \begin{align*}
@@ -279,7 +288,8 @@ that contain a \tresultZ{} will continue.\ly{What about ticks?}
     \transC{\tcons{t_1}{t_2}} &= \tdo{y_1}{\transC{t_1}}{\tdo{y_2}{\transC{t_2}}{\treturn{(\tcons{y_1}{y_2})}}} \\
     \transC{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}} &= \tdo{y}{\transC{t_3}}{\tfoldM{x_1}{x_2}{\transC{t_1}}{\transC{t_2}}{y}} \\
     \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t}{\treturn(\tresult{y})}} \\
-    \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}}
+    \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}} \\
+    \transC{\ttick{t}} &= \tlet{u}{\transC{t}}{\tpair{\tfst{u}}{\tsnd{u} + 1}}
   \end{align*}
   \caption{The \transCname{} \(\transC{-}\) from \(\LB\) to \(\LL\).}\label{fig:transC}
 \end{figure}

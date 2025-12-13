@@ -104,31 +104,31 @@ insertionSortDM xs ysD = do
       xsD' <- insertionSortDM xs' ysD'
       return (x :~ Thunk xsD')
 
----------------------
--- First (n-least) --
----------------------
+------------------------
+-- n-minimum elements --
+------------------------
 
 -- Clairvoyance
-firstC :: Ord a => Int -> T (List a) -> Tick (List a)
-firstC n xsT = takeC n =<< with xsT insertionSortC
+nminC :: Ord a => Int -> T (List a) -> Tick (List a)
+nminC n xsT = takeC n =<< with xsT insertionSortC
 
 -- Demand (constraints)
-firstD :: (Ord a, Approx a) => Int -> T (List a) -> List a -> Tick (T (List a))
-firstD n xsT ysTD |  xsTD <~ xsT
-                  && firstC n xsTD =:= Tick (ysTD, c)
+nminD :: (Ord a, Approx a) => Int -> T (List a) -> List a -> Tick (T (List a))
+nminD n xsT ysTD |  xsTD <~ xsT
+                 && nminC n xsTD =:= Tick (ysTD, c)
                  =  Tick (xsTD, c)
   where xsTD, c free
 
 -- Demand (generators)
-firstDG :: (Ord a, Approx a) => Int -> T (List a) -> List a -> Tick (T (List a))
-firstDG n xsT ysTD | firstC n xsTD =:= Tick (ysTD, c)
-                   = Tick (xsTD, c)
+nminDG :: (Ord a, Approx a) => Int -> T (List a) -> List a -> Tick (T (List a))
+nminDG n xsT ysTD | nminC n xsTD =:= Tick (ysTD, c)
+                  = Tick (xsTD, c)
   where xsTD = approx xsT
         c free
 
 -- Demand (manual)
-firstDM :: Ord a => Int -> [a] -> T (List a) -> Tick (T (List a))
-firstDM n xs ysTD = do
+nminDM :: Ord a => Int -> [a] -> T (List a) -> Tick (T (List a))
+nminDM n xs ysTD = do
   let zs = insertionSort xs
   zsTD <- takeDM n zs ysTD
   transpose (insertionSortDM xs <$> zsTD)

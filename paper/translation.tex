@@ -144,6 +144,14 @@ demanded or not.
   \inferrule{\TL{\Gamma}{t_1}{A} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tchoose{t_1}{t_2}}{A}} \qquad
   \inferrule{\\}{\TL{\Gamma}{\tfail}{A}}
 \end{mathpar}
+\end{center}
+\caption{The syntax of the logic language \(\LL\) and typing rules that are
+  related to the \TLazyZ{} datatype, the choice operator~(\texttt{?}), and free
+  variables.}\label{fig:syntax-logic}
+\end{figure}
+
+\begin{figure}[t]
+\begin{center}
   \begin{mathpar}
     \inferrule{\EL{\gamma}{t}{v}}{\EL{\gamma}{\tresult{t}}{\sthunk{v}}}{\rulename{L-Result}}
     \qquad
@@ -162,11 +170,11 @@ demanded or not.
       \EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto
         \sthunk{v_3}}{t_1}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{v_2}}{v}}{\rulename{L-Foldr-Result}}
   \end{mathpar}
+  \caption{The semantic rules that are related to the \TLazyZ{} datatype, the
+    choice operator~(\texttt{?}), and free
+    variables in \(\LL\).}\label{fig:logic-semantics}
+
 \end{center}
-\caption{The syntax of the logic language \(\LL\) and the semantic and typing
-  rules that are related to the \TLazyZ{} datatype, the choice
-  operator~(\texttt{?}), and free
-  variables.}\label{fig:syntax-logic}\label{fig:logic-semantics}
 \end{figure}
 
 \(\LL\) has introduction and elimination forms for all of the new types.  We

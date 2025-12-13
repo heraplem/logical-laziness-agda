@@ -91,7 +91,7 @@ appendC xs ysT = do
   fcase xs of
     Nil -> force ysT
     x :~ xsT' -> do
-      zsT <- under xsT' (`appendC` ysT)
+      zsT <- with xsT' (`appendC` ysT)
       return (x :~ zsT)
 
 -----------------

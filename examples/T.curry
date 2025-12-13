@@ -36,5 +36,5 @@ fromThunk = (`forcing` id)
 force :: Applicative f => T a -> f a
 force t = forcing t pure
 
-under :: Applicative f => T a -> (a -> f b) -> f (T b)
-under t k = thunk (forcing t k)
+with :: Applicative f => T a -> (a -> f b) -> f (T b)
+with t k = thunk (forcing t k)

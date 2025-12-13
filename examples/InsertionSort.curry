@@ -37,7 +37,7 @@ insertC x ys = do
         ysT <- thunk (return ys)
         return (x :~ ysT)
       else do
-        ysT'' <- under ysT' (insertC x)
+        ysT'' <- with ysT' (insertC x)
         return (y :~ ysT'')
 
 insertionSortC :: Ord a => List a -> Tick (List a)
@@ -46,7 +46,7 @@ insertionSortC xs = do
   fcase xs of
     Nil -> return Nil
     x :~ xsT' -> do
-      ysT' <- under xsT' insertionSortC
+      ysT' <- with xsT' insertionSortC
       ys' <- force ysT'
       insertC x ys'
 
@@ -111,7 +111,7 @@ insertionSortDM xs ysD = do
 
 -- Clairvoyance
 firstC :: Ord a => Nat -> T (List a) -> Tick (List a)
-firstC n xsT = takeC n =<< under xsT insertionSortC
+firstC n xsT = takeC n =<< with xsT insertionSortC
 
 -- Demand (constraints)
 firstD :: (Ord a, Approx a) => Nat -> T (List a) -> List a -> Tick (T (List a))

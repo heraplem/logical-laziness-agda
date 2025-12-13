@@ -1,7 +1,7 @@
 \section{The Translation}\label{sec:translation}
 
 In this section, we define two languagues: the base language \(\LB\), a simple
-functional langugae~(\cref{subsec:base-lang}); and a simple functional logic
+functional language~(\cref{subsec:base-lang}), and a simple functional logic
 language \(\LL\)~(\cref{subsec:logic-lang}). Next, we develop two translations
 from \(\LB\) to \(\LL\): a \emph{\transCname} strategy, which produces terms
 modeling clairvoyance
@@ -13,14 +13,14 @@ translation by applying it to the example of \texttt{take} and \texttt{append}
 discussed in \cref{sec:motivating-example}.
 
 We prove that this translation strategy is correct with respect to the
-clairvoyance semantics and the demand semantics in Agda, but we defer details of
+clairvoyance semantics and the demand semantics using Agda, but we defer details of
 the correctness theorem, its proof, and the Adga development to
 \cref{sec:equiv}.
 
 \subsection{The Base Language \(\LB\)}\label{subsec:base-lang}
 
 We show the syntax of the base language \(\LB\) in \cref{fig:syntax-base}.
-\(\LB\) is a simple typed calculus with booleans, lists, and lazy thunks. Its
+\(\LB\) is a simple typed calculus with booleans, lists, and lazy thunks (thunks being suspended computations). Its
 terms include variables, let-bindings, conditionals, and recursion based on
 \(\tfoldrZ\). In addition, it contains the explicit \( \tlazyZ \) and
 \( \tforceZ \) for wrapping a computation in a lazy thunk and forcing a
@@ -30,7 +30,7 @@ computation cost. These explicit operators decouple our analysis from any
 particular evaluation model.
 
 \(\LB\) does not support functions or general recursion. This is because demand
-semantics does not support those features~\cite{bjerner1989,demand-semantics}.
+semantics does not support those features~\cite{bjerner1989,demand-semantics}.\lai{We should briefly mention why this limitation is OK here.}
 
 \begin{figure}[t]
 \begin{center}
@@ -73,8 +73,8 @@ relating to lazy evaluation and computation costs:
   \EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma} .
 \]
 
-We do not need to model the natural semantics of \(\LB\), because prior works
-have established equivalence in terms of computation cost between natural
+We do not need to model the natural semantics of \(\LB\), because prior work
+has established computation cost equivalence between natural
 semantics and clairvoyance semantics~\cite{clairvoyant}, and between
 clairvoyance semantics and demand semantics~\cite{demand-semantics}. We discuss
 more details of those semantics in \cref{sec:equiv}.
@@ -93,11 +93,12 @@ contexts.
 \else
 We need natural numbers and products to represent computation costs. 
 \fi
+\lai{Would it be better to say that we "use" them, rather than "need" them?}
 
 In addition, we replace the \(\TThunkZ\) type with a \(\TLazyZ\) type, which can
 be either \(\tundefined\) or a \(\tresult{v}\) for some \(v\). In the
-\transCname{}, these two constructors indciate whether a computation is
-evaluated or not; in the \transDname, they indicate whether a computation is
+\transCname{}, these two constructors indicate whether a computation is
+evaluated or not. In the \transDname, they indicate whether a computation is
 demanded or not.
 
 \begin{figure}[t]
@@ -202,14 +203,13 @@ existing formalization of one specific functional logic
 language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics}, the Verse
 calculus~\cite{verse}) to keep our approach generally applicable.\ly{TODO:
   changes this claim. Steven pointed out that the language is more specific to
-  Curry.}
+  Curry.} \lai{Well, not really according to the latest comment above, right?}
 
 \paragraph{Semantics.}
 We show the semantic rules of \(L\) that are related to the \TLazyZ{} datatype,
 the choice operator~(\tchooseZ), and free variables in
 \cref{fig:logic-semantics}.\ly{Did we refer to any papers when we define this
-  semantics? If so, cite them.} Note that these semantics are eager. They are
-\(\LL\) are also partial due to \( \tfail \).
+  semantics? If so, cite them.} Note that these semantics are eager, and are partial due to \( \tfail \).
 
 \begin{figure}[t] 
   \[
@@ -236,12 +236,12 @@ the choice operator~(\tchooseZ), and free variables in
 \end{figure}
 
 \paragraph{Derived terms in \(\LL\).}
-We intend to use \(\LL\) to implement functional logic programs that ``carry'' a
-computation result and an associated computation cost. To simplify this, we
+We use \(\LL\) to implement functional logic programs that ``carry'' a
+computation result and its associated computation cost. To simplify this, we
 define some derived term constructs in \(\LL\)
 (\cref{fig:logic-derived}). \treturn{t} lifts \(t\) to a computation that costs
-\(0\); \tdo{x}{t_1}{t_2} chains the computations \(t_1\) and \(t_2\),
-accumulating their costs; and \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} chains a list of
+\(0\). \tdo{x}{t_1}{t_2} chains the computations \(t_1\) and \(t_2\),
+accumulating their costs. \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} chains a list of
 computations, accumulating all of their costs. \tfoldMZ employs an auxiliary
 construct \ttransposeZ, which converts terms of type \(\TThunk{(\TM{A})}\) to
 terms of type \(\TM{(\TThunk{A})}\). \tassertZ ensures that a given condition
@@ -249,28 +249,28 @@ holds by causing the computation to diverge if it does not.
 
 We show all the typing rules related to these derived terms in
 \cref{fig:logic-derived} as well. Readers who are familiar with monads might
-recognize that \texttt{M} is a writer's monad~\cite{moggi-monad,wadler-monad}.
+recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
 
 \subsection{The \TransCname}\label{subsec:clairvoyance-translation}
 
 \(\transC{-}\) (\cref{fig:transC}) translates from \(\LB\) to terms in \(\LL\)
 that simulate clairvoyance semantics. Values and variables are translated using
 \treturn. \tletZ and \tifZ expressions are translated using
-\tdo{\cdot}{\cdot}{\cdot}. \tfoldrZ, is translated to the derived term construct
-\tfoldMZ. Readers familiar with monads might recognize that this is essentially
-a monadic translation~\cite{moggi-monad,malias,wadler-monad}, with adaptations
+\tdo{\cdot}{\cdot}{\cdot} \lai{I'm not sure what these symbols are - the commas are making it confusing.}. \tfoldrZ, is translated to the derived term construct
+\tfoldMZ. Again, readers familiar with monads might recognize that this is essentially
+a monadic translation~\cite{moggi-monad,malias,wadler-monad} with adaptations
 for the \TLazyZ{} type borrowed from the clairvoyance
 monad~\cite{forking-paths}.
 
 The most important cases are those for \(\tlazyZ\) and \(\tforceZ\). When the
-orginal term is \(\tlazy{t}\), we use the nondeterministic operator \texttt{?}
+original term is \(\tlazy{t}\), we use the nondeterministic operator \texttt{?}
 to either skip the inner term's evaluation~(\(\treturn{\tundefined}\)) or
-compute the inner term and wrap the result inside \tresultZ. When the original
+compute the inner term and wrap the result inside \tresultZ \lai{wrap result in/inside result? Or wrap result *as/with* result? Or something else? Wording confuses me.}. When the original
 term is \(\tforce{t}\), we first evaluate \(t\) and pattern match on the result
 \(y_1\). If \(y_1\) evaluates to \(\tresult{y_2}\), we return \(y_2\);
-otherwise, we fail. (Note that \tfail{} only terminates the current
+otherwise, we fail. Note that \tfail{} only terminates the current
 nondeterministic branch, so any branches that contain a \tresultZ{} will
-continue.) To \ttickZ a computation, we simply run it and then increment its
+continue\lai{Can either be a partial sentence in parentheses, a full sentence, or a footnote. Can't put a whole sentence in parentheses}. To \ttickZ a computation, we simply run it and then increment its
 accumulated cost by \(1\).
 
 \begin{figure}[t]
@@ -300,9 +300,9 @@ The \transCname{} preserves well-typedness of the original term in \(\LB\):
 We now define the \transDname{} \( \transD{t}{\Gamma} \) from \( \LB \) to
 \( \LL \) (\cref{fig:demand-translation}), which produces terms that simulate
 the demand semantics. Unlike the \transCname, the typing context \(\Gamma\) in
-\( \LB \) is also a parameter to the translation, because we need to introduce
-new free variables with types corresponding to types in \( \Gamma \). This is
-consistent to the demand translation of Xia \textit{et
+\( \LB \) is also a parameter to the translation. This is because we need to introduce
+new free variables with types corresponding to types in \( \Gamma \), and is
+consistent with the demand translation of Xia \textit{et
   al.}~\cite{demand-semantics}
 
 \begin{figure}[t]

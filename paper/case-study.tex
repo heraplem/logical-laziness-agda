@@ -3,7 +3,7 @@
 In this section, we briefly outline and evaluate an implementation of our
 translation in the functional logic programming language Curry. Note that all of
 our definitions have been tested specifically with the KiCS2 Curry
-compiler~\cite{DBLP:conf/wflp/BrasselHPR11}.
+compiler~\cite{kics2}.
 
 \subsection{Foundations}
 
@@ -67,7 +67,8 @@ The foregoing types have all of the expected typeclass instances; \eg \texttt{Mo
 
 \subsection{Running computations}
 
-Now we can start defining some functions.
+\ly{TODO: rewrite these now that the code is shown in \cref{sec:intro}.} Now we
+can start defining some functions.
 \begin{lstlisting}[language=Curry]
 takeC :: Int -> T (List a) -> Tick (List a)
 takeC n xsT = do

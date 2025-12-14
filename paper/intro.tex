@@ -1,4 +1,4 @@
-\section{Introduction}
+\section{Introduction}\label{sec:intro}
 
 % \lai{I think we need a catchier intro paragraph (and especially opening
 %   sentence), but I'm not sure if the one below should be reworked or broken in
@@ -337,27 +337,134 @@ It is unsatisfying that even though we have two semantics that model lazy
 computation costs, they are very different and we have to choose depending on
 what we need.
 
-In this paper, we propose a way of unifying these two semantics using
-\emph{functional logic programming}. Nondeterministic choices in functional
-logic programming are natural fit for modeling the clairvoyance semantics. On
-the other hand, the demand semantics can be considered a variant of function
-inversion, so it can be modeled by applying functions to free variables (also
-known as logical variables). Furthermore, we show that both semantics can be
-represented by one simple, executable functional logic program, revealing that
-they are in fact two sides of the same coin. We demonstrate this connection both
-in theory and in practice.
+In this paper, we propose a novel approach of \emph{unifying} these two
+semantics using \emph{functional logic programming}. In this new approach, we
+can translate a lazy functional program to a functional logic program that
+models the clairvoyance semantics, via a \emph{\transCname}. Furthermore, this
+functional logic program can be easily extended to obtain a new program that
+encodes the demand semantics, via a \emph{\transDname}.
 
-\iffalse
-These two semantics were proposed independently, but it turns out that they
-correspond to two directions of the same functional logic program. Indeed, we
-can translate a given lazy functional program into a functional logic program
-that uses \emph{choice} to simulate the clairvoyance semantics. If we then add
-the desired input demand(s) as \emph{free variables}, the new functional logic
-program simulates the demand semantics. In this paper, we demonstrate this
-connection both in theory and in practice.
-\fi
+We show an example of translating the Haskell \cdh{take} function to functions
+in Curry~\cite{curry-lang} in \cref{fig:take-curry}. \Cref{fig:takeC-curry}
+shows the result of a \transCname, the definition of \cdc{takeC} in Curry.
+\Cref{fig:takeD-curry} shows the the result of a \transDname, \cdc{takeD}, which
+is a simple wrapper of \cdc{takeC}. Both \cdc{takeC} and \cdc{takeD} rely on
+some common definitions shown in \cref{fig:curry-thunk-func}.
 
-We make the following contributions:
+\ly{TODO: phrase these explanations better.}
+The \cdc{takeC} function takes \cdc{Int} and \cdc{T (List a)} that represents
+lists with $\bot$s as arguments, and returns a new list with $\bot$s in a
+\cdc{Tick} monad that encodes the computation cost. Most of the function works
+similarly to \cdh{take}. The key for implementing the clairvoyance semantics is
+the recursive call \cdc{thunk (takeC n' xsT')}, which unfolds to:
+\begin{lstlisting}[language=Curry]
+pure Undefined ? fmap Thunk (takeC n' xsT') 
+\end{lstlisting}
+That is, every time we make a recursive call, we use Curry's nondeterministic
+choice operator \cdc{?} to either skip the evaluation by returning
+\cdc{Undefined}, or evaluate the recursive call and wraps the result inside the
+\cdc{Thunk} constructor.
+
+The \cdc{takeD} function, on the other hand, relies on \cdc{takeC}. The core of
+\cdc{takeD} is in its guard expression: \cdc{takeC n xsTD =:= Tick (ysD, c)},
+where \cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, \cdc{xsTD} and \cdc{c}
+are free variables~(also known as logical variables). In this way, \cdc{takeD}
+computes the input \cdc{xsTD} and parts of the output \cdc{c} of \cdc{takeC},
+given the rest of its output \cdc{ysD}. In other words, \cdc{takeD} is a weaker
+form of a \emph{function inversion} of \cdc{takeC}. In addition, we request that
+\cdc{xsTD} to be an approximation of \cdc{xsT}, another argument of \cdc{takeD},
+so that it is either \cdc{xsT} or ``less evaluated'' than \cdc{xsT}.
+
+% Nondeterministic choices in functional logic programming are natural fit for
+% modeling the clairvoyance semantics. The demand semantics can be considered a
+% variant of function inversion, so it can be modeled by applying functions to
+% free variables (also known as logical variables). We show
+
+% Furthermore, we show that both semantics can be represented by one
+% simple, executable functional logic program, revealing that they are in fact two
+% sides of the same coin. We demonstrate this connection both in theory and in
+% practice.
+
+% These two semantics were proposed independently, but it turns out that they
+% correspond to two directions of the same functional logic program. Indeed, we
+% can translate a given lazy functional program into a functional logic program
+% that uses \emph{choice} to simulate the clairvoyance semantics. If we then add
+% the desired input demand(s) as \emph{free variables}, the new functional logic
+% program simulates the demand semantics. In this paper, we demonstrate this
+% connection both in theory and in practice.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{\textwidth}
+\begin{minipage}[b]{0.45\textwidth}    
+\begin{lstlisting}[language=Curry]
+data T a = Undefined | Thunk a
+
+thunk :: Applicative f => f a -> f (T a)
+thunk f = pure Undefined ? fmap Thunk f
+\end{lstlisting}
+\end{minipage}
+\qquad
+\begin{minipage}[b]{0.45\textwidth}    
+\begin{lstlisting}[language=Curry]
+force :: T a -> a
+force (Thunk v) = v
+\end{lstlisting}
+\end{minipage}
+\caption{Some basic Curry definitions.}\label{fig:curry-thunk-func}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\textwidth}
+\begin{lstlisting}[language=Curry]
+takeC :: Int -> T (List a) -> Tick (List a)
+takeC n xsT = do
+  tick
+  fcase n `compare` 0 of
+    EQ -> return Nil
+    GT -> do
+      let n' = n - 1
+      xs <- force xsT
+      fcase xs of
+        Nil -> return Nil
+        x :~ xsT' -> do
+          ysT' <- thunk (takeC n' xsT')
+          return (x :~ ysT')
+\end{lstlisting}
+\caption{The \cdc{takeC} function obtained from a
+  \transCname.}\label{fig:takeC-curry}
+\end{subfigure}
+\qquad
+\begin{subfigure}[b]{0.45\textwidth}
+\begin{lstlisting}[language=Curry]
+takeD :: Approx a =>
+         Int -> T (List a) ->
+         List a -> Tick (T (List a))
+takeD n xsT ysD
+      | takeC n xsTD =:= Tick (ysD, c)
+      = Tick (xsTD, c)
+  where xsTD = approx xsT
+        c free
+\end{lstlisting}
+\caption{The \cdc{takeD} function obtained from a
+  \transDname.}\label{fig:takeD-curry}
+\end{subfigure}
+\caption{The \transCname{} and \transDname{} of the \cdh{take} function
+  implemented in Curry.}\label{fig:take-curry}
+\end{figure}
+
+\paragraph{Our contributions.}
+By utilizing functional logic programming, we show that both the clairvoyance
+semantics and the demand semantics can be represented by two ways of evaluating
+one functional logic program, revealing that they are two sides of the same
+coin. In this paper, we show this connection both in theory and in practice.
+
+In addition, our result shows a simple way of executing clairvoyance semantics
+by utilizing functional logic language compilers like the KiCS2 Curry compiler,
+which supports flexible search strategies and features to encapsulate
+nondeterministic computations~\cite{kics2}. Our result also shows a simpler way
+of encoding the demand semantics by utilizing free variables in logic languages.
+Our evaluation shows that this simpler approach achieves acceptable performance.
+
+More concretely, we make the following contributions:
 
 \begin{itemize}
   \item We propose and formalize a mechanical way of translating functional
@@ -372,13 +479,11 @@ We make the following contributions:
   \item We conduct several case studies by manually translating some lazy
         Haskell programs, including insertion sorts, to Curry~\cite{curry-lang}
         based on our translation strategy. We also evaluate the performance of
-        translated code based on the KiCS2 Curry
-        compiler~\cite{DBLP:conf/wflp/BrasselHPR11}, which shows that acceptable
-        performance although the translated code is much simpler and reveals
-        potential optimization opportunities for Curry
+        translated code based on the KiCS2 Curry compiler~\cite{kics2}, which
+        shows that acceptable performance although the translated code is much
+        simpler and reveals potential optimization opportunities for Curry
         compilers~(\cref{sec:case-study}).
 \end{itemize}
 
-In addition, we provide a motivating example in \cref{sec:motivating-example},
-discuss related work in \cref{sec:related-work}, and conclude this paper in
-\cref{sec:conclusion}.
+In addition, we discuss related work in \cref{sec:related-work} and conclude
+this paper in \cref{sec:conclusion}.

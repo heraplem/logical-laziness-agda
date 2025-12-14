@@ -196,9 +196,9 @@ a question remains whether it performs reasonably efficient as it depends on the
 \transCname{} and free variables. To evaluate this, we ran \cdc{insertionSortD}
 on lists of the form \cdc{[n, n-1 .. 1]} with sizes ranging from \(1\) to
 \(100\), demanding the full result each time. We show the result of our
-performance evaluation in \cref{fig:insertionSortD_runtime}. All tests were
-performed on an AMD Ryzen 3900X running Linux 6.12.58 using the built-in timing
-functionality of KiCS2 (version 3.5.0).
+performance evaluation in \cref{fig:insertionSortD_runtime}. All experiments
+were performed on an AMD Ryzen 3900X running Linux 6.12.58 using the built-in
+timing functionality of KiCS2 (version 3.5.0) by running each evaluation once.
 
 \begin{figure}[t]
   \centering
@@ -209,15 +209,16 @@ functionality of KiCS2 (version 3.5.0).
 
 Asymptotically, \cdc{insertionSortD} appears to run in \(O(n^3)\) time: a cubic
 interpolation estimates it well. This asymptotic bound is shared by the original
-demand translation, which, in the worst case, must call the pure
-\cdc{insertionSort} function \(n\) times. However, the constants are much worse:
-\cdc{insertionSortD} takes more than \(6\) seconds on a \(100\)-element list,
-while the version we implemented using the original demand translation in Curry
-is fast enough that its runtime cannot be reliably measured.
+demand translation.
+%, which, in the worst case, must call the pure \cdc{insertionSort} function \(n\) times.
+However, the constants are much worse: \cdc{insertionSortD} takes \(6.44\)
+seconds on a \(100\)-element list, while the version we implemented using the
+original demand translation in Curry is fast enough that its runtime cannot be
+reliably measured.
 
 This result is not surprising, as the original demand semantics is specialized
 to computing minimal input demands, but the \transDname{} is built on a
 general-purpose logic language. Nevertheless, the experiment shows that the
 \transDname{} achieves acceptable performance~(worst performance on testing a
-fully out-of-order list with 100 elements is less than 7 seconds) and reveals
+fully out-of-order list with 100 elements is 6.44 seconds) and reveals
 potential optimization opportunities for Curry compilers.

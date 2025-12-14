@@ -291,15 +291,15 @@ the clairvoyance semantics to testing.
     values.}\label{fig:forking-paths}
 \end{figure}
 
-\paragraph{The demand semantics.} The demand semantics builds on the observation
-that, given the input and a demand on the output, we can compute the minimal
-demand on the input required for such output demand. This process is
-\emph{deterministic}.
+\paragraph{Demand semantics.} Demand semantics builds on the observation
+that, given an input and a demand on a function's output, we can compute the minimal
+input demand required for such an output demand
+\emph{deterministically}.
 
 In our example of \cdh{take 2 ([1,2,3] ++ [4,5])}, we first consider a demand on
 the output,
 \eg~\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}, where
-$\bot$ represents parts of the list that we do not care about. We then run the
+$\bot$ represents parts of the list that are not evaluated. We then run the
 \cdh{take} function ``backward'' to find that the minimal input demand required
 for \cdh{take 2} is also
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. We then run

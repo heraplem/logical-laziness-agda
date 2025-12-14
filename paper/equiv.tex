@@ -1,24 +1,5 @@
 \section{Correctness}\label{sec:equiv}
 
-\begin{figure}[t]
-  % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXG1hdGhiZntCfSJdLFsyLDAsIlxcbWF0aGJme0x9Il0sWzQsMCwiXFxtYXRoYmZ7U2V0fSJdLFs1LDFdLFswLDEsIlxcbWF0aGJie0N9XFxsZmxvb3ItXFxyZmxvb3IiLDIseyJvZmZzZXQiOjF9XSxbMCwxLCJcXG1hdGhiYntEfVxcbGZsb29yLVxccmZsb29yIiwwLHsib2Zmc2V0IjotMX1dLFswLDIsIlxcbWF0aGJie0N9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDIseyJjdXJ2ZSI6NX1dLFswLDIsIlxcbWF0aGJie0R9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDAseyJjdXJ2ZSI6LTV9XSxbMSwyLCJcXG1hdGhiYntMfVxcbGZsb29yLVxccmZsb29yIiwxXV0=
-  \[\begin{tikzcd}
-      {\mathbf{B}} && {\mathbf{L}} && {\mathbf{Set}} \\
-      &&&&& {}
-      \arrow["{\transDU{\cdot}}"', shift right, from=1-1, to=1-3]
-      \arrow["{\transC{\cdot}}", shift left, from=1-1, to=1-3]
-      \arrow["{\SD\llbracket\cdot\rrbracket}"', curve={height=30pt}, from=1-1, to=1-5]
-      \arrow["{\SC\llbracket\cdot\rrbracket}", curve={height=-30pt}, from=1-1, to=1-5]
-      \arrow["{\mathbb{L}\lfloor\cdot\rfloor}"{description}, from=1-3, to=1-5]
-    \end{tikzcd}\]
-  \caption{An overview of our work. \(\SC\llbracket\cdot\rrbracket\) and
-    \(\SD\llbracket\cdot\rrbracket\) respectively represent clairvoyance and
-    demand semantics; \(\SL\llbracket\cdot\rrbracket\) is the semantics of
-    \(\LL\); \(\transC{\cdot}\) and \(\transDU{\cdot}\) are term
-    translations. All arrows from \(\LB\) to \(\mathbf{Set}\) commute (up to a
-    suitable notion of equivalence).}
-\end{figure}
-
 In this section, we define clairvoyance and demand semantics on \(\LB\) and
 establish the equivalence of our translation with respect to both semantics,
 thus proving the translation correct. In \cref{subsec:clairvoyance}, we define a
@@ -32,22 +13,42 @@ prove that our clairvoyance translation and demand translation produce terms in
 \(\LL\) that compute the same result as the clairvoyance semantics and the
 demand semantics on \(\LB\), respectively. Our proofs rely on the equivalence
 between clairvoyance semantics and demand semantics, which was proven by Xia
-\textit{et al.}~\cite{demand-semantics}. We take this equivalence as an axiom.
+\textit{et al.}~\cite{demand-semantics}. We take this equivalence as
+axioms~(\cref{prop:cost-existence,prop:cost-minimality}).
 
-All of our theorems and proofs have been mechanized in the proof assistant
-Agda~\cite{DBLP:conf/tldi/Norell09}. This development will be released as a
-publically-available artifact.\ly{TODO: Make sure we have the code materials
-  ready for submission as well.}
+\begin{figure}[t]
+  % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXG1hdGhiZntCfSJdLFsyLDAsIlxcbWF0aGJme0x9Il0sWzQsMCwiXFxtYXRoYmZ7U2V0fSJdLFs1LDFdLFswLDEsIlxcbWF0aGJie0N9XFxsZmxvb3ItXFxyZmxvb3IiLDIseyJvZmZzZXQiOjF9XSxbMCwxLCJcXG1hdGhiYntEfVxcbGZsb29yLVxccmZsb29yIiwwLHsib2Zmc2V0IjotMX1dLFswLDIsIlxcbWF0aGJie0N9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDIseyJjdXJ2ZSI6NX1dLFswLDIsIlxcbWF0aGJie0R9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDAseyJjdXJ2ZSI6LTV9XSxbMSwyLCJcXG1hdGhiYntMfVxcbGZsb29yLVxccmZsb29yIiwxXV0=
+  \[\begin{tikzcd}
+      {\mathbf{B}} && {\mathbf{L}} && {\mathbf{Set}} \\
+      &&&&& {}
+      \arrow["{\transDU{\cdot}}"', shift right, from=1-1, to=1-3]
+      \arrow["{\transC{\cdot}}", shift left, from=1-1, to=1-3]
+      \arrow["{\SD\llbracket\cdot\rrbracket}"', curve={height=30pt}, from=1-1, to=1-5]
+      \arrow["{\SC\llbracket\cdot\rrbracket}", curve={height=-30pt}, from=1-1, to=1-5]
+      \arrow["{\mathbb{L}\llbracket\cdot\rrbracket}"{description}, from=1-3, to=1-5]
+    \end{tikzcd}\]
+  \caption{An overview of our work. \(\SC\llbracket\cdot\rrbracket\) and
+    \(\SD\llbracket\cdot\rrbracket\) respectively represent clairvoyance and
+    demand semantics; \(\SL\llbracket\cdot\rrbracket\) is the semantics of
+    \(\LL\); \(\transC{\cdot}\) and \(\transDU{\cdot}\) are term
+    translations. All arrows from \(\LB\) to \(\mathbf{Set}\) commute (up to a
+    suitable notion of equivalence).}
+\end{figure}
+
+All of our theorems and proofs have been mechanized in the Agda proof
+assistant~\cite{DBLP:conf/tldi/Norell09}. All the formalizations, theorems, and
+proofs can be found in our publically-available artifact.\ly{TODO: Make sure we
+  have the code materials ready for submission as well.}
 
 \subsection{Exact values and approximations}
 
 Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
-and a set \(\Approx{A}\) of \emph{approximation
-  values}~(\cref{fig:exact-approx}). The approximation values \(\Approx{A}\) are
-similar to the exact values, except some parts might be simply
-``discarded''~(represented by \(\sundefined\)). They represent ``smaller''
-values where certain computations are not needed; \ie~they are approximations of
-the exact values.
+and a set \(\Approx{A}\) of \emph{approximation values}, as defined in
+\cref{fig:exact-approx}. Approximation values \(\Approx{A}\) are similar to the
+exact values, except some parts might be simply ``discarded''~(represented by
+\(\sundefined\)).\ly{But what are exact values? Explain them as well.} They
+represent ``smaller'' values where certain computations are not needed; \ie~they
+are approximations of the exact values.
 
 \begin{figure}[t]
 \begin{center}
@@ -77,10 +78,11 @@ variables to exact values:
 \(\Approx{\Gamma}\) is defined similarly.
 
 Exact values and approximations are connected by the relation \(\approxofZ\)
-(\cref{fig:approx}). Intuitively, \(\approxof{a}{e}\) if \(a\) has the same
-shape as \(e\), but with some parts possibly replaced by \(\sundefined\). If
-\(e \in \Eval{A}\), we write \(\Approx{A}_{\approxof{\relax}{e}}\) to denote the
-set of values in \(\Approx{A}\) that approximate \(e\):
+(\cref{fig:approx}). Intuitively, \(\approxof{a}{e}\), pronounced ``\(a\)
+approximates \(e\)'', if \(a\) has the same shape as \(e\), but with some parts
+possibly replaced by \(\sundefined\). If \(e \in \Eval{A}\), we write
+\(\Approx{A}_{\approxof{\relax}{e}}\) to denote the set of values in
+\(\Approx{A}\) that approximate \(e\):
 \[
   \Approx{A}_{\approxof{\relax}{e}} = \setbuilder{a \in \Approx{A}}{\approxof{a}{e}} .
 \]
@@ -91,16 +93,35 @@ environments that elementwise approximate \(\gamma\).
 \begin{figure}[t]
   \begin{mathpar}
     \inferrule{\\}{\approxof{\sundefined}{e}} \qquad
-    \inferrule{\approxof{a}{e}}{\approxof{\sthunk{e}}{a}} \\
+    \inferrule{\approxof{a}{e}}{\approxof{\sthunk{e}}{a}} \qquad
     \inferrule{e \in \Eval{\TUnit} \cup \Eval{\TBool} \cup \Eval{\TNat} }{\approxof{e}{e}} \\
-    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\spair{a_1}{a_2}}{\spair{e_1}{e_2}}} \\
+    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\spair{a_1}{a_2}}{\spair{e_1}{e_2}}} \qquad
     \inferrule{\\}{\approxof{\snil}{\snil}} \qquad
-    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\scons{a_1}{a_2}}{\scons{e_1}{e_2}}}
+    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\scons{a_1}{a_2}}{\scons{e_1}{e_2}}} \\
+    \inferrule{\\}{\sundefined \le \sundefined} \qquad
+    \inferrule{a \le a'}{\sthunk{a} \le \sthunk{a'}} \qquad
+    \inferrule{a \in \Approx{\TUnit} \cup \Eval{\TBool} \cup \Eval{\TNat} }{a \le a} \\
+    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\spair{a_1}{a_2} \le \spair{a_1'}{a_2'}} \qquad
+    \inferrule{\\}{\snil \le \snil} \qquad
+    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\scons{a_1}{a_2} \le \scons{a_1'}{a_2'}} \\
+    \\
+    \bot_{\stt} = \stt \qquad
+    \bot_{\sfalse} = \sfalse \qquad
+    \bot_{\strue} = \strue \qquad
+    \bot_n = n \\
+    \bot_{\spair{e_1}{e_2}} = \spair{\bot_{e_1}}{\bot_{e_2}} \qquad
+    \bot_\snil = \snil \qquad
+    \bot_{\scons{e_1}{e_2}} = \scons{\bot_{e_1}}{\bot_{e_2}}
   \end{mathpar}
-  \caption{The approximation relation \(\approxofZ\) between exact values and approximations.}\label{fig:approx}
+  \caption{The approximation relation \(\approxofZ\) between approximations and
+    exact values, and the less defined relation \(\le\) between
+    approximations.}\label{fig:approx}\label{fig:definedness}
 \end{figure}
 
-Approximations come with a \emph{definedness} ordering (\cref{fig:definedness}). It is conceptually similar to the approximation relation: \(a \le a'\) if \(a\) has the same shape as \(a'\), but with some parts possibly replaced by \(\sundefined\).
+Approximations come with a \emph{definedness} ordering (\cref{fig:definedness}).
+It is conceptually similar to the approximation relation: \(a \le a'\),
+pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as
+\(a'\), but with some parts replaced by \(\sundefined\).
 
 \(\le\) is a partial order. Any two approximations \(a_1, a_2 \prec e\) have a
 least upper bound \(a_1 \sqcup a_2\). There is also a least element that
@@ -109,26 +130,6 @@ approximates any given exact value \(e\); we denote this by \(\bot_e\), or just
 any given exact value forms a bounded join-semilattice. Everything that we have
 just said also extends to the set of approximation environments that elementwise
 approximate a given exact environment.
-
-\begin{figure}[t]
-  \begin{mathpar}
-    \inferrule{\\}{\sundefined \le \sundefined} \qquad
-    \inferrule{a \le a'}{\sthunk{a} \le \sthunk{a'}} \\
-    \inferrule{a \in \Approx{\TUnit} \cup \Eval{\TBool} \cup \Eval{\TNat} }{a \le a} \\
-    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\spair{a_1}{a_2} \le \spair{a_1'}{a_2'}} \\
-    \inferrule{\\}{\snil \le \snil} \qquad
-    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\scons{a_1}{a_2} \le \scons{a_1'}{a_2'}} \\
-    \\
-    \bot_{\stt} = \stt \qquad
-    \bot_{\sfalse} = \sfalse \qquad
-    \bot_{\strue} = \strue \qquad
-    \bot_n = n \\
-    \bot_{\spair{e_1}{e_2}} = \spair{\bot_{e_1}}{\bot_{e_2}} \\
-    \bot_\snil = \snil \qquad
-    \bot_{\scons{e_1}{e_2}} = \scons{\bot_{e_1}}{\bot_{e_2}}
-  \end{mathpar}
-  \caption{The lattice of approximations.}\label{fig:definedness}
-\end{figure}
 
 % We can show that the evaluations semantics of \(\LB\) and that of \(\LL\)
 % satisfy the following properties:
@@ -150,8 +151,9 @@ The clairvoyance semantics on \(\LB\) is a big-step operational semantics with
 the judgment schema \(\EC{\gamma}{t}{c}{v}\): intuitively, \(c\) is the number
 of \(\ttickZ\)s encountered while evaluating \(t\) to \(v\). As with Hackett and
 Hutton's original clairvoyance semantics, our definition is based on
-\emph{improvement theory}~\cite{moran1999}. Where our semantics differ from
-Hackett and Hutton's, it is due to differences in the underlying language.
+\emph{improvement theory}~\cite{moran1999}. However, our semantics is based on a
+typed calculus \(\LB\) with explicit \( \tlazyZ \) and \( \tforceZ \)
+operators.\ly{When you say it's different, say what is the difference.}
 
 \begin{figure}[t]
   \begin{mathpar}

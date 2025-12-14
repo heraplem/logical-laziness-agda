@@ -303,11 +303,10 @@ $\bot$ represents parts of the list that are not evaluated. We then run the
 \cdh{take} function ``backward'' to find that the minimal input demand required
 for \cdh{take 2} is also
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. We then run
-\cdh{(++)} function ``backward'' as well to find that the minimal input demand
+\cdh{(++)} function ``backward'' as well to find that the minimal input demands
 required for the two input lists are
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$} and $\bot$,
-respectively. Along the way of computing the minimal input demand, the demand
-semantics also computes the computation cost associated with it.
+respectively. Throughout this process, the associated computation cost is also computed and carried forward.
 
 We can also use the demand semantics as a translation
 strategy~\cite{demand-semantics}. We show type signatures of translated
@@ -318,52 +317,45 @@ like \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}, but it
 uses them to represent demands.
 % We do not need any power sets, as the demand semantics is deterministic.
 
-We can easily test computation costs using these translated functions, because
-they are determisnitic. Unfortunately, the demand translation is much more
+Because these functions are deterministic, computation costs are easy to test. Unfortunately, the demand translation is much more
 complicated than the clairvoyance translation, which makes it more challenging
-for developing tools for demand translation or for formally reasoning about
-translated code.
+to develop tools for or formally reason about code under demand semantics.
 
 \paragraph{Two sides of the same coin.}
-It is unsatisfying that even though we have two semantics that model lazy
-computation costs, they are very different and we have to choose depending on
-what we need.
-
-In this paper, we propose a novel approach of \emph{unifying} these two
+We propose a novel approach of \emph{unifying} these two dissimilar but provably cost-equivalent
 semantics using \emph{functional logic programming}. In this new approach, we
-can translate a lazy functional program to a functional logic program that
-models the clairvoyance semantics, via a \emph{\transCname}. Furthermore, this
-functional logic program can be easily extended to obtain a new program that
-encodes the demand semantics, via a \emph{\transDname}.
+translate a lazy functional program to a functional logic program that
+models clairvoyance semantics via a \emph{\transCname}. This
+functional logic program can be extended to obtain a new program that
+encodes demand semantics via a \emph{\transDname}.
 
-We show an example of translating the Haskell \cdh{take} function to functions
-in Curry~\cite{curry-lang} in \cref{fig:take-curry}. \Cref{fig:takeC-curry}
+We show an example of translating the Haskell \cdh{take} function to Curry~\cite{curry-lang} in \cref{fig:take-curry}. \Cref{fig:takeC-curry}
 shows the result of a \transCname, the definition of \cdc{takeC} in Curry.
 \Cref{fig:takeD-curry} shows the the result of a \transDname, \cdc{takeD}, which
 is a simple wrapper of \cdc{takeC}. Both \cdc{takeC} and \cdc{takeD} rely on
 some common definitions shown in \cref{fig:curry-thunk-func}.
 
 \ly{TODO: phrase these explanations better.}
-The \cdc{takeC} function takes \cdc{Int} and \cdc{T (List a)} that represents
-lists with $\bot$s as arguments, and returns a new list with $\bot$s in a
-\cdc{Tick} monad that encodes the computation cost. Most of the function works
-similarly to \cdh{take}. The key for implementing the clairvoyance semantics is
+The \cdc{takeC} function takes an \cdc{Int}, and a \cdc{T (List a)} that represents
+a list with $\bot$s as arguments. It returns a new list \lai{What type?} with $\bot$s in the
+\cdc{Tick} monad, which encodes computation cost. Most of the function works
+similarly to \cdh{take}. The key for implementing clairvoyance semantics is
 the recursive call \cdc{thunk (takeC n' xsT')}, which unfolds to:
 \begin{lstlisting}[language=Curry]
 pure Undefined ? fmap Thunk (takeC n' xsT') 
 \end{lstlisting}
 That is, every time we make a recursive call, we use Curry's nondeterministic
 choice operator \cdc{?} to either skip the evaluation by returning
-\cdc{Undefined}, or evaluate the recursive call and wraps the result inside the
+\cdc{Undefined}, or evaluate the recursive call and wrap the result inside the
 \cdc{Thunk} constructor.
 
 The \cdc{takeD} function, on the other hand, relies on \cdc{takeC}. The core of
 \cdc{takeD} is in its guard expression: \cdc{takeC n xsTD =:= Tick (ysD, c)},
-where \cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, \cdc{xsTD} and \cdc{c}
+where \cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, and \cdc{xsTD} and \cdc{c}
 are free variables~(also known as logical variables). In this way, \cdc{takeD}
 computes the input \cdc{xsTD} and parts of the output \cdc{c} of \cdc{takeC},
-given the rest of its output \cdc{ysD}. In other words, \cdc{takeD} is a weaker
-form of a \emph{function inversion} of \cdc{takeC}. In addition, we request that
+given the rest of its output \cdc{ysD}. Put differently, \cdc{takeD} is a weaker
+form of a \emph{function inversion} of \cdc{takeC}. In addition, we require that
 \cdc{xsTD} to be an approximation of \cdc{xsT}, another argument of \cdc{takeD},
 so that it is either \cdc{xsT} or ``less evaluated'' than \cdc{xsT}.
 

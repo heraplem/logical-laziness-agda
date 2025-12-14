@@ -262,8 +262,7 @@ application is either nondetermistically evaluated or skipped, as illustrated in
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:2:$\bot$}, $\cdots$,
 and \cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is
 skipped. Afterwards, we run \cdh{take 2} in the same way over all the
-nondeterministic results of \cdh{[1,2,3] ++ [4,5]}. When it is not possible to
-evaluate, \eg~we want the second element from
+nondeterministic results of \cdh{[1,2,3] ++ [4,5]}. When evaluation is impossible, \eg~forcing the second element from
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)}, we
 discard the current nondeterministic branch. Eventually, one of the
 nondeterministic results gives the cost of lazy evaluation.

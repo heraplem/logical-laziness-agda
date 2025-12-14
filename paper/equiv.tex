@@ -1,92 +1,157 @@
 \section{Correctness}\label{sec:equiv}
 
-In this section, we prove the correctness of our translation by establishing
-equivalence with the clairvoyance semantics and the demand
-semantics~\cite{bjerner1989,demand-semantics}. We first define the clairvoyance
-semantics on \(\LB\) by adapting the semantics of Hackett and Hutton on untyped
-$\lambda$-calculus~\cite{clairvoyant} and that of Li \textit{et al.} on a typed
-calculus~\cite{forking-paths} in \cref{subsec:clairvoyance}. We then define the
-demand semantics on \(\LB\) by adapting the semantics of Bjerner and
-Holmstr{\"{o}}m~\cite{bjerner1989} and Xia \textit{et
-  al.}~\cite{demand-semantics} in \cref{subsec:demand-semantics}. We then prove
-that our clairvoyance translation and demand translation produce terms in
+\begin{figure}[t]
+  % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXG1hdGhiZntCfSJdLFsyLDAsIlxcbWF0aGJme0x9Il0sWzQsMCwiXFxtYXRoYmZ7U2V0fSJdLFs1LDFdLFswLDEsIlxcbWF0aGJie0N9XFxsZmxvb3ItXFxyZmxvb3IiLDIseyJvZmZzZXQiOjF9XSxbMCwxLCJcXG1hdGhiYntEfVxcbGZsb29yLVxccmZsb29yIiwwLHsib2Zmc2V0IjotMX1dLFswLDIsIlxcbWF0aGJie0N9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDIseyJjdXJ2ZSI6NX1dLFswLDIsIlxcbWF0aGJie0R9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDAseyJjdXJ2ZSI6LTV9XSxbMSwyLCJcXG1hdGhiYntMfVxcbGZsb29yLVxccmZsb29yIiwxXV0=
+  \[\begin{tikzcd}
+      {\mathbf{B}} && {\mathbf{L}} && {\mathbf{Set}} \\
+      &&&&& {}
+      \arrow["{\transDU{\cdot}}"', shift right, from=1-1, to=1-3]
+      \arrow["{\transC{\cdot}}", shift left, from=1-1, to=1-3]
+      \arrow["{\SD\llbracket\cdot\rrbracket}"', curve={height=30pt}, from=1-1, to=1-5]
+      \arrow["{\SC\llbracket\cdot\rrbracket}", curve={height=-30pt}, from=1-1, to=1-5]
+      \arrow["{\mathbb{L}\lfloor\cdot\rfloor}"{description}, from=1-3, to=1-5]
+    \end{tikzcd}\]
+  \caption{An overview of our work. \(\SC\llbracket\cdot\rrbracket\) and
+    \(\SD\llbracket\cdot\rrbracket\) respectively represent clairvoyance and
+    demand semantics; \(\SL\llbracket\cdot\rrbracket\) is the semantics of
+    \(\LL\); \(\transC{\cdot}\) and \(\transDU{\cdot}\) are term
+    translations. All arrows from \(\LB\) to \(\mathbf{Set}\) commute (up to a
+    suitable notion of equivalence).}
+\end{figure}
+
+In this section, we define clairvoyance and demand semantics on \(\LB\) and
+establish the equivalence of our translation with respect to both semantics,
+thus proving the translation correct. In \cref{subsec:clairvoyance}, we define a
+clairvoyance semantics on \(\LB\), adapting the semantics of Hackett and Hutton
+on an untyped \(\lambda\)-calculus~\cite{clairvoyant} and that of Li \textit{et
+  al.} on a typed calculus~\cite{forking-paths}. In
+\cref{subsec:demand-semantics}, we define a demand semantics on \(\LB\),
+adapting the semantics of Bjerner and Holmstr{\"{o}}m~\cite{bjerner1989} and Xia
+\textit{et al.}~\cite{demand-semantics}. Finally, in \cref{subsec:equiv}, we
+prove that our clairvoyance translation and demand translation produce terms in
 \(\LL\) that compute the same result as the clairvoyance semantics and the
-demand semantics on \(\LB\), respectively, in \cref{subsec:equiv}. These
-theorems show the correctness of our translation. 
+demand semantics on \(\LB\), respectively. Our proofs rely on the equivalence
+between clairvoyance semantics and demand semantics, which was proven by Xia
+\textit{et al.}~\cite{demand-semantics}. We take this equivalence as an axiom.
 
-Our proofs rely on the equivalence relation between the clairvoyance semantics
-and the demand semantics proven by Xia \textit{et al.}~\cite{demand-semantics},
-which we take as axioms in our work. All our formalization, theorems, and proofs
-are mechanized in Agda, which is provided as supplementary materials and will be
-released as public-available artifact.\ly{TODO: Make sure we have the code
-  materials ready for submission as well.}
+All of our theorems and proofs have been mechanized in the proof assistant
+Agda~\cite{DBLP:conf/tldi/Norell09}. This development will be released as a
+publically-available artifact.\ly{TODO: Make sure we have the code materials
+  ready for submission as well.}
 
-\ifextended
-\ly{There should be a commuting diagram outlining the relation among all our
-  semantics and theorems in the beginning of this section.}
-\fi
+\subsection{Exact values and approximations}
 
-\paragraph{Exact values and approximations.}
-We first adapt concepts developed by Li \textit{et al.}~\cite{forking-paths} to
-define the following: Each type \( A \) comes equipped with a set \( \Eval{A} \)
-of \emph{exact values} and a set \( \Approx{A} \) of \emph{approximation
-  values}, as defined in \cref{fig:exact-approx}. The set of exact values
-\( \Eval{A} \) represents all possible values of $A$ where thunks have been
-computed. The set of approximation values \( \Approx{A} \), on the other hand,
-additionally include values where some thunks might be simply
-``discarded''~(represented by $\sundefined$). These values represent ``smaller''
-values where certain computations are not needed, \ie~they are approximations of
-the exact values.\ly{TODO: Since \(\LB\) and \(\LL\) have different types now,
-  we should update these definitions and descriptions.}
+Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
+and a set \(\Approx{A}\) of \emph{approximation
+  values}~(\cref{fig:exact-approx}). The approximation values \(\Approx{A}\) are
+similar to the exact values, except some parts might be simply
+``discarded''~(represented by \(\sundefined\)). They represent ``smaller''
+values where certain computations are not needed; \ie~they are approximations of
+the exact values.
 
 \begin{figure}[t]
 \begin{center}
   \begin{align*}
-    %\Eval{A} &\in \mathcal{P}(A) \\
-    \Eval{\TBool} &= \SBool \\
     \Eval{\TThunk{A}} &= \Eval{A} \\
+    \Eval{\TUnit} &= \SUnit \\
+    \Eval{\TBool} &= \SBool \\
+    \Eval{\TProd{A}{B}} &= \Eval{A} \times \Eval{B} \\
+    \Eval{\TNat} &= \N \\
     \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}} \\ \\
-    %\Approx{A} &\in \mathcal{P}(A) \\
-    \Approx{\TBool} &= \SBool \\
     \Approx{\TLazy{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
+    \Approx{\TProd{A}{B}} &= \Approx{A} \times \Approx{B} \\
     \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{(\TList{A})}}}
   \end{align*}
 \end{center}
-\caption{Exact values and approximation values.\ly{TODO: We need rules for
-    product types, nat, unit for approximations.}}\label{fig:exact-approx}
+\caption{Exact values and approximation values. \(\Approx{A} = \Eval{A}\)
+  wherever \(\Approx{A}\) is not otherwise specified.}\label{fig:exact-approx}
 \end{figure}
 
-We additionally extend $\Eval{\cdot}$ and $\Approx{\cdot}$ to typing contexts.
-We use $\Eval{\Gamma}$ to represent a typing context such that for any
-$\gamma \in \Eval{\Gamma}$, $\gamma$ contains only exact values. The definition
-of $\Approx{\Gamma}$ is similiar.
+We extend \(\Eval{\cdot}\) and \(\Approx{\cdot}\) to typing contexts. If
+\(\Gamma = x_1 : A_1, \ldots, x_n : A_n \) is a typing context, then
+\(\Eval{\Gamma}\) is the set of environments of shape \(\Gamma\) that bind
+variables to exact values:
+\[
+  \Eval{\Gamma} = \setbuilder{x_1 \mapsto e_1, \ldots, x_n \mapsto e_n}{e_1 \in \Eval{A_1}, \ldots, e_n \in \Eval{A_n}}.
+\]
+\(\Approx{\Gamma}\) is defined similarly.
 
-We can show that the evaluations semantics of \(\LB\) and that of \(\LL\)
-satisfy the following properties:
+Exact values and approximations are connected by the relation \(\approxofZ\)
+(\cref{fig:approx}). Intuitively, \(\approxof{a}{e}\) if \(a\) has the same
+shape as \(e\), but with some parts possibly replaced by \(\sundefined\). If
+\(e \in \Eval{A}\), we write \(\Approx{A}_{\approxof{\relax}{e}}\) to denote the
+set of values in \(\Approx{A}\) that approximate \(e\):
+\[
+  \Approx{A}_{\approxof{\relax}{e}} = \setbuilder{a \in \Approx{A}}{\approxof{a}{e}} .
+\]
+Similarly, if \(\gamma \in \Eval{\Gamma}\), we write
+\(\Approx{\Gamma}_{\approxof{\relax}{\gamma}}\) to denote the set of
+environments that elementwise approximate \(\gamma\).
 
-\begin{lemma}[The evaluation semantics of \(\LB\) is an exact
-  semantics]\label{lem:evaluation-exact}
-  If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then
-  \( \EE{t}{\gamma} \in \Eval{A} \).
-\end{lemma}
+\begin{figure}[t]
+  \begin{mathpar}
+    \inferrule{\\}{\approxof{\sundefined}{e}} \qquad
+    \inferrule{\approxof{a}{e}}{\approxof{\sthunk{e}}{a}} \\
+    \inferrule{e \in \Eval{\TUnit} \cup \Eval{\TBool} \cup \Eval{\TNat} }{\approxof{e}{e}} \\
+    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\spair{a_1}{a_2}}{\spair{e_1}{e_2}}} \\
+    \inferrule{\\}{\approxof{\snil}{\snil}} \qquad
+    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\scons{a_1}{a_2}}{\scons{e_1}{e_2}}}
+  \end{mathpar}
+  \caption{The approximation relation \(\approxofZ\) between exact values and approximations.}\label{fig:approx}
+\end{figure}
 
-\begin{lemma}[The evaluation semantics of \(\LL\) is an approximation semantics]
-  If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and
-  \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
-\end{lemma}
+Approximations come with a \emph{definedness} ordering (\cref{fig:definedness}). It is conceptually similar to the approximation relation: \(a \le a'\) if \(a\) has the same shape as \(a'\), but with some parts possibly replaced by \(\sundefined\).
 
-\ly{TODO: define $\approxof{\relax}{\relax}$ here.}
+\(\le\) is a partial order. Any two approximations \(a_1, a_2 \prec e\) have a
+least upper bound \(a_1 \sqcup a_2\). There is also a least element that
+approximates any given exact value \(e\); we denote this by \(\bot_e\), or just
+\(\bot\) when \(e\) is clear from context. Thus, the set of approximations of
+any given exact value forms a bounded join-semilattice. Everything that we have
+just said also extends to the set of approximation environments that elementwise
+approximate a given exact environment.
+
+\begin{figure}[t]
+  \begin{mathpar}
+    \inferrule{\\}{\sundefined \le \sundefined} \qquad
+    \inferrule{a \le a'}{\sthunk{a} \le \sthunk{a'}} \\
+    \inferrule{a \in \Approx{\TUnit} \cup \Eval{\TBool} \cup \Eval{\TNat} }{a \le a} \\
+    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\spair{a_1}{a_2} \le \spair{a_1'}{a_2'}} \\
+    \inferrule{\\}{\snil \le \snil} \qquad
+    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\scons{a_1}{a_2} \le \scons{a_1'}{a_2'}} \\
+    \\
+    \bot_{\stt} = \stt \qquad
+    \bot_{\sfalse} = \sfalse \qquad
+    \bot_{\strue} = \strue \qquad
+    \bot_n = n \\
+    \bot_{\spair{e_1}{e_2}} = \spair{\bot_{e_1}}{\bot_{e_2}} \\
+    \bot_\snil = \snil \qquad
+    \bot_{\scons{e_1}{e_2}} = \scons{\bot_{e_1}}{\bot_{e_2}}
+  \end{mathpar}
+  \caption{The lattice of approximations.}\label{fig:definedness}
+\end{figure}
+
+% We can show that the evaluations semantics of \(\LB\) and that of \(\LL\)
+% satisfy the following properties:
+
+% \begin{lemma}[The evaluation semantics of \(\LB\) is an exact
+%   semantics]\label{lem:evaluation-exact}
+%   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then
+%   \( \EE{t}{\gamma} \in \Eval{A} \).
+% \end{lemma}
+
+% \begin{lemma}[The evaluation semantics of \(\LL\) is an approximation semantics]
+%   If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and
+%   \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
+% \end{lemma}
 
 \subsection{Clairvoyance Semantics}\label{subsec:clairvoyance}
 
-We define the clairvoyance semantics on \(\LB\) as a big-step operational
-semantics that has the judgment schema \( \EC{\gamma}{t}{c}{v} \). Intuitively,
-\( c \) is the number of \( \texttt{tick} \)s encountered while evaluating
-\( t \) to \( v \). This way of defining the clairvoyance semantics is based on
-the \emph{improvement theory}~\cite{moran1999}, just like the original
-clairvoyance semantics defined by Hackett and Hutton~\cite{clairvoyant}, except
-that we are based on a typed calculus \(\LB\) with explicit \( \tlazyZ \) and
-\( \tforceZ \) operators.
+The clairvoyance semantics on \(\LB\) is a big-step operational semantics with
+the judgment schema \(\EC{\gamma}{t}{c}{v}\): intuitively, \(c\) is the number
+of \(\ttickZ\)s encountered while evaluating \(t\) to \(v\). As with Hackett and
+Hutton's original clairvoyance semantics, our definition is based on
+\emph{improvement theory}~\cite{moran1999}. Where our semantics differ from
+Hackett and Hutton's, it is due to differences in the underlying language.
 
 \begin{figure}[t]
   \begin{mathpar}
@@ -102,28 +167,28 @@ that we are based on a typed calculus \(\LB\) with explicit \( \tlazyZ \) and
         \sthunk{v_3}}{t_1}{c_2}{v}}{\ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sthunk{v_2}}}{c_1
         + c_2}{v}}{\textsc{C-Foldr-Result}}
 \end{mathpar}
-\caption{A subset of the clairvoyance semantics defined on
+\caption{A subset of the clairvoyance semantics on
   \(\LB\).}\label{fig:clairvoyance-base}
 \end{figure}
 
-We display the crucial rules of the clairvoyance semantics in
+We give the most important rules for clairvoyance semantics in
 \cref{fig:clairvoyance-base}. The \rulename{C-Lazy-Result} and
 \rulename{C-Lazy-Undefined} rules state that, to evaluate a \( \tlazyZ \) term,
 we nondeterministically evaluate its subterm and wrap it in a
 \( \sthunkZ \)~(\ie~\rulename{C-Lazy-Result}), or substitute it with an
 ``empty'' value \( \sundefined \)~(\ie~\rulename{C-Lazy-Undefined}). This is the
-key for implementing clairvoyance semantics. The \rulename{C-Force} rule states
-that we can only evaluate a value of \( \TThunkZ \) type if it is in fact a
-\( \sthunkZ \), \ie~we cannot \( \tforceZ \) \( \sundefined \).
+key to clairvoyance semantics. The \rulename{C-Force} rule states that we can
+only evaluate a value of \( \TThunkZ \) type if it is in fact a \( \sthunkZ \),
+\ie~we cannot \( \tforceZ \) \( \sundefined \).
 
-One major distinction between our semantics and that of Hackett and
-Hutton~\cite{clairvoyant} is that, our base language \(\LB\) explicitly manages
-laziness with \( \tlazyZ \) and \( \tforceZ \) operators, so we introduce
-nondeterminism at the place of \( \tlazyZ \) operator. In contrast, Hackett and
+A major difference between our semantics and that of Hackett and
+Hutton~\cite{clairvoyant} is that our base language \(\LB\) explicitly manages
+laziness with \( \tlazyZ \) and \( \tforceZ \) operators, so we must introduce
+nondeterminism at \( \tlazyZ \) terms. In contrast, Hackett and
 Hutton~\cite{clairvoyant} introduce nondeterminism at \( \tletZ \) bindings:
-when evaluating \( \tlet{x}{t_1}{t_2} \), either \( x \) was immediately bound
-to the result of evaluting \( t_1 \), or else \( x \) was subtituted by
-\( \sundefined \).
+when evaluating \( \tlet{x}{t_1}{t_2} \) in their semantics, either \( x \) is
+immediately bound to the result of evaluting \( t_1 \), or else \( x \) is
+subtituted by \( \sundefined \).
 
 Note that \( \tfoldrZ \) is evaluated by first evaluting its list argument to a
 value \(v\) and then iterating over \(v\) via the auxiliary relation
@@ -133,31 +198,14 @@ takes as arguments: (1)~an element of the list; and (2)~a \( \sthunkZ \)
 obtained by iterating over the rest of the list, or \( \sundefined \) if the
 rest of the list is itself \( \sundefined \).
 
-
-% \begin{lemma}[Clairvoyance semantics is an approximation semantics]
-%   If \( \TB{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \),
-%   \( c \in \mathbb{N} \), and \( \EC{\gamma}{t}{c}{v} \), then
-%   \( v \in \Approx{A} \).
-% \end{lemma}
-
-% \begin{lemma}[Type soundness with respect to clairvoyance semantics]
-%   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Approx{\Gamma} \), then there
-%   exist \( v \in \Approx{A} \) and \( c \in \mathbb{N} \) such that
-%   \( \EC{\gamma}{t}{c}{v} \).
-% \end{lemma}
-
-% \ly{Really? How could \cref{prop:clair-mono} be true when there is
-%   nondeterminism? Clearly there can be smaller results even if $\gamma_2$ is
-%   bigger?}
-
 \subsection{Demand Semantics}\label{subsec:demand-semantics}
 
 The demand semantics is a deterministic semantics that interprets a term \( t \)
 as a function \( \EDU{t} \) that takes two arguments: (1)~an \emph{exact}
-evaluation context \( \gamma \), and (2)~a value of an approximation type that
-represents the output demand \( d \) on the result of \( \EE{t}{\gamma} \); it
-produces a list of minimal demands on \( \gamma \) and a computation cost. In
-summary, demand semantics has the ``type'':
+evaluation context \( \gamma \), and (2)~an approximation value that represents
+the output demand on the result of \( \EE{t}{\gamma} \); it produces a list of
+minimal demands on \( \gamma \) and a computation cost. In summary, demand
+semantics has the ``type'':
 \[
   \EDU{-} : (t : \Gamma \vdash A) \to (\gamma : \Eval{\Gamma}) \times \Approx{A}_{\approxof{\relax}{\EE{t}{\gamma}}} \to \Approx{\Gamma}_{\approxof{\relax}{\gamma}} \times \N .
 \]
@@ -166,22 +214,30 @@ required to compute a certain ``amount'' of the output \( \EE{t}{\gamma} \). It
 also computes how much it costs to perform that computation along the way.
 
 \begin{figure}[t]
-  \centering
-  \begin{align*}
-    \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\
-    \ED{\tlet{x}{t_1}{t_2}}{\gamma}{a} &= (d_1, c_1) \sqcup (d_2, c_2) &\text{where } ((d_2, x \mapsto b), c_2) &= \ED{t_2}{\gamma}{x \mapsto \EE{t}{\gamma}} \\
-    &&\text{and } (d_1, c_1) &= \ED{t_1}{\gamma}{b} \\
-    \ED{\ttick{t}}{\gamma}{a} &= (d, c + 1) &\text{where } (d, c) &= \ED{t}{\gamma}{a} \\
-    \ED{\tlazy{t}}{\gamma}{\sundefined} &= (\sundefined, 0) \\
-    \ED{\tlazy{t}}{\gamma}{\sthunk{a}} &= \ED{t}{\gamma}{a} \\
-    \ED{\tforce{t}}{\gamma}{a} &= \ED{t}{\gamma}{\sthunk{a}} \\
-    \ED{\ttrue}{\gamma}{a} &= (\sundefined, 0) \\
-    \ED{\tfalse}{\gamma}{a} &= (\sundefined, 0) \\
-    \ED{\tnil}{\gamma}{a} &= (\sundefined, 0) \\
-    \ED{\tcons{t_1}{t_2}}{\gamma}{a} &= \ED{t_1}{\gamma}{a} \sqcup \ED{t_2}{\gamma}{a} \\
-    \ED{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma}{b} &= (d', c) \sqcup \ED{t}{\gamma}{b'} &\text{where } (g, b', c) &= \EDF{t_1}{t_2}{\gamma}{\EE{t_3}{\gamma}}{b}
-  \end{align*}
-  \caption{The demand semantics.\ly{Where is the definition of $\EDF{-}{-}{-}{-}{-}?$}}\label{fig:demand-semantics}
+  \[
+    \begin{array}{rll}
+      \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\
+      \ED{\tlet{x}{t_1}{t_2}}{\gamma}{a} &= (d_1, c_1) \sqcup (d_2, c_2) &\text{where } ((d_2, x \mapsto b), c_2) = \ED{t_2}{\gamma}{x \mapsto \EE{t}{\gamma}} \\
+                        &&\text{and } (d_1, c_1) = \ED{t_1}{\gamma}{b} \\
+      \ED{\ttick{t}}{\gamma}{a} &= (d, c + 1) &\text{where } (d, c) = \ED{t}{\gamma}{a} \\
+      \ED{\tlazy{t}}{\gamma}{\sundefined} &= (\sundefined, 0) \\
+      \ED{\tlazy{t}}{\gamma}{\sthunk{a}} &= \ED{t}{\gamma}{a} \\
+      \ED{\tforce{t}}{\gamma}{a} &= \ED{t}{\gamma}{\sthunk{a}} \\
+      \ED{\ttrue}{\gamma}{a} &= (\sundefined, 0) \\
+      \ED{\tfalse}{\gamma}{a} &= (\sundefined, 0) \\
+      \ED{\tnil}{\gamma}{a} &= (\sundefined, 0) \\
+      \ED{\tcons{t_1}{t_2}}{\gamma}{a} &= \ED{t_1}{\gamma}{a} \sqcup \ED{t_2}{\gamma}{a} \\
+      \ED{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma}{b} &= (d', c) \sqcup \ED{t}{\gamma}{b'} &\text{where } (g, b', c) = \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{\EE{t_3}{\gamma}}{b} \\ \\
+      \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{\snil}{b} &= (d, \snil, c) & \text{where } (d, c) = \ED{t_2}{\gamma}{b} \\
+      \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{\scons{v_1}{v_2}}{b} &= (g_1 \sqcup g_2, \scons{a'}{d}, c_1 + c_2) \\
+      \multicolumn{3}{c}{\text{where } ((g_1, x_1 \mapsto a', x_2 \mapsto b'), c_1) = \ED{t_1}{\gamma, x_1 \mapsto v_1, x_2 \mapsto \EEF{x_1}{x_2}{t_1}{t_2}{\gamma}{v_2}}{b}} \\
+      \multicolumn{3}{c}{\text{and } (g_2, d, c) = \EDFF{x_1}{x_2}{t_1}{t_2}{\gamma}{v_2}{b'}} \\
+      \\
+      \EDFF{x_1}{x_2}{t_1}{t_2}{\gamma}{v}{\sundefined} &= \bot \\
+      \EDFF{x_1}{x_2}{t_1}{t_2}{\gamma}{v}{\sthunk{b}} &= (g, \sthunk{d}, c) &\text{where } (g, d, c) = \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{v}{b}
+    \end{array}
+  \]
+  \caption{The demand semantics on \(\LB\).}\label{fig:demand-semantics}
 \end{figure}
 
 We show the demand semantics on \(\LB\) in \cref{fig:demand-semantics}.
@@ -191,7 +247,7 @@ We show the demand semantics on \(\LB\) in \cref{fig:demand-semantics}.
   Let \( (\gamma^A, c) = \ED{t}{\gamma}{a} \).  Then \( \approxof{\gamma^A}{\gamma} \).
 \end{lemma}
 Note that \cref{prop:dem-approx-eval} does not just state that the demand
-semantics returns a value in $\Approx{\Gamma}_{\approxof{\relax}{\gamma}}$, it
+semantics returns a value in \(\Approx{\Gamma}_{\approxof{\relax}{\gamma}}\): it
 also states that the value is an approximation of the input.
 
 \subsection{Equivalence}\label{subsec:equiv}

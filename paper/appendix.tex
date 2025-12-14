@@ -15,14 +15,12 @@
     \end{cases} \\
   \EE{\tnil}{\gamma} &= \varepsilon \\
   \EE{\tcons{t_1}{t_2}}{\gamma} &= \scons{\EE{t_1}{\gamma}}{\EE{t_2}{\gamma}} \\
-  \EE{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma} &= \sfoldr{(v_1, v_2) \mapsto \EE{t_1}{\gamma, x_1 \mapsto v_1, x_2 \mapsto v_2}}{\EE{t_2}{\gamma}}{\EE{t_3}{\gamma}} \\
+  \EE{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma} &= \EEF{x_1}{x_2}{t_1}{t_2}{\gamma}{\EE{t_3}{\gamma}} \\
   \EE{\tlazy{t}}{\gamma} &= \EE{t}{\gamma} \\
   \EE{\tforce{t}}{\gamma} &= \EE{t}{\gamma} \\
-  \EE{\ttick{t}}{\gamma} &= \EE{t}{\gamma}
-\end{align*}
-
-\begin{align*}
-  \sfoldr{f}{y}{(x_1, x_2, \ldots, x_n)} = f(x_1, f(x_2, \cdots f(x_n, y) \cdots))
+  \EE{\ttick{t}}{\gamma} &= \EE{t}{\gamma} \\ \\
+  \EEF{x_1}{x_2}{t_1}{t_2}{\gamma}{\snil} &= \EE{t_2}{\gamma} \\
+  \EEF{x_1}{x_2}{t_1}{t_2}{\gamma}{\scons{v_1}{v_2}} &= \EE{t_1}{\gamma, x_1 \mapsto v_1, x_2 \mapsto \EEF{x_1}{x_2}{t_1}{t_2}{\gamma}{v_2}}
 \end{align*}
 
 \section{The Clairvoyance Semantics of \(\LB\)}\label{apx:clairvoyance-semantics}

@@ -23,6 +23,7 @@
 \usepackage{subfiles}
 \usepackage{subcaption}
 \usepackage{mathpartir}
+\usepackage{quiver}
 
 % these two are probably only necessary for the draft
 \usepackage{geometry}
@@ -117,8 +118,8 @@
 \newcommand{\TList}[1]{\texttt{List \({#1}\)}}
 \newcommand{\TThunkZ}{\texttt{Thunk}}
 \newcommand{\TThunk}[1]{\texttt{\TThunkZ\ \(#1\)}}
-\newcommand{\TLazyZ}{\texttt{Compute}}
-\newcommand{\TLazy}[1]{\texttt{\TLazyZ\ \(#1\)}}
+\newcommand{\TLazyZ}{\TThunkZ}
+\newcommand{\TLazy}[1]{\TThunk{#1}}
 \newcommand{\TM}[1]{\texttt{M\ \(#1\)}}
 
 % terms
@@ -142,8 +143,8 @@
 \newcommand{\tfoldr}[5]{\tfoldrZ\texttt{(\(\lambda{#1}{#2}\).\(#3\),\ \(#4\),\ \(#5\))}}
 \newcommand{\tthunkZ}{\texttt{thunk}} % tentative name
 \newcommand{\tthunk}[1]{\texttt{\tthunkZ\ \({#1}\)}}
-\newcommand{\tresultZ}{\texttt{result}} % tentative name
-\newcommand{\tresult}[1]{\texttt{\tresultZ\ \({#1}\)}}
+\newcommand{\tresultZ}{\tthunkZ} % tentative name
+\newcommand{\tresult}[1]{\tthunk{#1}}
 \newcommand{\tundefined}{\texttt{skipped}}
 \newcommand{\tlazyZ}{\texttt{lazy}}
 \newcommand{\tlazy}[1]{\texttt{\tlazyZ\ \(#1\)}}
@@ -168,23 +169,27 @@
 \newcommand{\tfoldM}[5]{\texttt{\tfoldMZ(\(\lambda {#1}{#2}.{#3}\),\ \(#4\),\ \(#5\))}}
 
 % semantic sets
+\newcommand{\SUnit}{\set{\stt}}
 \newcommand{\SBool}{\set{\strue, \sfalse}}
+\newcommand{\SNat}{\N}
 
 % semantic values and operations
+\newcommand{\stt}{\star}
 \newcommand{\strue}{\text{true}}
 \newcommand{\sfalse}{\text{false}}
 \newcommand{\sle}[2]{{#1} \leqslant {#2}}
 \newcommand{\snle}[2]{{#1} \nleqslant {#2}}
 \newcommand{\spair}[2]{({#1}, {#2})}
 \newcommand{\snil}{\varepsilon}
-\newcommand{\scons}[2]{(#1, #2)}
+\newcommand{\scons}[2]{\braces{#1, #2}}
 \newcommand{\sfoldr}[3]{\text{foldr}({#1}, {#2}, {#3})}
-\newcommand{\sthunkZ}{\text{result}}
+\newcommand{\sthunkZ}{\text{thunk}}
 \newcommand{\sthunk}[1]{\text{\sthunkZ\ \({#1}\)}}
 \newcommand{\sundefined}{\bot}
 
 % relations
-\newcommand{\approxof}[2]{{#1} \prec {#2}}
+\newcommand{\approxofZ}{\prec}
+\newcommand{\approxof}[2]{{#1} \approxofZ {#2}}
 
 % typing rules
 
@@ -198,13 +203,16 @@
 % evaluation
 \newcommand{\EEU}[1]{\bbrackets{#1}}
 \newcommand{\EE}[2]{\EEU{#1}({#2})}
+% evaluation foldr
+\newcommand{\EEF}[6]{\EEU{\lambda{#1}{#2}.{#3}}_\text{foldr}({#4}, {#5}, {#6})}
 % clairvoyance
 \newcommand{\EC}[4]{{{#1} \mathrel{;} {#2}} \Downarrow^\SC_{#3} {#4}}
 % demand
 \newcommand{\EDU}[1]{\SD\bbrackets{#1}}
 \newcommand{\ED}[3]{\EDU{#1}({#2}, {#3})}
 % demand foldr
-\newcommand{\EDF}[5]{\EDU{#1}_{\text{foldr}}({#2}, {#3}, {#4}, {#5})}
+\newcommand{\EDF}[7]{\EDU{\lambda{#1}{#2}.#3}_{\text{foldr}}({#4}, {#5}, {#6}, {#7})}
+\newcommand{\EDFF}[7]{\EDU{\lambda{#1}{#2}.#3}_{\text{foldr}'}({#4}, {#5}, {#6}, {#7})}
 % clairvoyance foldr
 \newcommand{\ECF}[8]{{{#1} \mathrel{;} \lambda{#2}{#3}.{#4}, {#5}, {#6}} \Downarrow^{\text{\(\SC\)-\tfoldrZ}}_{#7} {#8}}
 % logic
@@ -216,6 +224,7 @@
 
 % translations
 \newcommand{\transC}[1]{\SC\floor{#1}}
+\newcommand{\transDU}[1]{\SD\floor{#1}}
 \newcommand{\transD}[2]{\SD_{#2}\floor{#1}}
 \newcommand{\transCname}{logical clairvoyance translation}
 \newcommand{\transDname}{logical demand translation}

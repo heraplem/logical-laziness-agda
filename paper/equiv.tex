@@ -145,7 +145,7 @@ approximate a given exact environment.
 
 \subsection{Clairvoyance Semantics}\label{subsec:clairvoyance}
 
-The clairvoyance semantics on \(\LB\) is a big-step operational semantics with
+Clairvoyance semantics on \(\LB\) is a big-step operational semantics with
 the judgment schema \(\EC{\gamma}{t}{c}{v}\): intuitively, \(c\) is the number
 of \(\ttickZ\)s encountered while evaluating \(t\) to \(v\). As with Hackett and
 Hutton's original clairvoyance semantics, our definition is based on
@@ -171,32 +171,32 @@ operators.\ly{When you say it's different, say what is the difference.}
   \(\LB\).}\label{fig:clairvoyance-base}
 \end{figure}
 
-We give the most important rules for clairvoyance semantics in
+We give the main rules for clairvoyance semantics in
 \cref{fig:clairvoyance-base}. The \rulename{C-Lazy-Result} and
 \rulename{C-Lazy-Undefined} rules state that, to evaluate a \( \tlazyZ \) term,
 we nondeterministically evaluate its subterm and wrap it in a
-\( \sthunkZ \)~(\ie~\rulename{C-Lazy-Result}), or substitute it with an
-``empty'' value \( \sundefined \)~(\ie~\rulename{C-Lazy-Undefined}). This is the
+\( \sthunkZ \)~(\rulename{C-Lazy-Result}), or substitute it with an
+``empty'' value \( \sundefined \)~(\rulename{C-Lazy-Undefined}). This is the
 key to clairvoyance semantics. The \rulename{C-Force} rule states that we can
-only evaluate a value of \( \TThunkZ \) type if it is in fact a \( \sthunkZ \),
-\ie~we cannot \( \tforceZ \) \( \sundefined \).
+only evaluate a value of \( \TThunkZ \) type if it \emph{is} a \( \sthunkZ \)
+(\eg~we cannot \( \tforceZ \) \( \sundefined \)).
 
 A major difference between our semantics and that of Hackett and
-Hutton~\cite{clairvoyant} is that our base language \(\LB\) explicitly manages
+Hutton~\cite{clairvoyant} is that \(\LB\) explicitly manages
 laziness with \( \tlazyZ \) and \( \tforceZ \) operators, so we must introduce
-nondeterminism at \( \tlazyZ \) terms. In contrast, Hackett and
-Hutton~\cite{clairvoyant} introduce nondeterminism at \( \tletZ \) bindings:
-when evaluating \( \tlet{x}{t_1}{t_2} \) in their semantics, either \( x \) is
-immediately bound to the result of evaluting \( t_1 \), or else \( x \) is
-subtituted by \( \sundefined \).
+nondeterminism at \( \tlazyZ \) terms\lai{"at" lazy terms? Not sure what this means - for lazy terms? in lazy terms? with lazy terms? Needs clarification.}. In contrast, Hackett and
+Hutton~\cite{clairvoyant} introduce nondeterminism at \( \tletZ \) bindings \lai{Again, "at" here confuses me.}:
+when evaluating \( \tlet{x}{t_1}{t_2} \) in their semantics, \( x \) is either
+immediately bound to the result of evaluating \( t_1 \), or is
+substituted by \( \sundefined \).
 
-Note that \( \tfoldrZ \) is evaluated by first evaluting its list argument to a
-value \(v\) and then iterating over \(v\) via the auxiliary relation
+Note that \( \tfoldrZ \) is evaluated by first evaluating its list argument to a
+value \(v\), then iterating over \(v\) via the auxiliary relation
 \( \ECF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_2}{c_1}{v} \). Here, \( t_1 \) is a
 ``function'' (a term with free variables) that returns a \( \sthunkZ \) and
-takes as arguments: (1)~an element of the list; and (2)~a \( \sthunkZ \)
-obtained by iterating over the rest of the list, or \( \sundefined \) if the
-rest of the list is itself \( \sundefined \).
+takes two arguments: an element of the list, and a \( \sthunkZ \)
+obtained by iterating over the rest of the list (or \( \sundefined \) if the
+rest of the list is itself \( \sundefined \)).
 
 \subsection{Demand Semantics}\label{subsec:demand-semantics}
 

@@ -267,21 +267,20 @@ nondeterministic results of \cdh{[1,2,3] ++ [4,5]}. When evaluation is impossibl
 discard the current nondeterministic branch. Eventually, one of the
 nondeterministic results gives the cost of lazy evaluation.
 
-We can use the clairvoyance semantics as a recipe for a mechanical translation
+We can use clairvoyance semantics as a recipe for a mechanical translation
 from a pure program to a program where computation cost is
 reified~\cite{forking-paths}. We show type signatures of the translated
-\cdh{take} and \cdh{(++)} in \cref{fig:hs-example-clairvoyance}, called
-\cdh{takeC} and \cdh{appendC}, respectively. These translated functions are
+\cdh{take} and \cdh{(++)} in \cref{fig:hs-example-clairvoyance} as \cdh{takeC} and \cdh{appendC}, respectively. These translated functions are
 based on \emph{approximations} of lists, denoted as
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}. They
-represent lists that are potentially ``less evaluated'',~\eg \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. We use a
-natural number~($\mathbb{N}$) in the returned result to represent the associated
+represent lists that are potentially ``less evaluated'', like  \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. A
+natural number~($\mathbb{N}$) in the result represents the associated
 computation cost. Each translated function returns a power set of result and
-cost pairs, due to nondeterministic evaluation.
+cost pairs due to nondeterministic evaluation.
 
-We can use these translated functions to formally reason about computation cost
-of lazy programs. However, a major drawback of these functions is that power
-sets in returned types make execution challenging. This makes it hard to apply
+We can use these translated functions to formally reason about the computation cost
+of lazy programs. One major drawback of this approach is that power
+sets in returned types make execution expensive. This makes it hard to apply
 the clairvoyance semantics to testing.
 
 \begin{figure}[t]

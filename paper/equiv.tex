@@ -2,19 +2,18 @@
 
 In this section, we define clairvoyance and demand semantics on \(\LB\) and
 establish the equivalence of our translation with respect to both semantics,
-thus proving the translation correct. In \cref{subsec:clairvoyance}, we define a
+thus proving the translation correct. In \cref{subsec:clairvoyance}, we define
 clairvoyance semantics on \(\LB\), adapting the semantics of Hackett and Hutton
-on an untyped \(\lambda\)-calculus~\cite{clairvoyant} and that of Li \textit{et
+on an untyped \(\lambda\)-calculus~\cite{clairvoyant}, and of Li \textit{et
   al.} on a typed calculus~\cite{forking-paths}. In
-\cref{subsec:demand-semantics}, we define a demand semantics on \(\LB\),
+\cref{subsec:demand-semantics}, we define demand semantics on \(\LB\),
 adapting the semantics of Bjerner and Holmstr{\"{o}}m~\cite{bjerner1989} and Xia
-\textit{et al.}~\cite{demand-semantics}. Finally, in \cref{subsec:equiv}, we
-prove that our clairvoyance translation and demand translation produce terms in
-\(\LL\) that compute the same result as the clairvoyance semantics and the
+\textit{et al.}~\cite{demand-semantics}. Lastly, in \cref{subsec:equiv}, we
+prove that our clairvoyance and demand translations produce terms in
+\(\LL\) that compute the same result as clairvoyance and 
 demand semantics on \(\LB\), respectively. Our proofs rely on the equivalence
-between clairvoyance semantics and demand semantics, which was proven by Xia
-\textit{et al.}~\cite{demand-semantics}. We take this equivalence as
-axioms~(\cref{prop:cost-existence,prop:cost-minimality}).
+between clairvoyance and demand semantics, proven by Xia
+\textit{et al.}~\cite{demand-semantics}. We axiomatize this result~(\cref{prop:cost-existence,prop:cost-minimality}).
 
 \begin{figure}[t]
   % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXG1hdGhiZntCfSJdLFsyLDAsIlxcbWF0aGJme0x9Il0sWzQsMCwiXFxtYXRoYmZ7U2V0fSJdLFs1LDFdLFswLDEsIlxcbWF0aGJie0N9XFxsZmxvb3ItXFxyZmxvb3IiLDIseyJvZmZzZXQiOjF9XSxbMCwxLCJcXG1hdGhiYntEfVxcbGZsb29yLVxccmZsb29yIiwwLHsib2Zmc2V0IjotMX1dLFswLDIsIlxcbWF0aGJie0N9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDIseyJjdXJ2ZSI6NX1dLFswLDIsIlxcbWF0aGJie0R9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDAseyJjdXJ2ZSI6LTV9XSxbMSwyLCJcXG1hdGhiYntMfVxcbGZsb29yLVxccmZsb29yIiwxXV0=
@@ -35,7 +34,7 @@ axioms~(\cref{prop:cost-existence,prop:cost-minimality}).
     suitable notion of equivalence).}
 \end{figure}
 
-All of our theorems and proofs have been mechanized in the Agda proof
+All of our proofs are mechanized in the Agda proof
 assistant~\cite{DBLP:conf/tldi/Norell09}. All the formalizations, theorems, and
 proofs can be found in our publically-available artifact.\ly{TODO: Make sure we
   have the code materials ready for submission as well.}
@@ -45,9 +44,9 @@ proofs can be found in our publically-available artifact.\ly{TODO: Make sure we
 Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
 and a set \(\Approx{A}\) of \emph{approximation values}, as defined in
 \cref{fig:exact-approx}. Approximation values \(\Approx{A}\) are similar to the
-exact values, except some parts might be simply ``discarded''~(represented by
+exact values, except some parts might be ``discarded''~(represented by
 \(\sundefined\)).\ly{But what are exact values? Explain them as well.} They
-represent ``smaller'' values where certain computations are not needed; \ie~they
+represent ``smaller'' values where certain computations are unneeded; \ie~they
 are approximations of the exact values.
 
 \begin{figure}[t]
@@ -64,7 +63,7 @@ are approximations of the exact values.
     \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{(\TList{A})}}}
   \end{align*}
 \end{center}
-\caption{Exact values and approximation values. \(\Approx{A} = \Eval{A}\)
+\caption{Exact and approximation values. \(\Approx{A} = \Eval{A}\)
   wherever \(\Approx{A}\) is not otherwise specified.}\label{fig:exact-approx}
 \end{figure}
 
@@ -119,16 +118,15 @@ environments that elementwise approximate \(\gamma\).
 \end{figure}
 
 Approximations come with a \emph{definedness} ordering (\cref{fig:definedness}).
-It is conceptually similar to the approximation relation: \(a \le a'\),
+It is conceptually similar to the approximation relation \(a \le a'\),
 pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as
-\(a'\), but with some parts replaced by \(\sundefined\).
+\(a'\) with some parts replaced by \(\sundefined\).
 
-\(\le\) is a partial order. Any two approximations \(a_1, a_2 \prec e\) have a
+The \(\le\) operator is a partial order. Any two approximations \(a_1, a_2 \prec e\) have a
 least upper bound \(a_1 \sqcup a_2\). There is also a least element that
-approximates any given exact value \(e\); we denote this by \(\bot_e\), or just
+approximates any given exact value \(e\), denoted by \(\bot_e\), or
 \(\bot\) when \(e\) is clear from context. Thus, the set of approximations of
-any given exact value forms a bounded join-semilattice. Everything that we have
-just said also extends to the set of approximation environments that elementwise
+any exact value forms a bounded join-semilattice. This all also extends to the set of approximation environments that elementwise
 approximate a given exact environment.
 
 % We can show that the evaluations semantics of \(\LB\) and that of \(\LL\)

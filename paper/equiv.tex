@@ -237,10 +237,10 @@ also computes how much it costs to perform the computation.
       \EDFF{x_1}{x_2}{t_1}{t_2}{\gamma}{v}{\sthunk{b}} &= (g, \sthunk{d}, c) &\text{where } (g, d, c) = \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{v}{b}
     \end{array}
   \]
-  \caption{The demand semantics on \(\LB\).}\label{fig:demand-semantics}
+  \caption{Demand semantics on \(\LB\).}\label{fig:demand-semantics}
 \end{figure}
 
-We show the demand semantics on \(\LB\) in \cref{fig:demand-semantics}.
+We show demand semantics on \(\LB\) in \cref{fig:demand-semantics}.
 
 \begin{lemma}[Demand semantics is an approximation
   semantics]\label{prop:dem-approx-eval}
@@ -308,8 +308,8 @@ demand translation does not in general reduce \emph{only} to the actual result
 of demand semantics. Some logic languages have a built-in facility to collapse a
 nondeterministic computation into a deterministic one, returning either the
 first result found or a list of all possible results. If we can arrange for
-less-defined results to always be tried first, we can use such a facility to
-ensure that the demand translation does in fact always return the actual result
+less-defined results to always be tried first, we can use this to
+ensure that the demand translation always returns the actual result
 of demand semantics.
 \stl{
 Isn't the point of the demand translation that sometimes we'll get unevaluated thunks

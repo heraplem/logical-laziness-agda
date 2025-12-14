@@ -200,18 +200,18 @@ rest of the list is itself \( \sundefined \)).
 
 \subsection{Demand Semantics}\label{subsec:demand-semantics}
 
-The demand semantics is a deterministic semantics that interprets a term \( t \)
-as a function \( \EDU{t} \) that takes two arguments: (1)~an \emph{exact}
-evaluation context \( \gamma \), and (2)~an approximation value that represents
-the output demand on the result of \( \EE{t}{\gamma} \); it produces a list of
+Demand semantics is a deterministic semantics that interprets a term \( t \)
+as a function \( \EDU{t} \) which takes two arguments: an \emph{exact}
+evaluation context \( \gamma \), and an approximation value that represents
+the output demand on the result of \( \EE{t}{\gamma} \). It produces a list of
 minimal demands on \( \gamma \) and a computation cost. In summary, demand
 semantics has the ``type'':
 \[
   \EDU{-} : (t : \Gamma \vdash A) \to (\gamma : \Eval{\Gamma}) \times \Approx{A}_{\approxof{\relax}{\EE{t}{\gamma}}} \to \Approx{\Gamma}_{\approxof{\relax}{\gamma}} \times \N .
 \]
-Intuitively, demand sematics computes ``how much'' of the input \( \gamma \) is
-required to compute a certain ``amount'' of the output \( \EE{t}{\gamma} \). It
-also computes how much it costs to perform that computation along the way.
+Intuitively, demand semantics computes ``how much'' of the input \( \gamma \) is
+required to compute a desired ``amount'' of the output \( \EE{t}{\gamma} \). It
+also computes how much it costs to perform the computation.
 
 \begin{figure}[t]
   \[
@@ -246,9 +246,7 @@ We show the demand semantics on \(\LB\) in \cref{fig:demand-semantics}.
   semantics]\label{prop:dem-approx-eval}
   Let \( (\gamma^A, c) = \ED{t}{\gamma}{a} \).  Then \( \approxof{\gamma^A}{\gamma} \).
 \end{lemma}
-Note that \cref{prop:dem-approx-eval} does not just state that the demand
-semantics returns a value in \(\Approx{\Gamma}_{\approxof{\relax}{\gamma}}\): it
-also states that the value is an approximation of the input.
+\cref{prop:dem-approx-eval} requires that the returned value is in \(\Approx{\Gamma}_{\approxof{\relax}{\gamma}}\), and is an approximation of the input.
 
 \subsection{Equivalence}\label{subsec:equiv}
 

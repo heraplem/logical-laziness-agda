@@ -75,8 +75,8 @@ a default implementation of \cdc{approx} using free variables, but a specialized
 implementation can be much faster. The \cdc{Approx} typeclass depends on the
 \cdc{Data} typeclass, which is required for free variables.
 
-The \cdc{Tick} datatype is a product type that uses an \cdc{Int} to represent
-the computation cost associated with its value. It is essentially a writer's
+The \cdc{Tick} datatype is a product type which uses an \cdc{Int} to represent
+the computation cost associated with its value. It is essentially a writer
 monad~\cite{moggi-monad,wadler-monad}. \cdc{List a} is the approximation type of
 lists \cdc{[a]}. These types have all of the expected typeclass instances;
 \eg~\cdc{Tick} is a \cdc{Monad}. Those definitions are standard; we omit them
@@ -86,14 +86,14 @@ for brevity.
 We manually apply the \transCname{} and \transDname{} on classical Haskell
 functions and implement all translated functions in Curry. Examples we
 implemented include appending lists, insertion sort, and Okasaki's banker's
-queue~\cite{purely-functional}. For the sake of space, we omit definitions of
-these translated functions, but interested readers can find a case study on
-insertion sort in \cref{apx:case-study-insertion-sort} and all the code in our
+queue~\cite{purely-functional}. We omit definitions of
+these translated functions for space, but interested readers can view an insertion sort case study
+ in \cref{apx:case-study-insertion-sort}, and more in our
 publicly available artifact.
 
 \paragraph{Running computations.}
 All the translated functions can be executed using the KiCS2 Curry compiler,
-including all the logical clairvoyance functions. In addition, even though the
+including all the logical clairvoyance functions. In addition, even though 
 clairvoyance semantics returns a set of value-cost pairs due to nondeterminism,
 we can use Curry's \emph{search tree}
 functionality~\cite{DBLP:journals/jflp/BrasselHH04} to compute only the least
@@ -102,8 +102,8 @@ result, which is the true cost of lazy evaluation. In particular, the
 collapses a nondeterministic computation into a deterministic one according to a
 given \emph{search strategy}, which tells Curry how to navigate a tree of
 nondeterministic computations. In our implementation, we arrange our definitions
-so that the less-defined result is always on the left branch of a search tree,
-we can always find the least result via a depth-first search.
+so that the less-defined result is always on the left branch of a search tree.
+Thus, we can always find the least result via a depth-first search.
 
 % \ly{TODO: rewrite these now that the code is shown in \cref{sec:intro}.} Now we
 % can start defining some functions. \cdc{takeC} is the clairvoyance
@@ -116,8 +116,8 @@ we can always find the least result via a depth-first search.
 % 
 
 \paragraph{Guards vs.\ generators.}
-In Curry, there are two ways of implementing the logic demand functions: using
-guards and using generators. Even though they are semantically equivalent, there
+In Curry, there are two ways of implementing the logic demand functions: 
+guards and generators. Even though they are semantically equivalent, there
 is a huge performance difference.
 
 Na\"ively, we can implement \cdc{takeD} as follows:
@@ -128,12 +128,12 @@ takeD' xsT ysD |  xsTD <~ xsT
                =  Tick (xsTD, c)
   where xsTD, c free
 \end{lstlisting}
-In constrast to the definition in \cref{fig:takeD-curry}, we simply use the
+In contrast to the definition in \cref{fig:takeD-curry}, we use the
 \cdc{<~} operator in a guard condition in \cdc{takeD'} to assert that \cdc{xsTD}
 is an approximation of \cdc{xsT}. In this case, Curry must ``guess'' a valid
-input demand, which performs poorly. On the other hand, our implementation in
-\cref{fig:takeD-curry} uses an efficient generator \cdc{approx} defined for the
-\cdc{List} datatype, which performs much more efficient.
+input demand, performing poorly. On the other hand, our implementation in
+\cref{fig:takeD-curry} uses a generator \cdc{approx} defined for the
+\cdc{List} datatype, which is more efficient.
 
 % Finally, following the construction outlined in earlier sections, we can implement the demand function \cdc{takeD} in terms of % \cdc{takeC}. Here is a first attempt.
 % \begin{lstlisting}[language=Curry]
@@ -191,14 +191,14 @@ input demand, which performs poorly. On the other hand, our implementation in
 
 \paragraph{Performance.}
 
-Although the \transDname{} is much simpler than the original demand translation,
-a question remains whether it performs reasonably efficient as it depends on the
-\transCname{} and free variables. To evaluate this, we ran \cdc{insertionSortD}
+Although the \transDname{} is simpler than the original demand translation,
+the question remains whether it is reasonably efficient, as it depends on the
+\transCname{} and free variables. To evaluate\lai{Maybe choose another word, since 'evaluate' is a technical term} this, we ran \cdc{insertionSortD}
 on lists of the form \cdc{[n, n-1 .. 1]} with sizes ranging from \(1\) to
-\(100\), demanding the full result each time. We show the result of our
+\(100\), demanding the full list each time. We show the result of our
 performance evaluation in \cref{fig:insertionSortD_runtime}. All experiments
 were performed on an AMD Ryzen 3900X running Linux 6.12.58 using the built-in
-timing functionality of KiCS2 (version 3.5.0) by running each evaluation once.
+timing functionality of KiCS2 (version 3.5.0), running each evaluation once.
 
 \begin{figure}[t]
   \centering
@@ -212,8 +212,8 @@ interpolation estimates it well. This asymptotic bound is shared by the original
 demand translation.
 %, which, in the worst case, must call the pure \cdc{insertionSort} function \(n\) times.
 However, the constants are much worse: \cdc{insertionSortD} takes \(6.44\)
-seconds on a \(100\)-element list, while the version we implemented using the
-original demand translation in Curry is fast enough that its runtime cannot be
+seconds on a \(100\)-element list, while the 
+original demand translation version in Curry is fast enough that its runtime cannot be
 reliably measured.
 
 This result is not surprising, as the original demand semantics is specialized

@@ -436,16 +436,15 @@ takeD n xsT ysD
 \end{figure}
 
 \paragraph{Our contributions.}
-By utilizing functional logic programming, we show that both the clairvoyance
-semantics and the demand semantics can be represented by two ways of evaluating
-one functional logic program, revealing that they are two sides of the same
-coin. In this paper, we show this connection both in theory and in practice.
+Using functional logic programming, we show that clairvoyance
+and demand semantics can be represented as two ways of evaluating
+one functional logic program, revealing them as two sides of the same
+coin. We show this connection both in theory and in practice.
 
-In addition, our result shows a simple way of executing clairvoyance semantics
-by utilizing functional logic language compilers like the KiCS2 Curry compiler,
+In addition, our result shows a simple way of executing clairvoyance semantics utilizing functional logic language compilers like the KiCS2 Curry compiler,
 which supports flexible search strategies and features to encapsulate
 nondeterministic computations~\cite{kics2}. Our result also shows a simpler way
-of encoding the demand semantics by utilizing free variables in logic languages.
+to encode demand semantics using free variables in logic languages.
 Our evaluation shows that this simpler approach achieves acceptable performance.
 
 More concretely, we make the following contributions:
@@ -453,19 +452,17 @@ More concretely, we make the following contributions:
 \begin{itemize}
   \item We propose and formalize a mechanical way of translating functional
         programs to functional logic programs that reify lazy computation costs:
-        a \transCname{} that encodes the clairvoyance semantics, and a
+        a \transCname{} that encodes clairvoyance semantics, and a
         \transDname{} that is a thin wrapper of the \transCname{} and encodes
-        the demand semantics~(\cref{sec:translation}).
-  \item We formally prove that both \transCname{} and \transDname{} are correct
-        with respect the clairvoyance semantics and the demand semnatics,
+        demand semantics~(\cref{sec:translation}).
+  \item We formally prove that the \transCname{} and the \transDname{} are correct
+        with respect to clairvoyance and demand semnatics,
         respectively. All theorems and proofs are mechanized in
         Agda~(\cref{sec:equiv}).
-  \item We conduct several case studies by manually translating some lazy
-        Haskell programs, including insertion sorts, to Curry~\cite{curry-lang}
-        based on our translation strategy. We also evaluate the performance of
-        translated code based on the KiCS2 Curry compiler~\cite{kics2}, which
-        shows that acceptable performance although the translated code is much
-        simpler and reveals potential optimization opportunities for Curry
+  \item We conduct several case studies by manually translating lazy
+        Haskell programs, including insertion sort, to Curry~\cite{curry-lang}
+        based on our translation strategy. We evaluate the performance of
+        translated code based on the KiCS2 Curry compiler~\cite{kics2}, finding it acceptable despite simpler code. This also reveals potential optimization opportunities for Curry
         compilers~(\cref{sec:case-study}).
 \end{itemize}
 

@@ -196,3 +196,62 @@ As in clairvoyance semantics, the semantics of \( \tfoldrZ \) is defined in term
     \infer2{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{v_2}}{v}}
   \end{prooftree}
 \end{center}
+
+\section{Full Case Study on Insertion Sort}\label{apx:case-study-insertion-sort}
+
+A classic fact about lazy evaluation is that one can efficiently find the \(n\)
+smallest elements in a list by first sorting it and then taking a length-\(n\)
+prefix (provided that one uses a sufficiently lazy sorting algorithm). To test
+this, we first define insertion sort in clairvoyance semantics
+(\cdc{insertionSortC}).
+
+\begin{lstlisting}[language=Curry]
+insertC :: Ord a => a -> List a -> Tick (List a)
+insertC x ys = do
+  tick
+  fcase ys of
+    Nil -> do
+      ys' <- nilC
+      return (x :~ ys')
+    y :~ ysT' ->
+      if x <= y then do
+        ysT <- thunk (return ys)
+        return (x :~ ysT)
+      else do
+        ysT'' <- with ysT' (insertC x)
+        return (y :~ ysT'')
+
+insertionSortC :: Ord a => List a -> Tick (List a)
+insertionSortC xs = do
+  tick
+  fcase xs of
+    Nil -> return Nil
+    x :~ xsT' -> do
+      ysT' <- with xsT' insertionSortC
+      ys' <- force ysT'
+      insertC x ys'
+\end{lstlisting}
+
+Next, we define \cdc{nminC} as a composition of \cdc{takeC} and \cdc{insertionSortC}, along with its demand-semantics counterpart \cdc{nminD}.
+\begin{lstlisting}[language=Curry]
+nminC :: Ord a => Int -> T (List a) -> Tick (List a)
+nminC n xsT = takeC n =<< with xsT insertionSortC
+
+nminD :: (Ord a, Approx a) => Int -> T (List a) -> List a -> Tick (T (List a))
+nminD n xsT ysTD | nminC n xsTD =:= Tick (ysTD, c)
+                 = Tick (xsTD, c)
+  where xsTD = approx xsT
+        c free
+\end{lstlisting}
+Now, how much does it cost to sort a \(3\)-element list?
+\begin{lstlisting}[language=Curry]
+> insertionSortDG (fromList [3, 2, 1]) (fromList [1, 2, 3]) :: Tick (List Int)
+(Tick ((:~ 3 (Thunk (:~ 2 (Thunk (:~ 1 (Thunk Nil)))))),10))  
+\end{lstlisting}
+If we demand the entire result, we incur a cost of \(10\) ticks. What if we just want the first element?
+\begin{lstlisting}
+> someValueWith dfsStrategy $ nminDG 1 (Thunk (fromList [3, 2, 1])) (fromList [1])
+    :: Tick (T (List Int))
+(Tick ((Thunk (:~ 3 (Thunk (:~ 2 (Thunk (:~ 1 (Thunk Nil))))))),9))
+\end{lstlisting}
+The resulting computation only costs \(9\) ticks.

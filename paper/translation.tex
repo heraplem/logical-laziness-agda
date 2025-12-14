@@ -1,4 +1,9 @@
 \section{The Translation}\label{sec:translation}
+\ly{TODO: do not start a sentence with small case letters, even if the sentence
+  starts with code like \cdc{let} or \cdc{foldr}. Rephrase them so there is a
+  word before these terms. Please also make sure there is a space between code
+  and text when tehre should be when using macros: you might want to use
+  \texttt{\tletZ{}} instead of \texttt{\tletZ} in those case.}
 
 In this section, we define two languagues: the base language \(\LB\), a simple
 functional language~(\cref{subsec:base-lang}), and a simple functional logic
@@ -42,6 +47,7 @@ semantics does not support those features~\cite{bjerner1989,demand-semantics}.\l
   \ttick{t}
 \end{bnf}
 \begin{mathpar}
+  Typing
   \\ \inferrule{\Gamma \vdash^\LB t_1 : A \\ \Gamma \vdash^\LB t_2 :
     \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}{\textsc{cons}} \\
   \inferrule{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B \\ \Gamma
@@ -138,44 +144,24 @@ demanded or not.
   // \tfail{}
 \end{bnf}
 \begin{mathpar}
+  Typing\\
   \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\tresult{t}}{\TLazy{A}}} \qquad
   \inferrule{\\}{\TL{\Gamma}{\tundefined}{\TLazy{A}}} \\
   \inferrule{\TL{\Gamma}{t_1}{\TLazy{A}} \\ \TL{\Gamma, x : A}{t_2}{B} \\ \TL{\Gamma}{t_3}{B}}{\TL{\Gamma}{\tcase{t_1}{x}{t_2}{t_3}}{B}} \\
   \inferrule{\\}{\TL{\Gamma}{\tfree{A}}{A}} \qquad
   \inferrule{\TL{\Gamma}{t_1}{A} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tchoose{t_1}{t_2}}{A}} \qquad
-  \inferrule{\\}{\TL{\Gamma}{\tfail}{A}}
-\end{mathpar}
-\end{center}
-\caption{The syntax of the logic language \(\LL\) and typing rules that are
-  related to the \TLazyZ{} datatype, the choice operator~(\texttt{?}), and free
-  variables.}\label{fig:syntax-logic}
-\end{figure}
-
-\begin{figure}[t]
-\begin{center}
-  \begin{mathpar}
-    \inferrule{\EL{\gamma}{t}{v}}{\EL{\gamma}{\tresult{t}}{\sthunk{v}}}{\rulename{L-Result}}
-    \qquad
-    \inferrule{\\}{\EL{\gamma}{\tundefined}{\sundefined}}{\rulename{L-Undefined}} \\
-    \inferrule{\EL{\gamma}{t_1}{\sthunk{v_1}} \\ \EL{\gamma, x \mapsto v_1}{t_2}{v_2}}{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v_2}}{\rulename{L-Case-Result}} \\
-    \inferrule{\EL{\gamma}{t_1}{\sundefined} \\ \EL{\gamma}{t_3}{v}}{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v}}{\rulename{L-Case-Undefined}}\\
-    \inferrule{v : A}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}} \qquad
+  \inferrule{\\}{\TL{\Gamma}{\tfail}{A}} \\
+  Semantics\\
+   \inferrule{v : A}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}} \qquad
     \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}}
     \qquad
     \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \\
-    \inferrule{\EL{\gamma}{t_3}{v_1} \\
-      \ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{v_2}}{\EL{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{v_2}}{\rulename{L-Foldr}} \\
-    \inferrule{\EL{\gamma}{t_2}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{v}}{\rulename{L-Foldr-Nil}} \qquad
-    \inferrule{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{v}}{\rulename{L-Foldr-Undefined}} \\
-    \inferrule{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\sthunk{v_2}}{v_3} \\
-      \EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto
-        \sthunk{v_3}}{t_1}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{v_2}}{v}}{\rulename{L-Foldr-Result}}
-  \end{mathpar}
-  \caption{The semantic rules that are related to the \TLazyZ{} datatype, the
-    choice operator~(\texttt{?}), and free
-    variables in \(\LL\).}\label{fig:logic-semantics}
-
+\end{mathpar}
 \end{center}
+\caption{The syntax of the logic language \(\LL\). Typing rules and semantic
+  rules that are related to the \TLazyZ{} datatype, the choice
+  operator~(\texttt{?}), and free
+  variables.}\label{fig:syntax-logic}\label{fig:logic-semantics}
 \end{figure}
 
 \(\LL\) has introduction and elimination forms for all of the new types.  We
@@ -205,7 +191,6 @@ calculus~\cite{verse}) to keep our approach generally applicable.\ly{TODO:
   changes this claim. Steven pointed out that the language is more specific to
   Curry.} \lai{Well, not really according to the latest comment above, right?}
 
-\paragraph{Semantics.}
 We show the semantic rules of \(L\) that are related to the \TLazyZ{} datatype,
 the choice operator~(\tchooseZ), and free variables in
 \cref{fig:logic-semantics}.\ly{Did we refer to any papers when we define this
@@ -253,14 +238,15 @@ recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
 
 \subsection{The \TransCname}\label{subsec:clairvoyance-translation}
 
-\(\transC{-}\) (\cref{fig:transC}) translates from \(\LB\) to terms in \(\LL\)
-that simulate clairvoyance semantics. Values and variables are translated using
-\treturn. \tletZ and \tifZ expressions are translated using
-\tdo{\cdot}{\cdot}{\cdot} \lai{I'm not sure what these symbols are - the commas are making it confusing.}. \tfoldrZ, is translated to the derived term construct
-\tfoldMZ. Again, readers familiar with monads might recognize that this is essentially
-a monadic translation~\cite{moggi-monad,malias,wadler-monad} with adaptations
-for the \TLazyZ{} type borrowed from the clairvoyance
-monad~\cite{forking-paths}.
+We define the \transCname{} \(\transC{-}\) in \cref{fig:transC}. It translates
+terms in \(\LB\) to terms in \(\LL\) that simulate clairvoyance semantics.
+Values and variables are translated using \treturnZ. The \tletZ{} bindings and
+\tifZ{} expressions are translated using \tdo{\cdot}{\cdot}{\cdot} \lai{I'm not
+  sure what these symbols are - the commas are making it confusing.}. A
+\tfoldrZ{} expression is translated to a derived term construct \tfoldMZ.
+Readers familiar with monads might recognize that this is essentially a monadic
+translation~\cite{moggi-monad,malias,wadler-monad} with adaptations for the
+\TLazyZ{} type borrowed from the clairvoyance monad~\cite{forking-paths}.
 
 The most important cases are those for \(\tlazyZ\) and \(\tforceZ\). When the
 original term is \(\tlazy{t}\), we use the nondeterministic operator \texttt{?}

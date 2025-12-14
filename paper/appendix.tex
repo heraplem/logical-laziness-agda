@@ -43,6 +43,26 @@
 
 \section{The Evaluation Semantics of $L$}\label{apx:semantics-logic}
 
+\begin{mathpar}
+  \inferrule{\EL{\gamma}{t}{v}}{\EL{\gamma}{\tresult{t}}{\sthunk{v}}}{\rulename{L-Result}}
+  \qquad
+  \inferrule{\\}{\EL{\gamma}{\tundefined}{\sundefined}}{\rulename{L-Undefined}} \\
+  \inferrule{\EL{\gamma}{t_1}{\sthunk{v_1}} \\ \EL{\gamma, x \mapsto v_1}{t_2}{v_2}}{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v_2}}{\rulename{L-Case-Result}} \\
+  \inferrule{\EL{\gamma}{t_1}{\sundefined} \\ \EL{\gamma}{t_3}{v}}{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v}}{\rulename{L-Case-Undefined}}\\
+  \inferrule{v : A}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}} \qquad
+  \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}}
+  \qquad
+  \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \\
+  \inferrule{\EL{\gamma}{t_3}{v_1} \\
+    \ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{v_1}{v_2}}{\EL{\gamma}{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{v_2}}{\rulename{L-Foldr}} \\
+  \inferrule{\EL{\gamma}{t_2}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\snil}{v}}{\rulename{L-Foldr-Nil}} \qquad
+  \inferrule{\EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto \sundefined}{t_1}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{\sundefined}}{v}}{\rulename{L-Foldr-Undefined}} \\
+  \inferrule{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\sthunk{v_2}}{v_3} \\
+    \EL{\gamma, x_1 \mapsto v_1, x_2 \mapsto
+      \sthunk{v_3}}{t_1}{v}}{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{v_2}}{v}}{\rulename{L-Foldr-Result}}
+\end{mathpar}
+
+\iffalse
 \begin{center}
   \begin{prooftree}
     \hypo{\gamma(x) = v}
@@ -196,6 +216,7 @@ As in clairvoyance semantics, the semantics of \( \tfoldrZ \) is defined in term
     \infer2{\ELF{\gamma}{x_1}{x_2}{t_1}{t_2}{\scons{v_1}{v_2}}{v}}
   \end{prooftree}
 \end{center}
+\fi
 
 \section{Full Case Study on Insertion Sort}\label{apx:case-study-insertion-sort}
 

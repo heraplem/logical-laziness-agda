@@ -23,28 +23,25 @@ data T a = Undefined | Thunk a
 thunk :: Applicative f => f a -> f (T a)
 thunk f = pure Undefined ? fmap Thunk f
 
-class Data a => Approx a where
-  (<~) :: a -> a -> Bool
-
-  approx :: a -> a
-  approx x | y <~ x = y
-    where y free
+newtype Tick a = Tick { runTick :: (a, Int) }
+  
+data List a = Nil | (:~) a (T (List a))
 \end{lstlisting}
 \end{minipage}
 \qquad
 \begin{minipage}[b]{0.5\textwidth}
 \begin{lstlisting}[language=Curry]
-forcing :: T a -> (a -> b) -> b
-forcing (Thunk v) f = f v
+class Data a => Approx a where
+  (<~) :: a -> a -> Bool
 
+  approx :: a -> a
+  approx x | y <~ x = y
+  where y free
+  
 instance Approx a => Approx (T a) where
   Undefined <~ _         = True
   Thunk _   <~ Undefined = False
   Thunk x   <~ Thunk y   = x <~ y
-
-newtype Tick a = Tick { runTick :: (a, Int) }
-  
-data List a = Nil | (:~) a (T (List a))
 \end{lstlisting}
 \end{minipage}
 \caption{Key definitions for implementing the logical clairvoyance semantics and
@@ -60,10 +57,7 @@ We show key definitions of this framework in \cref{fig:curry-foundations}. The
 \cdc{T} datatype represents a value whose evaluation may be
 skipped~(\cdc{Undefined}) or evaluated~(\cdc{Thunk}). The \cdc{thunk} combinator
 uses Curry's nondeterministic choice operator to either skip an effectful
-computation~(represented by the applicative functor \cdc{f}) or run it. The
-\cdc{forcing} combinator generalizes the \cdc{force} combinator defined in
-\cref{fig:curry-thunk-func}: it applies a function to a lazily-computed value,
-provided that is has in fact been computed.
+computation~(represented by the applicative functor \cdc{f}) or run it.
 % The \cdc{with} combinator pushes an effectful computation through a \cdc{T},
 % yielding \cdc{Undefined} if no value is present.
 

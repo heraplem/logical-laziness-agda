@@ -83,7 +83,6 @@ the tail of a list must always be wrapped in a \(\TThunkZ\). Similarly, the
 ``function'' argument to \(\tfoldrZ\) always requires that its second parameter
 be wrapped in a \(\TThunkZ\).
 
-\paragraph{Evaluation semantics.}
 We can give language \(\LB\) a denotational semantics \(\EE{t}{\gamma}\) for any
 term \(t\) in an environment \(\gamma\) by simply ignoring all operations
 related to lazy evaluation and computation costs:
@@ -226,7 +225,7 @@ that this semantics is eager; furthermore, due to \( \tfail \), it is partial.
   \begin{mathpar}
     \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
-    \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}} \\
+    \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \\ \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}} \\
     \inferrule{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}{\TL{\Gamma}{t}{\TM{(\TThunk{A})}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}}
   \end{mathpar}
@@ -252,7 +251,7 @@ We show all the typing rules related to these derived terms in
 \cref{fig:logic-derived} as well. Readers who are familiar with monads might
 recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
 
-\subsection{The \TransCname}\label{subsec:clairvoyance-translation}
+\subsection{\TransCname}\label{subsec:clairvoyance-translation}
 
 We define the \transCname{} \(\transC{\cdot}\) in \cref{fig:transC}. The
 \transCname{} translates terms in \(\LB\) to terms in \(\LL\) that simulate
@@ -301,7 +300,7 @@ The \transCname{} preserves well-typedness of the original term in \(\LB\):
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).
 \end{theorem}
 
-\subsection{The \TransDname}\label{subsec:demand-translation}
+\subsection{\TransDname}\label{subsec:demand-translation}
 
 We now define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
 in \cref{fig:demand-translation}. This translation produces terms that simulate

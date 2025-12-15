@@ -340,11 +340,11 @@ shows the result of a \transCname, the definition of \cdc{takeC} in Curry.
 is a simple wrapper of \cdc{takeC}. Both \cdc{takeC} and \cdc{takeD} rely on
 some common definitions shown in \cref{fig:curry-thunk-func}.
 
-\ly{TODO: phrase these explanations better.}
-The \cdc{takeC} function takes an \cdc{Int}, and a \cdc{T (List a)} that represents
-a list with $\bot$s as arguments. It returns a new list \lai{What type?} with $\bot$s in the
-\cdc{Tick} monad, which encodes computation cost. Most of the function works
-similarly to \cdh{take}. The key for implementing clairvoyance semantics is
+\ly{TODO: phrase these explanations better.} The \cdc{takeC} function takes an
+\cdc{Int}, and a \cdc{T (List a)} that represents a list with $\bot$s as
+arguments. It returns a new list \lai{What type?} with $\bot$s in the \cdc{Tick}
+monad, which encodes computation cost. The function works similarly to
+\cdh{take} for most parts. The key for implementing clairvoyance semantics is
 the recursive call \cdc{thunk (takeC n' xsT')}, which unfolds to:
 \begin{lstlisting}[language=Curry]
 pure Undefined ? fmap Thunk (takeC n' xsT') 
@@ -397,33 +397,30 @@ thunk f = pure Undefined ? fmap Thunk f
 \qquad
 \begin{minipage}[b]{0.45\textwidth}    
 \begin{lstlisting}[language=Curry]
-force :: T a -> a
-force (Thunk v) = v
+forcing :: T a -> (a -> b) -> b
+forcing (Thunk v) f = f v
 \end{lstlisting}
 \end{minipage}
 \caption{Some basic Curry definitions.}\label{fig:curry-thunk-func}
 \end{subfigure}
-\begin{subfigure}[b]{0.45\textwidth}
+\begin{subfigure}[b]{0.55\textwidth}
 \begin{lstlisting}[language=Curry]
 takeC :: Int -> T (List a) -> Tick (List a)
 takeC n xsT = do
   tick
   fcase n `compare` 0 of
     EQ -> return Nil
-    GT -> do
-      let n' = n - 1
-      xs <- force xsT
+    GT -> forcing xsT $ \xs ->
       fcase xs of
         Nil -> return Nil
         x :~ xsT' -> do
-          ysT' <- thunk (takeC n' xsT')
-          return (x :~ ysT')
+          (x:~) <$> thunk (takeC (n - 1) xsT')
 \end{lstlisting}
 \caption{The \cdc{takeC} function obtained from a
   \transCname.}\label{fig:takeC-curry}
 \end{subfigure}
 \qquad
-\begin{subfigure}[b]{0.45\textwidth}
+\begin{subfigure}[b]{0.4\textwidth}
 \begin{lstlisting}[language=Curry]
 takeD :: Approx a =>
          Int -> T (List a) ->
@@ -465,11 +462,13 @@ More concretely, we make the following contributions:
         with respect to clairvoyance and demand semnatics,
         respectively. All theorems and proofs are mechanized in
         Agda~(\cref{sec:equiv}).
-  \item We conduct several case studies by manually translating lazy
-        Haskell programs, including insertion sort, to Curry~\cite{curry-lang}
-        based on our translation strategy. We evaluate the performance of
-        translated code based on the KiCS2 Curry compiler~\cite{kics2}, finding it acceptable despite simpler code. This also reveals potential optimization opportunities for Curry
-        compilers~(\cref{sec:case-study}).
+  \item We conduct several case studies by manually translating lazy Haskell
+        programs, including insertion sort and Okasaki's banker's
+        queue~\cite{purely-functional} to Curry~\cite{curry-lang} based on our
+        translation strategy. We evaluate the performance of translated code
+        based on the KiCS2 Curry compiler~\cite{kics2}, finding it acceptable
+        despite simpler code. This also reveals potential optimization
+        opportunities for Curry compilers~(\cref{sec:case-study}).
 \end{itemize}
 
 In addition, we discuss related work in \cref{sec:related-work} and conclude

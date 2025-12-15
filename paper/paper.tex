@@ -266,15 +266,15 @@
   analyzing computation costs. Unfortunately, clairvoyance semantics is simple
   but hard to execute; demand semantics is executable, but its semantics is much
   more complicated. In this paper, we proposal a novel approach of unifying
-  these two semantics using functional logic programming. We propose a logical
-  clairvoyance translation, that translates lazy functional programs to
-  functional logic programs where the computation cost can be computed, and a
-  logical demand translation, which is a simple extension to the logical
+  these two semantics using functional logic programming. We propose (1)~a
+  logical clairvoyance translation, that translates lazy functional programs to
+  functional logic programs where the computation cost can be evaluated, and
+  (2)~a logical demand translation, which is a simple extension to the logical
   clairvoyance translation. We prove that these two translations correctly
   implement clairvoyance semantics and demand semantics, respectively. We also
   conduct case studies based on Curry/KiCS2 to show how these translations can
-  be used in practice.
-  \keywords{Functional Logic Programming, Lazy Evaluation, Cost Analysis}
+  be used in practice. \keywords{Functional Logic Programming, Lazy Evaluation,
+    Cost Analysis}
 \end{abstract}
 
 \subfile{intro}

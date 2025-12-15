@@ -5,27 +5,43 @@
   \cite{iris-credit,iris-thunk,liquidate,liquid-okasaki,danielsson-08,foner2018,first-order-lazy,lazy-amortized-testing}.
   There are also many papers on non-lazy computation costs.}
 
-\paragraph{Lazy semantics.}
-There are many semantics for lazy programming languages. The best known of these
-is the natural semantics of Launchbury~\cite{launchbury1993}. Clairvoyance
-semantics was first studied by Hackett and Hutton~\cite{clairvoyant}, who proved
-its equivalence with Launchbury's semantics. Li \emph{et al.} developed a model
-of this semantics in Rocq, along with a framework for automating proofs about
-the behavior of programs in it~\cite{forking-paths}. Demand semantics was first
-studied by Bjerner and Holmstr{\"{o}}m~\cite{bjerner1989}. Their semantics was
-untyped; a typed version, essentially the same as the demand semantics in the
-present work, was first published by Xia \emph{et
-  al.}~\cite{demand-semantics}. Xia \emph{et al.} were also the first to
-demonstrate that demand semantics is equivalent to other semantics for lazy
-languages; in particular, they proved the cost existence and cost minimality
-theorems, which, together, amount to equivalence with clairvoyance semantics.
-
 \paragraph{Lazy cost analysis.}
-This work grew out of an effort to formally verify the performance of lazy
-programs: the original motivation was to find a ``source of truth'' against
-which to judge the correctness of hand-written demand
-terms. Okasaki's~\cite{purely-functional} analysis techniques are foundational
-to this area of research. Formal developments have been carried out in Rocq, particularly via the Iris framework~\cite{iris-credit,iris-thunk}; in Liquid Haskell~\cite{liquidate,liquid-okasaki}; and in Agda~\cite{danielsson-08}. There is also work on \emph{testing} the performance on lazy data structure; \eg\ by Lorenzen~\cite{lazy-amortized-testing}.
+Existing research on lazy cost analysis can be divided into roughly three
+different approaches. The first approach, represented by work on
+Iris$^{\$}$~\cite{iris-credit,iris-thunk}, deals with mutable heaps directly,
+but requires using special programming logics like the separation
+logic~\cite{separation-logic}. The second approach, represented by
+LiquidHaskell~\cite{liquidate,liquid-okasaki}, uses a graded monad proposed by
+Danielsson~\cite{danielsson-08} to track computation cost. However, this
+approach needs to deal with sharing manually. The third approach utilizes
+alternative semantics, such as clairvoyance
+semantics~\cite{clairvoyant,forking-paths} and demand
+semantics~\cite{bjerner1989,demand-semantics}, that are equivalent to lazy
+evaluation in terms of computation cost. In contrast to the natural semantics of
+lazy evaluation~\cite{launchbury1993}, these semantics reify computation cost in
+pure and eager semantics, so we can use them to reason about lazy computation
+cost without being concerned with mutable heaps, sharing, or our-of-order
+executions.
+
+Clairvoyance semantics was proposed by Hackett and Hutton~\cite{clairvoyant},
+who proved its equivalence with Launchbury's semantics. Li \emph{et al.}
+extended clairvoyance semantics to a typed setting and mechanized it in Rocq,
+along with a framework for mechanically reasoning computation
+costs~\cite{forking-paths}. Demand semantics was proposed by Bjerner and
+Holmstr{\"{o}}m~\cite{bjerner1989}. Xia \emph{et al.} later extended it to a
+typed setting and proved its equivalence to clairvoyance semantics, in forms of
+cost existence and cost minimality theorems. We rely on these results in our
+correctness theorems in
+\cref{sec:equiv}~(\ie~\cref{prop:cost-existence,prop:cost-minimality}). They
+further uses demand semantics to mechanically verify amortized costs and
+persistence of two of Okasaki's data structures: the banker's queue and the
+implicit queue~\cite{purely-functional} in Rocq.
+
+There have also been works on applying property-based testing to lazy
+computation cost analysis, such as Foner \textit{et al.}~\cite{foner2018} and
+Lorenzen~\cite{lazy-amortized-testing}. We leave it as future work to extend our
+work to property-based testing frameworks in Curry like
+EasyCheck~\cite{easy-check} and CurryCheck~\cite{curry-check}.
 
 \paragraph{Lazy performance.}
 Beyond just analyzing costs, there is great value in improving the performance
@@ -34,8 +50,6 @@ see Jones and Salkild~\cite{DBLP:conf/fpca/JonesS89}, Jones and
 Partain~\cite{strictness-analysis}, Massey and
 Tick~\cite{DBLP:conf/ifipPACT/MasseyT94}, and Lorenzen \textit{et
   al.}~\cite{10.1145/3747530}.
-
-\paragraph{Cost analysis.}
 
 \paragraph{Functional logic programming.}
 We implemented our examples in Curry; however, most of the techniques in this

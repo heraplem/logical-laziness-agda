@@ -181,10 +181,9 @@ no need for arbitrary functions on natural numbers, so we include only literals
 and addition. We also have constructs for logic programming: free
 variables~(\(\tfreeZ\)), also known as logic variables; nondeterministic
 choice~(\(\tchooseZ\)); and failure~(\(\tfail\)). Note that free variables must
-be annotated with their types in order to ensure deterministic typing. Finally,
-we have a Boolean operator \(\tleZ\), which indicates whether its left-hand
-operand is less defined than its right-hand operand (in the sense defined in
-\cref{subsec:values}).
+be annotated with their types. Finally, we have a Boolean operator \(\tleZ\),
+which indicates whether its left-hand operand is less defined than its
+right-hand operand (in the sense defined in \cref{subsec:values}).
 
 \stl{
 So, any eager functional logic language is equivalent to a pure logic language
@@ -223,7 +222,7 @@ that this semantics is eager; furthermore, due to \( \tfail \), it is partial.
     \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
     \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \\ \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}} \\
-    \inferrule{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}{\TL{\Gamma}{t}{\TM{(\TThunk{A})}}} \qquad
+    \inferrule{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}{\TL{\Gamma}{\ttranspose{t}}{\TM{(\TThunk{A})}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}}
   \end{mathpar}
   \caption{Derived constructs in \(\LL\) and their typing rules. Readers who are

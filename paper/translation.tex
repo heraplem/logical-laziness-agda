@@ -323,14 +323,13 @@ demand on the output of \(t\).
 
 Intuitively, \(\transD{t}{\Gamma}\) operates as follows.
 \begin{itemize}
-  \item For each typing assumption \(x_i : A_i\) in \(\Gamma\), introduce a new
-        logic variable \(x_i' : A\), subject to the constraint that
-        \(x_i' \le x_i\).
+  \item For each variable \(x_i : A_i\) in \(\Gamma\), introduce a new free
+        variable \(x_i' : A\) such that \(x_i' \le x_i\).
   \item Pass \(t\) through the \transCname\ and execute it, but with each
         \(x_i\) replaced by the corresponding free variable \(x'_i\). This
         yields a result-cost pair \(u\).
   \item Constrain the result \(\tfst{u}\) to be equal to the input \(x\).
-  \item Return a tuple containing the values of all new logic variables, along
+  \item Return a tuple containing the values of all new free variables, along
         with the cost \(\tsnd{u}\).
 \end{itemize}
 This is a special case of the common logic programming idiom of function
@@ -347,8 +346,9 @@ original term in \(\LB\):
 \begin{theorem}\label{thm:transD-type}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma, x : A}{\transD{t}{\Gamma}}{\TM{\verts{\Gamma}}} \).
 \end{theorem}
-In the above theorem, the operation \( \verts{\cdot} \) turns typing contexts
-into product types.
+The operation \( \verts{\cdot} \) turns typing contexts into product types. Both
+theorems are formalized and proven in Agda, which is included in our
+publicly-available artifact.
 % \[
 %   \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} ,
 % \]

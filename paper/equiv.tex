@@ -1,19 +1,28 @@
 \section{Correctness}\label{sec:equiv}
 
-In this section, we define clairvoyance and demand semantics on \(\LB\) and
-establish the equivalence of our translation with respect to both semantics,
-thus proving the translation correct. In \cref{subsec:clairvoyance}, we define
-clairvoyance semantics on \(\LB\), adapting the semantics of Hackett and Hutton
-on an untyped \(\lambda\)-calculus~\cite{clairvoyant}, and of Li \textit{et
-  al.} on a typed calculus~\cite{forking-paths}. In
-\cref{subsec:demand-semantics}, we define demand semantics on \(\LB\),
-adapting the semantics of Bjerner and Holmstr{\"{o}}m~\cite{bjerner1989} and Xia
-\textit{et al.}~\cite{demand-semantics}. Lastly, in \cref{subsec:equiv}, we
-prove that our clairvoyance and demand translations produce terms in
-\(\LL\) that compute the same result as clairvoyance and 
-demand semantics on \(\LB\), respectively. Our proofs rely on the equivalence
-between clairvoyance and demand semantics, proven by Xia
-\textit{et al.}~\cite{demand-semantics}. We axiomatize this result~(\cref{prop:cost-existence,prop:cost-minimality}).
+In this section, we prove that our \transCname{} and \transDname{} correctly
+implements clairvoyance semantics and demand semantics, respectively. We show an
+overview of how we establish their correctness in \cref{fig:proof-overview}. 
+
+All of our proofs are mechanized in the Agda proof
+assistant~\cite{DBLP:conf/tldi/Norell09}. All the formalizations, theorems, and
+proofs can be found in our publically-available artifact.\ly{TODO: Make sure we
+  have the code materials ready for submission as well.}
+
+% In this section, we define clairvoyance and demand semantics on \(\LB\) and
+% establish the equivalence of our translation with respect to both semantics,
+% thus proving the translation correct. In \cref{subsec:clairvoyance}, we define
+% clairvoyance semantics on \(\LB\), adapting the semantics of Hackett and
+% Hutton on an untyped \(\lambda\)-calculus~\cite{clairvoyant}, and of Li
+% \textit{et al.} on a typed calculus~\cite{forking-paths}. In
+% \cref{subsec:demand-semantics}, we define demand semantics on \(\LB\),
+% adapting the semantics of Bjerner and Holmstr{\"{o}}m~\cite{bjerner1989} and
+% Xia \textit{et al.}~\cite{demand-semantics}. Lastly, in \cref{subsec:equiv},
+% we prove that our clairvoyance and demand translations produce terms in
+% \(\LL\) that compute the same result as clairvoyance and demand semantics on
+% \(\LB\), respectively. Our proofs rely on the equivalence between clairvoyance
+% and demand semantics, proven by Xia \textit{et al.}~\cite{demand-semantics}.
+% We axiomatize this result~(\cref{prop:cost-existence,prop:cost-minimality}).
 
 \begin{figure}[t]
   % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXG1hdGhiZntCfSJdLFsyLDAsIlxcbWF0aGJme0x9Il0sWzQsMCwiXFxtYXRoYmZ7U2V0fSJdLFs1LDFdLFswLDEsIlxcbWF0aGJie0N9XFxsZmxvb3ItXFxyZmxvb3IiLDIseyJvZmZzZXQiOjF9XSxbMCwxLCJcXG1hdGhiYntEfVxcbGZsb29yLVxccmZsb29yIiwwLHsib2Zmc2V0IjotMX1dLFswLDIsIlxcbWF0aGJie0N9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDIseyJjdXJ2ZSI6NX1dLFswLDIsIlxcbWF0aGJie0R9XFxsbGJyYWNrZXQtXFxycmJyYWNrZXQiLDAseyJjdXJ2ZSI6LTV9XSxbMSwyLCJcXG1hdGhiYntMfVxcbGZsb29yLVxccmZsb29yIiwxXV0=
@@ -31,13 +40,8 @@ between clairvoyance and demand semantics, proven by Xia
     demand semantics; \(\SL\llbracket\cdot\rrbracket\) is the semantics of
     \(\LL\); \(\transC{\cdot}\) and \(\transDU{\cdot}\) are term
     translations. All arrows from \(\LB\) to \(\mathbf{Set}\) commute (up to a
-    suitable notion of equivalence).}
+    suitable notion of equivalence).}\label{fig:proof-overview}
 \end{figure}
-
-All of our proofs are mechanized in the Agda proof
-assistant~\cite{DBLP:conf/tldi/Norell09}. All the formalizations, theorems, and
-proofs can be found in our publically-available artifact.\ly{TODO: Make sure we
-  have the code materials ready for submission as well.}
 
 \subsection{Exact values and approximations}\label{subsec:values}
 

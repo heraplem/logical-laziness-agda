@@ -39,7 +39,7 @@ assistant~\cite{DBLP:conf/tldi/Norell09}. All the formalizations, theorems, and
 proofs can be found in our publically-available artifact.\ly{TODO: Make sure we
   have the code materials ready for submission as well.}
 
-\subsection{Exact values and approximations}
+\subsection{Exact values and approximations}\label{subsec:values}
 
 Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
 and a set \(\Approx{A}\) of \emph{approximation values}, as defined in
@@ -117,17 +117,31 @@ environments that elementwise approximate \(\gamma\).
     approximations.}\label{fig:approx}\label{fig:definedness}
 \end{figure}
 
-Approximations come with a \emph{definedness} ordering (\cref{fig:definedness}).
-It is conceptually similar to the approximation relation \(a \le a'\),
+\paragraph{The lattice of approximations.}
+Approximations come with a \emph{definedness} relation (\cref{fig:definedness}).
+It is conceptually similar to the approximation relation: \(a \le a'\),
 pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as
 \(a'\) with some parts replaced by \(\sundefined\).
 
-The \(\le\) operator is a partial order. Any two approximations \(a_1, a_2 \prec e\) have a
-least upper bound \(a_1 \sqcup a_2\). There is also a least element that
-approximates any given exact value \(e\), denoted by \(\bot_e\), or
-\(\bot\) when \(e\) is clear from context. Thus, the set of approximations of
-any exact value forms a bounded join-semilattice. This all also extends to the set of approximation environments that elementwise
-approximate a given exact environment.
+\(\le\) has the following properties:
+\begin{itemize}
+\item If \(\approxof{a}{e}\) and \(a' \le a\), then \(\approxof{a'}{e}\).
+\item \(\le\) is a partial order.
+\item Any two approximations \(a_1, a_2 \prec e\) have a least upper bound
+  \(a_1 \sqcup a_2\).
+\item For any exact value \(e \in \Eval{A}\), there a least element in
+  \(\Approx{A}\) that approximates \(e\), denoted by \(\bot_e\), or just
+  \(\bot\) when \(e\) is clear from context.
+\end{itemize}
+Thus, the set of approximations of any exact value forms a bounded
+join-semilattice.
+
+\(\le\) can be extended to environments. Given \(\gamma \in \Eval{\Gamma}\) and
+\(\gamma^A_1, \gamma^A_2 \prec \gamma\), we say that
+\(\gamma^A_1 \le \gamma^A_2\) if each value in \(\gamma^A_1\) is less defined
+than the corresponding value in \(\gamma^A_2\). The definedness relation on
+environments inherits all of the properties of \(\le\) on approximations; in
+particular, it is a bounded join-semilattice.
 
 % We can show that the evaluations semantics of \(\LB\) and that of \(\LL\)
 % satisfy the following properties:

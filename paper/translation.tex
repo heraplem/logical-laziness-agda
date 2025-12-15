@@ -15,9 +15,9 @@ and a \emph{\transDname}, itself a thin wrapper around \transCname, which
 produces terms modeling demand
 semantics~\cite{bjerner1989,demand-semantics}~(\cref{subsec:demand-translation}).
 
-We prove that these translation strategies are correct with respect to the
-clairvoyance semantics and the demand semantics using Agda, but we defer details
-of the correctness theorem, its proof, and the Adga development to
+We have proven that these translation strategies are correct with respect to the
+clairvoyance semantics and the demand semantics in Agda, but we defer details of
+the correctness theorem, its proof, and the Adga development to
 \cref{sec:equiv}.
 
 \subsection{The Base Language \(\LB\)}\label{subsec:base-lang}
@@ -26,7 +26,7 @@ We show the syntax of the base language \(\LB\) in \cref{fig:syntax-base}.
 Language \(\LB\) is a simple typed calculus with booleans, lists, and lazy
 thunks (\ie~suspended computations). Its terms include variables,
 \(\tletZ\)-bindings, conditionals, and recursions based on \(\tfoldrZ\). In
-addition, it contains \( \tlazyZ \) and \( \tforceZ \) for wrapping a
+addition, it contains \( \tlazyZ \) and \( \tforceZ \) operators, which wrap a
 computation in a lazy thunk and forcing a computation from a thunk,
 respectively.
 % The \(\TThunkZ\) type represents thunks in lazy evaluation.
@@ -37,13 +37,17 @@ explicit operators decouple our analysis from any particular evaluation model.
 demand semantics does not support these
 features~\cite{bjerner1989,demand-semantics}. The lack of higher-order functions
 does not fundamentally limit \(\LB\)'s expressivity, since any higher-order
-program can be converted to an equivalent first-order program via the technique
-of
-defunctionalization~\cite{DBLP:conf/acm/Reynolds72,DBLP:conf/ppdp/DanvyN01}. The
-lack of general recursion \emph{is} a fundamental limitation on expressivity,
-but it is not a problem for cost analysis: we can simulate general recursion
-without any change in asymptotic complexity by providing a ``fuel'' parameter
-that decreases on every recursive call.
+program can be
+defunctionalized~\cite{DBLP:conf/acm/Reynolds72,DBLP:conf/ppdp/DanvyN01} to an
+equivalent first-order program.\nc{The ``story of your function's life'' paper
+  says that the language does not support higher-order functions; but, really,
+  it doesn't even support \emph{first-class} functions. So is it even worth
+  mentioning defunctionalization here? I'm pretty sure this still isn't a
+  fundamental limit on expressivity, though.} The lack of general recursion
+\emph{is} a fundamental limitation on expressivity, but it is not a problem for
+cost analysis: we can simulate general recursion without any change in
+asymptotic complexity by providing a ``fuel'' parameter that decreases on every
+recursive call.
 
 \begin{figure}[t]
 \begin{center}
@@ -67,7 +71,7 @@ that decreases on every recursive call.
     A}{\textsc{tick}}
 \end{mathpar}
 \end{center}
-\caption{The syntax of \(\LB\) and typing rules related to lazy thunks and
+\caption{The syntax of \(\LB\) and typing ruoles related to lazy thunks and
   costs.}\label{fig:typing-base}\label{fig:syntax-base}
 \end{figure}
 
@@ -76,8 +80,8 @@ typing rules for thunks and computation costs in \cref{fig:typing-base}.
 Notably, lists are lazy: the cons of lists \(\tcons{t_1}{t_2}\) takes a term
 \(t_1\) of type \(A\) and a term \(t_2\) of type \(\TThunk{(\TList{A})}\), so
 the tail of a list must always be wrapped in a \(\TThunkZ\). Similarly, the
-``function'' argument to \(\tfoldrZ\) always requires its second paramter be
-wrapped in a \(\TThunkZ\).
+``function'' argument to \(\tfoldrZ\) always requires that its second parameter
+be wrapped in a \(\TThunkZ\).
 
 \paragraph{Evaluation semantics.}
 We can give language \(\LB\) a denotational semantics \(\EE{t}{\gamma}\) for any
@@ -86,36 +90,35 @@ related to lazy evaluation and computation costs:
 \[
   \EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma} .
 \]
-We do not need to model the natural semantics of \(\LB\), because prior work
-has established computation cost equivalence between natural
-semantics and clairvoyance semantics~\cite{clairvoyant}, and between
-clairvoyance semantics and demand semantics~\cite{demand-semantics}.
-% We discuss more details of those semantics in \cref{sec:equiv}.
+We do not need to model the natural semantics of \(\LB\), because prior work has
+established computation cost equivalence between natural semantics and
+clairvoyance semantics~\cite{clairvoyant}, and between clairvoyance semantics
+and demand semantics~\cite{demand-semantics}.
 
-\subsection{The Logic Language $L$}\label{subsec:logic-lang}
+\subsection{The Logic Language \(\LL\)}\label{subsec:logic-lang}
 
 We show the syntax of \(\LL\) in \cref{fig:syntax-logic}. Compared with \(\LB\),
 language \(\LL\) has some new types: a unit type \(\TUnit\), natural numbers
 \(\TNat\), and product types \(\TProd{A}{B}\).
 \ifextended
-We need the natural number type to model
-computation costs, and we need product types to return computation results along
-with costs. Since we are going to model demand semantics, we also need products
-to model evaluation contexts, and we need the unit type to model \emph{empty}
-contexts.
+  We need the natural number type to model computation costs, and we need
+  product types to return computation results along with costs. Since we are
+  going to model demand semantics, we also need products to model evaluation
+  contexts, and we need the unit type to model \emph{empty} contexts.
 \else
   We need natural numbers and products to represent computation costs associated
   with values, and we need products and the unit type to represent
-  environments. Note, though, that the types in \(\LL\) are a superset of the
-  types in \(\LB\).
+  environments. Note that the types of \(\LL\) are a superset of the types of
+  \(\LB\); as a consequence, any valid typing context for \(\LB\) is also a
+  valid typing context for \(\LL\).
 \fi
 
-In addition, we introduce two constructors to the \(\TThunkZ\) type: a
-\(\tresult{v}\) for an evaluated value \(v\), and an \(\tundefined\) for a value
-that is not evaluated~(\ie~the $\bot$ we used in \cref{sec:intro}). In the
-\transCname{}, these two constructors indicate whether a computation is
-evaluated or not. In the \transDname, they indicate whether a computation is
-demanded or not.
+In addition, we introduce two constructors for the \(\TThunkZ\) type:
+\(\tresultZ\) for the result of an expression that has been evaluated, and
+\(\tundefined\) the result of an expression that has been skipped~(\ie~the
+$\bot$ we used in \cref{sec:intro}). In the \transCname{}, these two
+constructors indicate whether a computation is evaluated or not. In the
+\transDname, they indicate whether a computation is demanded or not.
 
 \begin{figure}[t]
   \begin{center}
@@ -173,18 +176,19 @@ demanded or not.
   \caption{The syntax of the logic language \(\LL\). Typing rules and semantic
     rules that are related to the \TLazyZ{} datatype,
     approximations~(\(\tleZ\)), the choice operator~(\texttt{?}), and free
-    variables.}\label{fig:syntax-logic}\label{fig:logic-semantics}
+    variables. See \cref{subsec:values} for the meaning of the \(\le\)
+    relation.}\label{fig:syntax-logic}\label{fig:logic-semantics}
 \end{figure}
 
 \(\LL\) has introduction and elimination forms for all of the new types. We have
 no need for arbitrary functions on natural numbers, so we include only literals
 and addition. We also have constructs for logic programming: free
-variables~(\(\tfreeZ\), also known as logic variables), nondeterministic
-choice~(\(\tchooseZ\)), and failure~(\(\tfail\)). Note that free variables must
+variables~(\(\tfreeZ\)), also known as logic variables; nondeterministic
+choice~(\(\tchooseZ\)); and failure~(\(\tfail\)). Note that free variables must
 be annotated with their types in order to ensure deterministic typing. Finally,
 we have a Boolean operator \(\tleZ\), which indicates whether its left-hand
-operand lies below its right-hand operand in the order of approximations
-(see \cref{subsec:values}).
+operand is less defined than its right-hand operand (in the sense defined in
+\cref{subsec:values}).
 
 \stl{
 So, any eager functional logic language is equivalent to a pure logic language
@@ -205,7 +209,7 @@ calculus~\cite{verse}) to keep our approach generally applicable.
 We show the semantic rules of \(L\) that are related to the choice
 operator~(\tchooseZ) and free variables in \cref{fig:logic-semantics}.\ly{Did we
   refer to any papers when we define this semantics? If so, cite them.} Note
-that this semantics is eager, and is partial due to \( \tfail \).
+that this semantics is eager; furthermore, due to \( \tfail \), it is partial.
 
 \begin{figure}[t] 
   \[
@@ -237,12 +241,12 @@ computation result and its associated computation cost. To encapsulate
 operations related to computation costs, we define some derived term constructs
 in \(\LL\) in \cref{fig:logic-derived}. We use \treturn{t} to lift \(t\) to a
 computation that costs \(0\). We use \tdo{x}{t_1}{t_2} to chain computations
-\(t_1\) and \(t_2\), while accumulating their costs. We use
+\(t_1\) and \(t_2\) while accumulating their costs. We use
 \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} to chain a list of computations, accumulating
 all of their costs. The \tfoldMZ{} operation employs an auxiliary construct
 \ttransposeZ, which converts terms of type \(\TThunk{(\TM{A})}\) to terms of
-type \(\TM{(\TThunk{A})}\). In addition, we define \tassertZ{} to ensure that a
-given condition holds by causing the computation to fail if it does not.
+type \(\TM{(\TThunk{A})}\). In addition, we define \tassertZ{}, which ensures
+that a given condition holds, causing the computation to fail if it does not.
 
 We show all the typing rules related to these derived terms in
 \cref{fig:logic-derived} as well. Readers who are familiar with monads might
@@ -250,28 +254,29 @@ recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
 
 \subsection{The \TransCname}\label{subsec:clairvoyance-translation}
 
-We define the \transCname{} \(\transC{-}\) in \cref{fig:transC}. It translates
-terms in \(\LB\) to terms in \(\LL\) that simulate clairvoyance semantics.
-Values and variables are translated using \treturnZ. The \tletZ-bindings and
-\tifZ{} expressions are translated using \tdo{\cdot}{\cdot}{\cdot}. A \tfoldrZ{}
-expression is translated using the derived term construct \tfoldMZ. Readers
-familiar with monads might recognize that this is essentially a monadic
-translation~\cite{moggi-monad,malias,wadler-monad} with adaptations for the
-\TLazyZ{} type~\cite{forking-paths}.
+We define the \transCname{} \(\transC{\cdot}\) in \cref{fig:transC}. The
+\transCname{} translates terms in \(\LB\) to terms in \(\LL\) that simulate
+clairvoyance semantics. Values and variables are translated using
+\treturnZ. Variable bindings (\tletZ) are translated via sequencing
+(\tdo{\cdot}{\cdot}{\cdot}). Conditionals (\tifZ) are translated by first
+evaluating the condition and then evaluating the appropriate branch. A
+\tfoldrZ{} expression is translated to the derived term construct
+\tfoldMZ. Readers familiar with monads might recognize that this is essentially
+a monadic translation~\cite{moggi-monad,malias,wadler-monad} with adaptations
+for the \TLazyZ{} type~\cite{forking-paths}.
 
 The most important cases are those for \(\tlazyZ\) and \(\tforceZ\). When the
-original term is \(\tlazy{t}\), we use the nondeterministic operator \texttt{?}
-to either skip the inner term's evaluation~(\(\treturn{\tundefined}\)) or
-compute the inner term and wrap the result inside \tresultZ \lai{wrap result
-  in/inside result? Or wrap result *as/with* result? Or something else? Wording
-  confuses me.}. When the original term is \(\tforce{t}\), we first evaluate
-\(t\) and pattern match on the result \(y_1\). If \(y_1\) evaluates to
-\(\tresult{y_2}\), we return \(y_2\); otherwise, we \tfail Note that \tfail{}
+original term is \(\tlazy{t}\), we use the nondeterministic choice operator
+\texttt{?} to either skip the inner term's
+evaluation~(\(\treturn{\tundefined}\)) or evaluate the inner term and wrap the
+result inside a \tresultZ. When the original term is \(\tforce{t}\), we first
+evaluate \(t\) and pattern match on the result \(y_1\). If \(y_1\) evaluates to
+\(\tresult{y_2}\), we return \(y_2\); otherwise, we \tfail. Note that \tfail{}
 only terminates the current nondeterministic branch, so any branches that
 contain a \tresultZ{} will continue\lai{Can either be a partial sentence in
   parentheses, a full sentence, or a footnote. Can't put a whole sentence in
-  parentheses}. To \ttickZ{} a computation, we simply run it and increment
-its accumulated cost by \(1\).
+  parentheses}. To \ttickZ{} a computation, we simply run it and increment its
+accumulated cost by \(1\).
 
 \begin{figure}[t]
   \begin{align*}
@@ -287,7 +292,8 @@ its accumulated cost by \(1\).
     \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}} \\
     \transC{\ttick{t}} &= \tlet{u}{\transC{t}}{\tpair{\tfst{u}}{\tsnd{u} + 1}}
   \end{align*}
-  \caption{The \transCname{} \(\transC{-}\) from \(\LB\) to \(\LL\).}\label{fig:transC}
+  \caption{The \transCname{} \(\transC{\cdot}\) from \(\LB\) to
+    \(\LL\).}\label{fig:transC}
 \end{figure}
 
 The \transCname{} preserves well-typedness of the original term in \(\LB\):
@@ -297,13 +303,18 @@ The \transCname{} preserves well-typedness of the original term in \(\LB\):
 
 \subsection{The \TransDname}\label{subsec:demand-translation}
 
-We now define the \transDname{} \( \transD{t}{\Gamma} \) from \( \LB \) to
-\( \LL \) in \cref{fig:demand-translation}. The translation produces terms that
-simulate the demand semantics. Unlike the \transCname, the typing context
-\(\Gamma\) in \( \LB \) is also a parameter to the \transDname. This is because
-we need to introduce new free variables with types corresponding to types in
-\( \Gamma \). This treatment is the same as the demand translation of Xia
-\textit{et al.}~\cite{demand-semantics}
+We now define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
+in \cref{fig:demand-translation}. This translation produces terms that simulate
+demand semantics.
+
+Unlike the \transCname, the \transDname also takes as a parameter a typing
+context \(\Gamma\) such that \(\TB{\Gamma}{t}{A}\) (for some type \(A\)). This
+is because the \transDname must know the names and types of \(t\)'s free
+variables. This treatment is the same as the demand translation of Xia
+\textit{et al.}~\cite{demand-semantics}. As output, \(\transD{t}{\Gamma}\)
+produces a term in \(\LB\) that has all the same free variables as \(t\), plus
+an additional free variable \(x\), which represents a demand on the output of
+\(t\). (We make this precise in \cref{thm:transD-type}.)
 
 \begin{figure}[t]
   \[
@@ -314,7 +325,7 @@ we need to introduce new free variables with types corresponding to types in
                                                  &\tlet{x'_n}{\tfree{A_n}}{\relax} \\
                                                  &\tassert{\tle{x'_n}{x_n}}{\relax} \\
                                                  &\tlet{u}{\transC{t'}}{\relax} \\
-                                                 &\tassert{\teq{x}{\tfst{u}}}{\relax} \\
+                                                 &\tassert{\teq{\tfst{u}}{x}}{\relax} \\
                                                  &\tpair{\texttt{(\( x'_1 \),\ \( \ldots \),\ \( x'_n \))}}{\tsnd{u}} \\
       \multicolumn{2}{c}{\text{where \( t' = t[x'_1/x_1, \ldots, x'_n/x_n] \).}}
     \end{array}
@@ -322,25 +333,25 @@ we need to introduce new free variables with types corresponding to types in
   \caption{The \transDname.}\label{fig:demand-translation}
 \end{figure}
 
-The \transDname{} \( \transD{t}{\Gamma} \) walks through \(\Gamma\), introduces
-a free variable for every variable in \(\Gamma\), and asserts that the free
-variable approximates (\texttt{<=}) the corresponding variable in \(\Gamma\). It
-then substitues all the original variables in \(t\) with newly declared free
-variables to obtain a new term \(t'\), and passes \(t'\) to the \transCname{}
-\(\transC{-}\).
-
-Intuitively, the 
-
-Intuitively, the \transDname{} \emph{inverses} the translated code obtained from
-the \transCname{} using free variables, but additionally constrains the context
-of \(\transC{t'}\) to approximate the original \(\Gamma\).\ly{TODO: I don't like
-  this explanation. Find a better one later.}
+In English, \(\transD{t}{\Gamma}\) operates as follows.
+\begin{itemize}
+\item For each typing assumption \(x_i : A_i\) in \(\Gamma\), introduce a new
+  logic variable \(x_i' : A\), subject to the constraint that \(x_i' \le x_i\).
+\item Pass \(t\) through the \transCname\ and execute it, but with each \(x_i\) replaced by the corresponding free variable \(x'_i\). This yields a \((\text{result}, \text{cost})\) pair \(u\).
+\item Constrain the result \(\tfst{u}\) to be equal to the input \(x\).
+\item Return a tuple containing the values of the new logic variables, along
+  with the cost \(\tsnd{u}\).
+\end{itemize}
+This is a special case of the common logic programming idiom of function
+inversion: \(\transD{t}{\Gamma}\) computes the inverse of \(\transC{t}\), but constrains the result to be an approximation of a certain set of inputs to \(\transC{t}\).\nc{How's this?}
 
 The \transDname{} preserves well-typedness of the original term in \(\LB\):
 \begin{theorem}
+  \label{thm:transD-type}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma, x : A}{\transD{t}{\Gamma}}{\TM{\verts{\Gamma}}} \).
 \end{theorem}
-where the operation \( \verts{-} \) turns contexts into product types:
+In the above theorem, the operation \( \verts{\cdot} \) turns typing contexts
+into product types:
 \[
   \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} ,
 \]

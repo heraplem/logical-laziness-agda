@@ -123,7 +123,7 @@ It is conceptually similar to the approximation relation: \(a \le a'\),
 pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as
 \(a'\) with some parts replaced by \(\sundefined\).
 
-\(\le\) has the following properties:
+\(\le\) has the following properties.
 \begin{itemize}
 \item If \(\approxof{a}{e}\) and \(a' \le a\), then \(\approxof{a'}{e}\).
 \item \(\le\) is a partial order.
@@ -159,13 +159,15 @@ particular, it is a bounded join-semilattice.
 
 \subsection{Clairvoyance Semantics}\label{subsec:clairvoyance}
 
-Clairvoyance semantics on \(\LB\) is a big-step operational semantics with
-the judgment schema \(\EC{\gamma}{t}{c}{v}\): intuitively, \(c\) is the number
-of \(\ttickZ\)s encountered while evaluating \(t\) to \(v\). As with Hackett and
+Clairvoyance semantics on \(\LB\) is a big-step operational semantics with the
+judgment schema \(\EC{\gamma}{t}{c}{v}\): intuitively, \(c\) is the number of
+\(\ttickZ\)s encountered while evaluating \(t\) to \(v\). As with Hackett and
 Hutton's original clairvoyance semantics, our definition is based on
-\emph{improvement theory}~\cite{moran1999}. However, our semantics is based on a
-typed calculus \(\LB\) with explicit \( \tlazyZ \) and \( \tforceZ \)
-operators.\ly{When you say it's different, say what is the difference.}
+\emph{improvement theory}~\cite{moran1999}. Unlike their semantics, which is
+based on an untyped calculus with implicit laziness points and costs, ours is
+based on a typed calculus with explicit \( \tlazyZ \) and \( \tforceZ \)
+operators.\ly{When you say it's different, say what is the difference.}\nc{How's
+  this?}
 
 \begin{figure}[t]
   \begin{mathpar}
@@ -196,13 +198,15 @@ only evaluate a value of \( \TThunkZ \) type if it \emph{is} a \( \sthunkZ \)
 (\eg~we cannot \( \tforceZ \) \( \sundefined \)).
 
 A major difference between our semantics and that of Hackett and
-Hutton~\cite{clairvoyant} is that \(\LB\) explicitly manages
-laziness with \( \tlazyZ \) and \( \tforceZ \) operators, so we must introduce
-nondeterminism at \( \tlazyZ \) terms\lai{"at" lazy terms? Not sure what this means - for lazy terms? in lazy terms? with lazy terms? Needs clarification.}. In contrast, Hackett and
-Hutton~\cite{clairvoyant} introduce nondeterminism at \( \tletZ \) bindings \lai{Again, "at" here confuses me.}:
-when evaluating \( \tlet{x}{t_1}{t_2} \) in their semantics, \( x \) is either
-immediately bound to the result of evaluating \( t_1 \), or is
-substituted by \( \sundefined \).
+Hutton~\cite{clairvoyant} is that \(\LB\) explicitly manages laziness with
+\( \tlazyZ \) and \( \tforceZ \) operators, so we must introduce nondeterminism
+at \( \tlazyZ \) terms\lai{"at" lazy terms? Not sure what this means - for lazy
+  terms? in lazy terms? with lazy terms? Needs clarification.}. In contrast,
+Hackett and Hutton~\cite{clairvoyant} introduce nondeterminism at \( \tletZ \)
+bindings \lai{Again, "at" here confuses me.}: when evaluating
+\( \tlet{x}{t_1}{t_2} \) in their semantics, either \( x \) is either
+immediately bound to the result of evaluating \( t_1 \), or it is not bound at
+all.
 
 Note that \( \tfoldrZ \) is evaluated by first evaluating its list argument to a
 value \(v\), then iterating over \(v\) via the auxiliary relation

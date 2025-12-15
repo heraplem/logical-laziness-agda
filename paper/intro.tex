@@ -28,7 +28,19 @@ Lazy evaluation is demand-driven, performing only
 operations required to compute a final result~\cite{launchbury1993}. This enables functional programmers to write compositional code with
 comparable or better performance to eager evaluation~\cite{fp-matters}. Sadly,
 cost analysis becomes
-challenging as a `side effect.'
+challenging as a `side effect.' For example, consider the Haskell functions \cdh{take} and \cdh{(++)},
+defined in \cref{fig:hs-example-original}. Suppose that we want to evaluate
+the following code:
+\begin{lstlisting}[language=Haskell]
+	take 2 ([1,2,3] ++ [4,5]) 
+\end{lstlisting}
+This program only evaluates when its result is demanded, \eg~when we print the
+result. When there is a demand, say on the first element, we will run \cdh{take}
+and \cdh{(++)} once to obtain the first element, \cdh{1}. However, suppose that, in the future, we demand the entire list. We will then
+evaluate \cdh{take} and \cdh{(++)} ``one level deeper'' to obtain the second
+element, \cdh{2}, and \cdh{take} again to obtain the end of the list:
+\cdh{[]}. These computations (and those in other lazy programs) are evaluated \emph{on demand}, \emph{out of order}, and are
+\emph{interleaved}. Common cost models often cannot accommodate some or all of these properties of laziness, leading to the aforementioned difficulties in performance analysis.
 % as the analyzer needs to reason about mutable heaps and cannot consider a
 % function in isolation.
 
@@ -87,22 +99,8 @@ appendD :: [a] -> [a] -> [a]$^A$ -> (([a]$^A$, [a]$^A$), $\mathbb{N}$)
   sections.\ly{TODO: mention which section.}}\label{fig:hs-example}
 \end{figure}
 
-Let's consider the Haskell functions \cdh{take} and \cdh{(++)} as a concrete example,
-defined in \cref{fig:hs-example-original}. Suppose that we are going to evaluate
-the following piece of code:
-\begin{lstlisting}[language=Haskell]
-  take 2 ([1,2,3] ++ [4,5]) 
-\end{lstlisting}
-This program only evaluates when its result is demanded, \eg~when we print the
-result. When there is a demand, say on the first element, we will run \cdh{take}
-and \cdh{(++)} once to obtain the first element, \cdh{1}. However, suppose that, in the future, we demand the entire list. We will then
-evaluate \cdh{take} and \cdh{(++)} ``one level deeper'' to obtain the second
-element, \cdh{2}, and \cdh{take} again to obtain the end of the list:
-\cdh{[]}. These computations (and those in other lazy programs) are evaluated \emph{on demand}, \emph{out of order}, and are
-\emph{interleaved}. Common cost models often cannot accommodate some or all of these properties of laziness, leading to the aforementioned difficulties in performance analysis.
-
-How can we bring simplicity, order, and compositionality to lazy computation costs when these properties are fundamentally absent in the semantics? Some
-recent works propose that, instead of handling the stateful natural
+How can we bring simplicity, order, and compositionality to lazy computation costs when these properties are fundamentally missing in its semantics? Some
+recent work proposes that, instead of handling the stateful natural
 semantics of lazy evaluation~\cite{launchbury1993}, we can utilize simpler
 \emph{alternative semantics} that are cost-equivalent to lazy evaluation. Two such semantics, which are the focus of our work, are clairvoyance
 semantics~\cite{clairvoyant,forking-paths} and demand
@@ -115,7 +113,7 @@ functional program, so that the analysis is \emph{simple} and
 \emph{compositional}. By simplicity, we mean that we should be able to use
 simple tools like equational reasoning for simple properties about cost. By
 compositionality, we mean that we can reason about each lazy function
-individually, and compose properties about each function's cost when reaosning
+individually, and compose properties about each function's cost when reasoning
 about the whole program.
 
 
@@ -255,18 +253,18 @@ lazy operation, it makes a \emph{nondeterministic} choice of evaluating the
 computation or skipping it.
 
 To apply clairvoyance semantics to \cdh{take 2 ([1,2,3] ++ [4,5])}, we first
-evaluate \cdh{[1,2,3] ++ [4,5]}. Each recursive function application is either
+evaluate \cdh{[1,2,3] ++ [4,5]}. Each recursive function application is
 nondetermistically evaluated or skipped, as illustrated in
-\cref{fig:forking-paths}. The results of \cdh{[1,2,3] ++ [4,5]} include
+\cref{fig:forking-paths}. The results of \cdh{[1,2,3] ++ [4,5]} are
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$},
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:2:$\bot$}, $\cdots$,
-and \cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is
-skipped. Afterwards, we run \cdh{take 2} in the same way over all the
+\cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is
+skipped. Next, we run \cdh{take 2} over all the
 nondeterministic results of \cdh{[1,2,3] ++ [4,5]}. When evaluation is
 impossible, \eg~forcing the second element from
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)}, we
-discard the current nondeterministic branch. Eventually, one of the
-nondeterministic results gives the cost of lazy evaluation.
+discard that branch. Eventually, one of the
+results gives the cost of lazy evaluation.
 
 We can use clairvoyance semantics as a recipe for a mechanical translation from
 a pure program to a program where computation cost is
@@ -283,22 +281,19 @@ nondeterministic evaluation.
 
 We can use these translated functions to formally reason about the computation cost
 of lazy programs. One major drawback of this approach is that power
-sets in returned types make execution expensive. This makes it hard to apply
-the clairvoyance semantics to testing.
+sets in returned types make execution expensive. This makes it hard to apply clairvoyance semantics to testing.
 
 \begin{figure}[t]
   \centering
   \includegraphics[page=1,width=0.7\textwidth]{Figs/forking-paths.pdf}
-  \caption{An illustration of the clairvoyance evaluation of \cdh{[1,2,3] ++
-      [4,5]}. We use $\bot$ to represent skipped
+  \caption{An overview of clairvoyance evaluation for \cdh{[1,2,3] ++
+      [4,5]}. $\bot$ to represents skipped
     values.}\label{fig:forking-paths}
 \end{figure}
 
 \paragraph{Demand semantics.} Demand semantics builds on the observation that,
 given a function's input and a demand on its output, we can evaluate the minimal
-input demand required for such an output demand \emph{deterministically}.
-
-In our example of \cdh{take 2 ([1,2,3] ++ [4,5])}, we first consider a demand on
+input demand required for such an output demand \emph{deterministically}. In our example of \cdh{take 2 ([1,2,3] ++ [4,5])}, we first consider a demand on
 the output,
 \eg~\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}, where
 $\bot$ represents parts of the list that are not evaluated. We then run the
@@ -311,11 +306,11 @@ required for the two input lists are
 respectively. Throughout this process, the associated computation cost is also
 evaluated and carried forward.
 
-We can also use demand semantics as a translation
-strategy~\cite{demand-semantics}. We show pseudo type signatures of translated
-functions, \cdh{takeD} and \cdh{appendD}, in \cref{fig:hs-example-demand}.
-Similar to the clairvoyance translation, we use natural numbers in the result to
-represent computation costs. The demand translation also uses approximations
+Demand semantics is also useful as a translation
+strategy~\cite{demand-semantics}. We show pseudo type signatures of the translated
+functions \cdh{takeD} and \cdh{appendD} in \cref{fig:hs-example-demand}.
+Similar to the clairvoyance translation, we use a natural number in the result to
+represent computation cost. The demand translation also uses approximations
 like \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}, but it
 uses them to represent demands.
 % We do not need any power sets, as the demand semantics is deterministic.
@@ -325,7 +320,7 @@ complicated than the clairvoyance translation, which makes it more challenging
 to develop tools for or formally reason about code under demand semantics.
 
 \paragraph{Our contributions.}
-It is unsatisfying that although we have two semantics that model lazy
+It is unsatisfying that, although we have two semantics that model lazy
 computation costs, they are very different and we have to choose between them
 depending on what we need. In this paper, we propose a novel approach of
 \emph{unifying} these two semantics using \emph{functional logic programming}.
@@ -343,7 +338,7 @@ is a simple wrapper of \cdc{takeC}. Both \cdc{takeC} and \cdc{takeD} rely on
 some common definitions shown in \cref{fig:curry-thunk-func}.
 
 \ly{TODO: phrase these explanations better.} The \cdc{takeC} function takes an
-\cdc{Int}, and a \cdc{T (List a)} that represents a list with $\bot$s as
+\cdc{Int}, and a \cdc{T (List a)} which represents a list with $\bot$s as
 arguments. It returns a new list \lai{What type?} with $\bot$s in the \cdc{Tick}
 monad that encodes computation cost. The function works similarly to \cdh{take}
 for most parts. The key for implementing clairvoyance semantics is the recursive
@@ -362,7 +357,7 @@ where \cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, and \cdc{xsTD} and
 \cdc{takeD} computes the input \cdc{xsTD} and parts of the output \cdc{c} of
 \cdc{takeC}, given the rest of its output \cdc{ysD}. Put differently,
 \cdc{takeD} is a weaker form of a \emph{function inversion} of \cdc{takeC}. In
-addition, we require that \cdc{xsTD} to be an approximation of \cdc{xsT},
+addition, we require \cdc{xsTD} to be an approximation of \cdc{xsT},
 another argument of \cdc{takeD}, so that it is either \cdc{xsT} or ``less
 evaluated'' than \cdc{xsT}.
 
@@ -454,22 +449,22 @@ evaluation shows that this simpler approach achieves acceptable performance.
 More concretely, we make the following contributions:
 
 \begin{itemize}
-  \item We propose and formalize a mechanical way of translating functional
-        programs to functional logic programs that reify lazy computation costs:
+  \item We propose and formalize a mechanical means of translating functional
+        programs to functional logic programs that reifies lazy computation costs:
         a \transCname{} that encodes clairvoyance semantics, and a
         \transDname{} that is a thin wrapper of the \transCname{} and encodes
         demand semantics~(\cref{sec:translation}).
   \item We formally prove that the \transCname{} and the \transDname{} are correct
         with respect to clairvoyance and demand semnatics,
         respectively. All theorems and proofs are mechanized in
-        Agda~(\cref{sec:equiv}).
+        Agda~\cite{DBLP:conf/tldi/Norell09}~(\cref{sec:equiv}).
   \item We conduct several case studies by manually translating lazy Haskell
         programs, including insertion sort and Okasaki's banker's
         queue~\cite{purely-functional} to Curry~\cite{curry-lang} based on our
         translation strategy. We evaluate the performance of translated code
-        based on the KiCS2 Curry compiler~\cite{kics2}, finding it acceptable
+        using the KiCS2 Curry compiler~\cite{kics2}, finding it acceptable
         despite simpler code. This also reveals potential optimization
-        opportunities for Curry compilers~(\cref{sec:case-study}).
+        opportunities for Curry compilers~(\cref{sec:case-study}).\lai{Dubious final contribution.}
 \end{itemize}
 
 In addition, we discuss related work in \cref{sec:related-work} and conclude

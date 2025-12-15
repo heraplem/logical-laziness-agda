@@ -98,20 +98,16 @@ and demand semantics~\cite{demand-semantics}.
 \subsection{The Logic Language \(\LL\)}\label{subsec:logic-lang}
 
 We show the syntax of \(\LL\) in \cref{fig:syntax-logic}. Compared with \(\LB\),
-language \(\LL\) has some new types: a unit type \(\TUnit\), natural numbers
-\(\TNat\), and product types \(\TProd{A}{B}\).
-\ifextended
-  We need the natural number type to model computation costs, and we need
-  product types to return computation results along with costs. Since we are
-  going to model demand semantics, we also need products to model evaluation
-  contexts, and we need the unit type to model \emph{empty} contexts.
-\else
-  We need natural numbers and products to represent computation costs associated
-  with values, and we need products and the unit type to represent
-  environments. Note that the types of \(\LL\) are a superset of the types of
-  \(\LB\); as a consequence, any valid typing context for \(\LB\) is also a
-  valid typing context for \(\LL\).
-\fi
+language \(\LL\) has more types: a unit type \(\TUnit\), natural numbers
+\(\TNat\), and product types \(\TProd{A}{B}\). \ifextended We need the natural
+  number type to model computation costs, and we need product types to return
+  computation results along with costs. Since we are going to model demand
+  semantics, we also need products to model evaluation contexts, and we need the
+  unit type to model \emph{empty} contexts. \else We need natural numbers and
+  products to represent computation costs associated with values, and we need
+  products and the unit type to represent environments. Note that the types of
+  \(\LL\) are a superset of the types of \(\LB\); as a consequence, any valid
+  typing context for \(\LB\) is also a valid typing context for \(\LL\). \fi
 
 In addition, we introduce two constructors for the \(\TThunkZ\) type:
 \(\tresultZ\) for the result of an expression that has been evaluated, and
@@ -252,7 +248,7 @@ We show all the typing rules related to these derived terms in
 \cref{fig:logic-derived} as well. Readers who are familiar with monads might
 recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
 
-\subsection{Exact values and approximations}\label{subsec:values}
+\subsection{Exact Values and Approximations}\label{subsec:values}
 
 Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
 and a set \(\Approx{A}\) of \emph{approximation values}, as defined in
@@ -336,20 +332,20 @@ It is conceptually similar to the approximation relation: \(a \le a'\),
 pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as
 \(a'\) with some parts replaced by \(\sundefined\).
 
-\(\le\) has the following properties.
+The definedness relation \(\le\) has the following properties.
 \begin{itemize}
-\item If \(\approxof{a}{e}\) and \(a' \le a\), then \(\approxof{a'}{e}\).
-\item \(\le\) is a partial order.
-\item Any two approximations \(a_1, a_2 \prec e\) have a least upper bound
-  \(a_1 \sqcup a_2\).
-\item For any exact value \(e \in \Eval{A}\), there a least element in
-  \(\Approx{A}\) that approximates \(e\), denoted by \(\bot_e\), or just
-  \(\bot\) when \(e\) is clear from context.
+  \item If \(\approxof{a}{e}\) and \(a' \le a\), then \(\approxof{a'}{e}\).
+  \item The definedness relation \(\le\) is a partial order.
+  \item Any two approximations \(a_1, a_2 \prec e\) have a least upper bound
+        \(a_1 \sqcup a_2\).
+  \item For any exact value \(e \in \Eval{A}\), there is a least element in
+        \(\Approx{A}\) that approximates \(e\), denoted by \(\bot_e\), or just
+        \(\bot\) when \(e\) is clear from context.
 \end{itemize}
 Thus, the set of approximations of any exact value forms a bounded
 join-semilattice.
 
-\(\le\) can be extended to environments. Given \(\gamma \in \Eval{\Gamma}\) and
+We also extend \(\le\) to environments. Given \(\gamma \in \Eval{\Gamma}\) and
 \(\gamma^A_1, \gamma^A_2 \prec \gamma\), we say that
 \(\gamma^A_1 \le \gamma^A_2\) if each value in \(\gamma^A_1\) is less defined
 than the corresponding value in \(\gamma^A_2\). The definedness relation on

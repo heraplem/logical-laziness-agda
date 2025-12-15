@@ -142,7 +142,7 @@ on the \transCname, is equivalent to the demand semantics.
 \end{proof}
 
 We can then establish the correctness of the \transDname{} via two theorems:
-adequacy and soundness:
+adequacy and soundness.
 
 \begin{theorem}[Adequacy of the \transDname]
   Define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \) and let \( {\gamma^A}' \ge \gamma^A \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EL{\gamma, y^A \mapsto {a^A}'}{\transD{t}{\Gamma}}{({\gamma^A}', c)} \).  In particular, \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\gamma^A, c)} \).
@@ -160,17 +160,17 @@ adequacy and soundness:
   By \cref{prop:dem-trans-sem,prop:cost-minimality}.
 \end{proof}
 
-Note that the \transDname{} still produces nondeterministic code, which does not
+Note that the \transDname{} produces nondeterministic code, which does not
 reduce \emph{only} to the result of demand semantics. Some logic languages have
 a built-in facility to collapse a nondeterministic computation into a
 deterministic one, returning either the first result found or a list of all
-possible results. If we can arrange for less-defined results to always be tried
-first, we can use this to ensure that the demand translation always returns the
-actual result of demand semantics. \stl{ Isn't the point of the demand
-  translation that sometimes we'll get unevaluated thunks which translate to
-  undefined? In that case it matches up with the fact that flp programs will
-  fail. That's kind of what we want. I think it's better to say that with a
-  complete search strategy we get all results. We don't need to rely on tools
-  like set functions or findall that way. Unless we're saying that demand
-  semantics evaluates to an incomparable term.}
+possible results. We can arrange for less-defined results to always be tried
+first, to ensure that the \transDname{} always returns the actual result of
+demand semantics. \stl{ Isn't the point of the demand translation that sometimes
+  we'll get unevaluated thunks which translate to undefined? In that case it
+  matches up with the fact that flp programs will fail. That's kind of what we
+  want. I think it's better to say that with a complete search strategy we get
+  all results. We don't need to rely on tools like set functions or findall that
+  way. Unless we're saying that demand semantics evaluates to an incomparable
+  term.}
 

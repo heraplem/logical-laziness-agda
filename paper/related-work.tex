@@ -2,8 +2,14 @@
 
 \ly{TODO: Mention Anton Lorenzo's work.}
 
+\ly{TODO: There are tons of related work not mentioned here yet. On lazy
+  computation cost:
+  \cite{iris-credit,iris-thunk,liquidate,liquid-okasaki,danielsson-08,foner2018,first-order-lazy,lazy-amortized-testing}.
+  There are also many papers on non-lazy computation costs.}
+
+\paragraph{Lazy cost analysis.}
 There are many other semantics for lazy programming languages. The best known of
-these is the natural semantics of Launchbury,~\cite{launchbury1993} which models
+these is the natural semantics of Launchbury~\cite{launchbury1993}, which models
 the state of a lazy program as a heap of variable bindings that is updated
 whenever a variable is evaluated. This semantics has the advantage of being easy
 to understand intuitively, as it closely reflects a na{\"{i}}ve implementation
@@ -13,7 +19,7 @@ Clairvoyance semantics was first studied by Hackett and
 Hutton~\cite{clairvoyant}, who proved its equivalence with Launchbury's
 semantics. Li \emph{et al.} developed a model of this semantics in Rocq, along
 with a framework for automating proofs about the behavior of
-programs.~\cite{forking-paths}
+programs~\cite{forking-paths}.
 
 Demand semantics was first studied by Bjerner and
 Holmstr{\"{o}}m.~\cite{bjerner1989} Their semantics was untyped; a typed version
@@ -24,31 +30,33 @@ semantics for lazy languages; in particular, it contains the theorems of cost
 existence and cost minimality, which amount to equivalence with clairvoyance
 semantics.
 
+\paragraph{Cost analysis.}
 
-Functional Logic programming combines the features common in function programming, such as
-higher order functions, algebraic data types, and parametric polymorphism,
-with the features of logic programming, including non-determinism and logic variables.
-Early examples of functional logic languages either added functional language
-features to a Logic language based on predicate logic, 
-or logic features to a function language based on lambda calculus.
-These languages include
-ALF \cite{alf}, Babel \cite{babel}, K-Leaf \cite{kleaf}, SLOG \cite{slog},
-caio \cite{ciao}, mercury \cite{mercury}, and HAL \cite{hal}.
-Another approach, taken by Toy \cite{toy} and Curry \cite{curry} and Verse \cite{verse},
-is to integrate the features into a different formalism.
+\paragraph{Functional logic programming.}
+\ly{We probably don't have the space to discuss the history of functional logic
+  programming. On the other hand, I feel we should discuss what are some related
+  works to our approach/methodology; why we choose Curry, and what it means for
+  us to apply this methodology to other FLP systems.} Functional Logic
+programming combines the features common in function programming, such as
+higher-order functions, algebraic data types, and parametric polymorphism, with
+the features of logic programming, including nondeterminism and logical
+variables. Early examples of functional logic languages either added functional
+language features to a Logic language based on predicate logic, or logic
+features to a function language based on $\lambda$-calculus. These languages
+include ALF~\cite{alf}, Babel~\cite{babel}, K-Leaf~\cite{kleaf},
+SLOG~\cite{slog}, caio~\cite{ciao}, mercury~\cite{mercury}, and HAL~\cite{hal}.
+Another approach, taken by Toy~\cite{toy}, Curry~\cite{curry}, and
+Verse~\cite{verse}, is to integrate the features into a different formalism.
 
-In this paper we work with the language Curry,
-which grew out of the ideas of term rewriting and narrowing.
-for a more complete development see \cite{theoryToCurry,flp}.
-Antoy~\cite{definitionalTrees} showed that term rewrite systems which belonging to 
-the class of Inductively Sequential systems could be given an
-optimal rewriting strategy.
-Later Antoy et al.~\cite{needed}
-extended this to an optimal narrowing strategy,
-and Antoy~\cite{lois} showed how this class of rewriting systems
-could be extended to include rules with overlapping left hand sides..
-and these Limited Overlapping Inductively Sequential (LOIS) systems
-could be computed with a combination of narrowing and a search strategy.
-This narrowing plus search proved to be a good foundation for 
-an implementation~\cite{pakcs}.
+In this paper we work with the language Curry, which grew out of the ideas of
+term rewriting and narrowing. For a more complete development,
+see~\cite{theoryToCurry,flp}. Antoy~\cite{definitionalTrees} showed that term
+rewrite systems, which belonging to the class of Inductively Sequential systems,
+could be given an optimal rewriting strategy. Later, Antoy \textit{et
+  al.}~\cite{needed} extended this to an optimal narrowing strategy, and
+Antoy~\cite{lois} showed how this class of rewriting systems could be extended
+to include rules with overlapping left-hand sides.. and these Limited
+Overlapping Inductively Sequential (LOIS) systems could be computed with a
+combination of narrowing and a search strategy. This narrowing plus search
+proved to be a good foundation for an implementation~\cite{pakcs}.
 

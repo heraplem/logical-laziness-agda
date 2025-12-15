@@ -193,3 +193,40 @@ url = {https://www.curry-lang.org/pakcs/Manual.pdf}
   biburl       = {https://dblp.org/rec/conf/ppdp/2001.bib},
   bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
+
+@article{first-order-lazy,
+author = {Lorenzen, Anton and Leijen, Daan and Swierstra, Wouter and Lindley, Sam},
+title = {First-Order Laziness},
+year = {2025},
+issue_date = {August 2025},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {9},
+number = {ICFP},
+url = {https://doi.org/10.1145/3747530},
+doi = {10.1145/3747530},
+abstract = {In strict languages, laziness is typically modeled with explicit thunks   that defer a computation until needed and memoize the result.   Such thunks are implemented using a closure. Implementing   lazy data structures using thunks thus has several disadvantages:   closures cannot be printed or inspected during debugging;   allocating closures requires additional memory, sometimes leading to poor performance;  reasoning about the performance of such lazy data structures is notoriously subtle.  These complications prevent wider adoption of lazy data structures,   even in settings where they should shine.   In this paper, we introduce lazy constructors as a simple first-order   alternative to lazy thunks. Lazy constructors enable the thunks of a lazy data structure  to be defunctionalized, yielding implementations of lazy data structures   that are not only significantly faster but can easily be inspected for debugging.},
+journal = {Proc. ACM Program. Lang.},
+month = aug,
+articleno = {261},
+numpages = {29},
+keywords = {Defunctionalization, Laziness, Perceus}
+}
+
+@inproceedings{lazy-amortized-testing,
+author = {Lorenzen, Anton},
+title = {Lightweight Testing of Persistent Amortized Time Complexity in the Credit Monad},
+year = {2025},
+isbn = {9798400721472},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3759164.3759351},
+doi = {10.1145/3759164.3759351},
+abstract = {Persistent data structures are ubiquitous in functional programming languages and their designers frequently have to reason about amortized time complexity. But proving amortized bounds is difficult in a persistent setting, and pen-and-paper proofs give little assurance of correctness, while a full mechanization in a proof assistant can be too involved for the casual user. In this work, we define a strict domain specific language (DSL) for testing the amortized time complexity of persistent data structures using QuickCheck. Our DSL can give strong evidence of correctness, while imposing low overhead on the user. We have used our DSL to check the amortized time complexity of all lazy data structures in Okasaki's book. As a sign of our approach's effectiveness, we re-discovered a previously unreported gap in the analysis of persistent Finger Trees.},
+booktitle = {Proceedings of the 18th ACM SIGPLAN International Haskell Symposium},
+pages = {80–93},
+numpages = {14},
+keywords = {Amortized Complexity, Defunctionalization, Finger Trees, Haskell, Laziness, Lazy Constructors, Persistent Data Structures, QuickCheck},
+location = {Singapore, Singapore},
+series = {Haskell '25}
+}

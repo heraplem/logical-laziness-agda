@@ -252,6 +252,125 @@ We show all the typing rules related to these derived terms in
 \cref{fig:logic-derived} as well. Readers who are familiar with monads might
 recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
 
+\subsection{Exact values and approximations}\label{subsec:values}
+
+Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
+and a set \(\Approx{A}\) of \emph{approximation values}, as defined in
+\cref{fig:exact-approx}. Approximation values \(\Approx{A}\) are similar to the
+exact values, except some parts might be ``discarded''~(represented by
+\(\sundefined\)).\ly{But what are exact values? Explain them as well.} They
+represent ``smaller'' values where certain computations are unneeded; \ie~they
+are approximations of the exact values.
+
+\begin{figure}[t]
+\begin{center}
+  \begin{align*}
+    \Eval{\TThunk{A}} &= \Eval{A} \\
+    \Eval{\TUnit} &= \SUnit \\
+    \Eval{\TBool} &= \SBool \\
+    \Eval{\TProd{A}{B}} &= \Eval{A} \times \Eval{B} \\
+    \Eval{\TNat} &= \N \\
+    \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}} \\ \\
+    \Approx{\TLazy{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
+    \Approx{\TProd{A}{B}} &= \Approx{A} \times \Approx{B} \\
+    \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{(\TList{A})}}}
+  \end{align*}
+\end{center}
+\caption{Exact and approximation values. \(\Approx{A} = \Eval{A}\)
+  wherever \(\Approx{A}\) is not otherwise specified.}\label{fig:exact-approx}
+\end{figure}
+
+We extend \(\Eval{\cdot}\) and \(\Approx{\cdot}\) to typing contexts. If
+\(\Gamma = x_1 : A_1, \ldots, x_n : A_n \) is a typing context, then
+\(\Eval{\Gamma}\) is the set of environments of shape \(\Gamma\) that bind
+variables to exact values:
+\[
+  \Eval{\Gamma} = \setbuilder{x_1 \mapsto e_1, \ldots, x_n \mapsto e_n}{e_1 \in \Eval{A_1}, \ldots, e_n \in \Eval{A_n}}.
+\]
+\(\Approx{\Gamma}\) is defined similarly.
+
+Exact values and approximations are connected by the relation \(\approxofZ\)
+(\cref{fig:approx}). Intuitively, \(\approxof{a}{e}\), pronounced ``\(a\)
+approximates \(e\)'', if \(a\) has the same shape as \(e\), but with some parts
+possibly replaced by \(\sundefined\). If \(e \in \Eval{A}\), we write
+\(\Approx{A}_{\approxof{\relax}{e}}\) to denote the set of values in
+\(\Approx{A}\) that approximate \(e\):
+\[
+  \Approx{A}_{\approxof{\relax}{e}} = \setbuilder{a \in \Approx{A}}{\approxof{a}{e}} .
+\]
+Similarly, if \(\gamma \in \Eval{\Gamma}\), we write
+\(\Approx{\Gamma}_{\approxof{\relax}{\gamma}}\) to denote the set of
+environments that elementwise approximate \(\gamma\).
+
+\begin{figure}[t]
+  \begin{mathpar}
+    \inferrule{\\}{\approxof{\sundefined}{e}} \qquad
+    \inferrule{\approxof{a}{e}}{\approxof{\sthunk{e}}{a}} \qquad
+    \inferrule{e \in \Eval{\TUnit} \cup \Eval{\TBool} \cup \Eval{\TNat} }{\approxof{e}{e}} \\
+    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\spair{a_1}{a_2}}{\spair{e_1}{e_2}}} \qquad
+    \inferrule{\\}{\approxof{\snil}{\snil}} \qquad
+    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\scons{a_1}{a_2}}{\scons{e_1}{e_2}}} \\
+    \inferrule{\\}{\sundefined \le \sundefined} \qquad
+    \inferrule{a \le a'}{\sthunk{a} \le \sthunk{a'}} \qquad
+    \inferrule{a \in \Approx{\TUnit} \cup \Eval{\TBool} \cup \Eval{\TNat} }{a \le a} \\
+    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\spair{a_1}{a_2} \le \spair{a_1'}{a_2'}} \qquad
+    \inferrule{\\}{\snil \le \snil} \qquad
+    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\scons{a_1}{a_2} \le \scons{a_1'}{a_2'}} \\
+    \\
+    \bot_{\stt} = \stt \qquad
+    \bot_{\sfalse} = \sfalse \qquad
+    \bot_{\strue} = \strue \qquad
+    \bot_n = n \\
+    \bot_{\spair{e_1}{e_2}} = \spair{\bot_{e_1}}{\bot_{e_2}} \qquad
+    \bot_\snil = \snil \qquad
+    \bot_{\scons{e_1}{e_2}} = \scons{\bot_{e_1}}{\bot_{e_2}}
+  \end{mathpar}
+  \caption{The approximation relation \(\approxofZ\) between approximations and
+    exact values, and the less defined relation \(\le\) between
+    approximations.}\label{fig:approx}\label{fig:definedness}
+\end{figure}
+
+\paragraph{The lattice of approximations.}
+Approximations come with a \emph{definedness} relation (\cref{fig:definedness}).
+It is conceptually similar to the approximation relation: \(a \le a'\),
+pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as
+\(a'\) with some parts replaced by \(\sundefined\).
+
+\(\le\) has the following properties.
+\begin{itemize}
+\item If \(\approxof{a}{e}\) and \(a' \le a\), then \(\approxof{a'}{e}\).
+\item \(\le\) is a partial order.
+\item Any two approximations \(a_1, a_2 \prec e\) have a least upper bound
+  \(a_1 \sqcup a_2\).
+\item For any exact value \(e \in \Eval{A}\), there a least element in
+  \(\Approx{A}\) that approximates \(e\), denoted by \(\bot_e\), or just
+  \(\bot\) when \(e\) is clear from context.
+\end{itemize}
+Thus, the set of approximations of any exact value forms a bounded
+join-semilattice.
+
+\(\le\) can be extended to environments. Given \(\gamma \in \Eval{\Gamma}\) and
+\(\gamma^A_1, \gamma^A_2 \prec \gamma\), we say that
+\(\gamma^A_1 \le \gamma^A_2\) if each value in \(\gamma^A_1\) is less defined
+than the corresponding value in \(\gamma^A_2\). The definedness relation on
+environments inherits all of the properties of \(\le\) on approximations; in
+particular, it is a bounded join-semilattice.
+
+% We can show that the evaluations semantics of \(\LB\) and that of \(\LL\)
+% satisfy the following properties:
+
+% \begin{lemma}[The evaluation semantics of \(\LB\) is an exact
+%   semantics]\label{lem:evaluation-exact}
+%   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then
+%   \( \EE{t}{\gamma} \in \Eval{A} \).
+% \end{lemma}
+
+% \begin{lemma}[The evaluation semantics of \(\LL\) is an approximation semantics]
+%   If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and
+%   \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
+% \end{lemma}
+
+
 \subsection{\TransCname{} and \TransDname{}}\label{subsec:clairvoyance-translation}\label{subsec:demand-translation}
 
 We define the \transCname{} \(\transC{\cdot}\) in \cref{fig:transC}. The

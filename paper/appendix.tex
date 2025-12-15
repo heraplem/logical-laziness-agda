@@ -41,6 +41,40 @@
   \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\ttick{t}}{c + 1}{v}}{\textsc{C-Tick}} \\
 \end{mathpar}
 
+\section{The Demand Semantics of \(\LB\)}\label{apx:demand-semantics}
+
+  \[
+    \begin{array}{rll}
+      \ED{x}{\gamma}{a} &= (\braces{x \mapsto a}, 0) \\
+      \ED{\tlet{x}{t_1}{t_2}}{\gamma}{a} &= (d_1, c_1) \sqcup (d_2, c_2) &\text{where } ((d_2, x \mapsto b), c_2) = \ED{t_2}{\gamma}{x \mapsto \EE{t}{\gamma}} \\
+                        &&\text{and } (d_1, c_1) = \ED{t_1}{\gamma}{b} \\
+      \ED{\ttick{t}}{\gamma}{a} &= (d, c + 1) &\text{where } (d, c) = \ED{t}{\gamma}{a} \\
+      \ED{\tlazy{t}}{\gamma}{\sundefined} &= (\sundefined, 0) \\
+      \ED{\tlazy{t}}{\gamma}{\sthunk{a}} &= \ED{t}{\gamma}{a} \\
+      \ED{\tforce{t}}{\gamma}{a} &= \ED{t}{\gamma}{\sthunk{a}} \\
+      \ED{\ttrue}{\gamma}{a} &= (\sundefined, 0) \\
+      \ED{\tfalse}{\gamma}{a} &= (\sundefined, 0) \\
+      \ED{\tnil}{\gamma}{a} &= (\sundefined, 0) \\
+      \ED{\tcons{t_1}{t_2}}{\gamma}{a} &= \ED{t_1}{\gamma}{a} \sqcup \ED{t_2}{\gamma}{a} \\
+      \ED{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}}{\gamma}{b} &= (d', c) \sqcup \ED{t}{\gamma}{b'} &\text{where } (g, b', c) = \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{\EE{t_3}{\gamma}}{b} \\ \\
+      \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{\snil}{b} &= (d, \snil, c) & \text{where } (d, c) = \ED{t_2}{\gamma}{b} \\
+      \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{\scons{v_1}{v_2}}{b} &= (g_1 \sqcup g_2, \scons{a'}{d}, c_1 + c_2) \\
+      \multicolumn{3}{c}{\text{where } ((g_1, x_1 \mapsto a', x_2 \mapsto b'), c_1) = \ED{t_1}{\gamma, x_1 \mapsto v_1, x_2 \mapsto \EEF{x_1}{x_2}{t_1}{t_2}{\gamma}{v_2}}{b}} \\
+      \multicolumn{3}{c}{\text{and } (g_2, d, c) = \EDFF{x_1}{x_2}{t_1}{t_2}{\gamma}{v_2}{b'}} \\
+      \\
+      \EDFF{x_1}{x_2}{t_1}{t_2}{\gamma}{v}{\sundefined} &= \bot \\
+      \EDFF{x_1}{x_2}{t_1}{t_2}{\gamma}{v}{\sthunk{b}} &= (g, \sthunk{d}, c) &\text{where } (g, d, c) = \EDF{x_1}{x_2}{t_1}{t_2}{\gamma}{v}{b}
+    \end{array}
+  \]
+
+\begin{lemma}[Demand semantics is an approximation
+  semantics]\label{prop:dem-approx-eval}
+  Let \( (\gamma^A, c) = \ED{t}{\gamma}{a} \).  Then \( \approxof{\gamma^A}{\gamma} \).
+\end{lemma}
+\cref{prop:dem-approx-eval} requires that the returned value is in \(\Approx{\Gamma}_{\approxof{\relax}{\gamma}}\), and is an approximation of the input.
+
+
+  
 \section{The Semantics of \(\LL\)}\label{apx:semantics-logic}
 
 \begin{mathpar}

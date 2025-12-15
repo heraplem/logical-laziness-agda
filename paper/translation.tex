@@ -6,9 +6,9 @@
   \texttt{\tletZ{}} instead of \texttt{\tletZ} in those case.}
 
 In this section, we define two languagues: a simple functional language
-\(\LB\)~(\cref{subsec:base-lang}), and a simple functional logic language
+\(\LB\)~(\cref{subsec:base-lang}) and a simple functional logic language
 \(\LL\)~(\cref{subsec:logic-lang}). Next, we develop two translations from
-\(\LB\) to \(\LL\): a \emph{\transCname} strategy, which produces terms modeling
+\(\LB\) to \(\LL\): a \emph{\transCname}, which produces terms modeling
 clairvoyance
 semantics~\cite{clairvoyant,forking-paths}~(\cref{subsec:clairvoyance-translation});
 and a \emph{\transDname}, itself a thin wrapper around \transCname, which
@@ -33,8 +33,17 @@ respectively.
 Finally, the \( \ttickZ \) operator incurs one unit of computation cost. These
 explicit operators decouple our analysis from any particular evaluation model.
 
-\(\LB\) does not support functions or general recursion. This is because demand
-semantics does not support those features~\cite{bjerner1989,demand-semantics}.\lai{We should briefly mention why this limitation is OK here.}
+\(\LB\) does not have higher-order functions or general recursion, because
+demand semantics does not support these
+features~\cite{bjerner1989,demand-semantics}. The lack of higher-order functions
+does not fundamentally limit \(\LB\)'s expressivity, since any higher-order
+program can be converted to an equivalent first-order program via the technique
+of
+defunctionalization~\cite{DBLP:conf/acm/Reynolds72,DBLP:conf/ppdp/DanvyN01}. The
+lack of general recursion \emph{is} a fundamental limitation on expressivity,
+but it is not a problem for cost analysis: we can simulate general recursion
+without any change in asymptotic complexity by providing a ``fuel'' parameter
+that decreases on every recursive call.
 
 \begin{figure}[t]
 \begin{center}
@@ -46,7 +55,7 @@ semantics does not support those features~\cite{bjerner1989,demand-semantics}.\l
   \ttick{t}
 \end{bnf}
 \begin{mathpar}
-  Typing
+  \textit{Typing}
   \\ \inferrule{\Gamma \vdash^\LB t_1 : A \\ \Gamma \vdash^\LB t_2 :
     \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}{\textsc{cons}} \\
   \inferrule{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B \\ \Gamma
@@ -58,8 +67,8 @@ semantics does not support those features~\cite{bjerner1989,demand-semantics}.\l
     A}{\textsc{tick}}
 \end{mathpar}
 \end{center}
-\caption{The syntax of \(\LB\) and typing rules that are related to lazy thunks
-  and cost.}\label{fig:typing-base}\label{fig:syntax-base}
+\caption{The syntax of \(\LB\) and typing rules related to lazy thunks and
+  costs.}\label{fig:typing-base}\label{fig:syntax-base}
 \end{figure}
 
 Most of the typing rules for \(\LB\) are standard, so we omit them. We show the
@@ -77,7 +86,6 @@ related to lazy evaluation and computation costs:
 \[
   \EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma} .
 \]
-
 We do not need to model the natural semantics of \(\LB\), because prior work
 has established computation cost equivalence between natural
 semantics and clairvoyance semantics~\cite{clairvoyant}, and between
@@ -96,8 +104,10 @@ with costs. Since we are going to model demand semantics, we also need products
 to model evaluation contexts, and we need the unit type to model \emph{empty}
 contexts.
 \else
-We need natural numbers and products to represent computation costs associated
-with values.
+  We need natural numbers and products to represent computation costs associated
+  with values, and we need products and the unit type to represent
+  environments. Note, though, that the types in \(\LL\) are a superset of the
+  types in \(\LB\).
 \fi
 
 In addition, we introduce two constructors to the \(\TThunkZ\) type: a
@@ -108,60 +118,62 @@ evaluated or not. In the \transDname, they indicate whether a computation is
 demanded or not.
 
 \begin{figure}[t]
-\begin{center}
-\begin{bnf}
-  \( A \) ::=
-  | \TUnit{}
-  // \TBool{}
-  // \TNat{}
-  // \TProd{A}{A}
-  // \TList{A}
-  // \TLazy{A}
-  ;;
+  \begin{center}
+    \begin{bnf}
+      \( A \) ::=
+      | \TUnit{}
+      // \TBool{}
+      // \TNat{}
+      // \TProd{A}{A}
+      // \TList{A}
+      // \TLazy{A}
+      ;;
 
-  $t$ ::=
-  | $x$
-  // \tlet{x}{t}{t}
-  // \tunit{}
-  // \ttrue{}
-  // \tfalse{}
-  // \tif{t}{t}{t}
-  // \tpair{t}{t}
-  // \tfst{t}
-  // \tsnd{t}
-  | \tresult{t}
-  // \tundefined{}
-  // \teq{t}{t}
-  // \tle{t}{t}
-  // \tcase{t}{x}{t}{t}
-  | $n$
-  // \tadd{t}{t}
-  // \tnil{}
-  // \tcons{t}{t}
-  // \tfoldr{x}{x}{t}{t}{t}
-  // \tchoose{t}{t}
-  // \tfree{A}
-  // \tfail{}
-\end{bnf}
-\begin{mathpar}
-  Typing\\
-  \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\tresult{t}}{\TLazy{A}}} \qquad
-  \inferrule{\\}{\TL{\Gamma}{\tundefined}{\TLazy{A}}} \\
-  \inferrule{\TL{\Gamma}{t_1}{\TLazy{A}} \\ \TL{\Gamma, x : A}{t_2}{B} \\ \TL{\Gamma}{t_3}{B}}{\TL{\Gamma}{\tcase{t_1}{x}{t_2}{t_3}}{B}} \\
-  \inferrule{\\}{\TL{\Gamma}{\tfree{A}}{A}} \qquad
-  \inferrule{\TL{\Gamma}{t_1}{A} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tchoose{t_1}{t_2}}{A}} \qquad
-  \inferrule{\\}{\TL{\Gamma}{\tfail}{A}} \\
-  Semantics\\
-   \inferrule{v : A}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}} \qquad
-    \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}}
-    \qquad
-    \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \\
-\end{mathpar}
-\end{center}
-\caption{The syntax of the logic language \(\LL\). Typing rules and semantic
-  rules that are related to the \TLazyZ{} datatype, the choice
-  operator~(\texttt{?}), and free
-  variables.}\label{fig:syntax-logic}\label{fig:logic-semantics}
+      $t$ ::=
+      | $x$
+      // \tlet{x}{t}{t}
+      // \tunit{}
+      // \ttrue{}
+      // \tfalse{}
+      // \tif{t}{t}{t}
+      // \tpair{t}{t}
+      // \tfst{t}
+      // \tsnd{t}
+      | \tresult{t}
+      // \tundefined{}
+      // \teq{t}{t}
+      // \tle{t}{t}
+      // \tcase{t}{x}{t}{t}
+      | $n$
+      // \tadd{t}{t}
+      // \tnil{}
+      // \tcons{t}{t}
+      // \tfoldr{x}{x}{t}{t}{t}
+      // \tchoose{t}{t}
+      // \tfree{A}
+      // \tfail{}
+    \end{bnf}
+    \begin{mathpar}
+      \textit{Typing}\\
+      \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\tresult{t}}{\TLazy{A}}} \qquad
+      \inferrule{\\}{\TL{\Gamma}{\tundefined}{\TLazy{A}}} \\
+      \inferrule{\TL{\Gamma}{t_1}{\TLazy{A}} \\ \TL{\Gamma, x : A}{t_2}{B} \\ \TL{\Gamma}{t_3}{B}}{\TL{\Gamma}{\tcase{t_1}{x}{t_2}{t_3}}{B}} \\
+      \inferrule{\\}{\TL{\Gamma}{\tfree{A}}{A}} \qquad
+      \inferrule{\TL{\Gamma}{t_1}{A} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tchoose{t_1}{t_2}}{A}} \qquad
+      \inferrule{\\}{\TL{\Gamma}{\tfail}{A}} \\
+      \textit{Semantics}\\
+      \inferrule{\EL{\gamma}{t_1}{v_1} \\ \EL{\gamma}{t_2}{v_2} \\ v_1 \le v_2}{\EL{\gamma}{\tle{t_1}{t_2}}{\strue}} \qquad
+      \inferrule{\EL{\gamma}{t_1}{v_1} \\ \EL{\gamma}{t_2}{v_2} \\ v_1 \nleq v_2}{\EL{\gamma}{\tle{t_1}{t_2}}{\sfalse}} \\
+      \inferrule{v \in \Approx{A}}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}} \qquad
+      \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}}
+      \qquad
+      \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \\
+    \end{mathpar}
+  \end{center}
+  \caption{The syntax of the logic language \(\LL\). Typing rules and semantic
+    rules that are related to the \TLazyZ{} datatype,
+    approximations~(\(\tleZ\)), the choice operator~(\texttt{?}), and free
+    variables.}\label{fig:syntax-logic}\label{fig:logic-semantics}
 \end{figure}
 
 \(\LL\) has introduction and elimination forms for all of the new types. We have
@@ -171,9 +183,8 @@ variables~(\(\tfreeZ\), also known as logic variables), nondeterministic
 choice~(\(\tchooseZ\)), and failure~(\(\tfail\)). Note that free variables must
 be annotated with their types in order to ensure deterministic typing. Finally,
 we have a Boolean operator \(\tleZ\), which indicates whether its left-hand
-operand lies below its right-hand operand in the order of
-approximations.\ly{TODO: Approximations are not defined yet. What should we do
-  about this definition?}
+operand lies below its right-hand operand in the order of approximations
+(see \cref{subsec:values}).
 
 \stl{
 So, any eager functional logic language is equivalent to a pure logic language
@@ -311,12 +322,14 @@ we need to introduce new free variables with types corresponding to types in
   \caption{The \transDname.}\label{fig:demand-translation}
 \end{figure}
 
-The \transDname{} \( \transD{t}{\Gamma} \) walks through \(\Gamma\), declares a
-free variable for every variable in \(\Gamma\), and asserts that the free
+The \transDname{} \( \transD{t}{\Gamma} \) walks through \(\Gamma\), introduces
+a free variable for every variable in \(\Gamma\), and asserts that the free
 variable approximates (\texttt{<=}) the corresponding variable in \(\Gamma\). It
 then substitues all the original variables in \(t\) with newly declared free
 variables to obtain a new term \(t'\), and passes \(t'\) to the \transCname{}
 \(\transC{-}\).
+
+Intuitively, the 
 
 Intuitively, the \transDname{} \emph{inverses} the translated code obtained from
 the \transCname{} using free variables, but additionally constrains the context

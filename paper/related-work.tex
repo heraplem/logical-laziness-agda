@@ -1,43 +1,46 @@
 \section{Related Work}\label{sec:related-work}
 
-\ly{TODO: Mention Anton Lorenzo's work.}
-
 \ly{TODO: There are tons of related work not mentioned here yet. On lazy
   computation cost:
   \cite{iris-credit,iris-thunk,liquidate,liquid-okasaki,danielsson-08,foner2018,first-order-lazy,lazy-amortized-testing}.
   There are also many papers on non-lazy computation costs.}
 
+\paragraph{Lazy semantics.}
+There are many semantics for lazy programming languages. The best known of these
+is the natural semantics of Launchbury~\cite{launchbury1993}. Clairvoyance
+semantics was first studied by Hackett and Hutton~\cite{clairvoyant}, who proved
+its equivalence with Launchbury's semantics. Li \emph{et al.} developed a model
+of this semantics in Rocq, along with a framework for automating proofs about
+the behavior of programs in it~\cite{forking-paths}. Demand semantics was first
+studied by Bjerner and Holmstr{\"{o}}m~\cite{bjerner1989}. Their semantics was
+untyped; a typed version, essentially the same as the demand semantics in the
+present work, was first published by Xia \emph{et
+  al.}~\cite{demand-semantics}. Xia \emph{et al.} were also the first to
+demonstrate that demand semantics is equivalent to other semantics for lazy
+languages; in particular, they proved the cost existence and cost minimality
+theorems, which, together, amount to equivalence with clairvoyance semantics.
+
 \paragraph{Lazy cost analysis.}
-There are many other semantics for lazy programming languages. The best known of
-these is the natural semantics of Launchbury~\cite{launchbury1993}, which models
-the state of a lazy program as a heap of variable bindings that is updated
-whenever a variable is evaluated. This semantics has the advantage of being easy
-to understand intuitively, as it closely reflects a na{\"{i}}ve implementation
-of lazy evaluation on an actual computer.
+This work grew out of an effort to formally verify the performance of lazy
+programs: the original motivation was to find a ``source of truth'' against
+which to judge the correctness of hand-written demand
+terms. Okasaki's~\cite{purely-functional} analysis techniques are foundational
+to this area of research. Formal developments have been carried out in Rocq, particularly via the Iris framework~\cite{iris-credit,iris-thunk}; in Liquid Haskell~\cite{liquidate,liquid-okasaki}; and in Agda~\cite{danielsson-08}. There is also work on \emph{testing} the performance on lazy data structure; \eg\ by Lorenzen~\cite{lazy-amortized-testing}.
 
-Clairvoyance semantics was first studied by Hackett and
-Hutton~\cite{clairvoyant}, who proved its equivalence with Launchbury's
-semantics. Li \emph{et al.} developed a model of this semantics in Rocq, along
-with a framework for automating proofs about the behavior of
-programs~\cite{forking-paths} in it.
-
-Demand semantics was first studied by Bjerner and
-Holmstr{\"{o}}m~\cite{bjerner1989}. Their semantics was untyped; a typed version
-was first published by Xia \emph{et al.}~\cite{demand-semantics}. Our demand
-semantics is essentially the same as theirs. Xia \emph{et al.} were also the
-first to demonstrate that demand semantics is equivalent to other semantics for
-lazy languages; in particular, they proved the cost existence and cost
-minimality theorems, which, together, amount to equivalence with clairvoyance
-semantics.
+\paragraph{Lazy performance.}
+Beyond just analyzing costs, there is great value in improving the performance
+of lazy programs. The work in this area is far too vast to summarize succinctly;
+see Jones and Salkild~\cite{DBLP:conf/fpca/JonesS89}, Jones and
+Partain~\cite{strictness-analysis}, Massey and
+Tick~\cite{DBLP:conf/ifipPACT/MasseyT94}, and Lorenzen \textit{et
+  al.}~\cite{10.1145/3747530}.
 
 \paragraph{Cost analysis.}
 
 \paragraph{Functional logic programming.}
-We implemented our examples in Curry~\cite{curry},
-however most of the techniques in this paper are not specific to Curry
-and could just as easily have been implemented in other functional logic languages
-such as Verse~\cite{verse} or mercury~\cite{mercury}.
-Because $\LL$ uses eager evaluation, we could even use a pure logic language like
-prolog for the translation~\cite{EagerFLPIsLogic}.
-The only technique that is specific to
-Curry is traversing the search tree~\cite{DBLP:journals/jflp/BrasselHH04}.
+We implemented our examples in Curry; however, most of the techniques in this
+paper are not specific to Curry, and could have been implemented in other
+functional logic languages such as Verse~\cite{verse} or
+mercury~\cite{mercury}. Because \(\LL\) uses eager evaluation, we could have
+even translated to a pure logic language; \eg\ Prolog~\cite{EagerFLPIsLogic}.
+~\cite{DBLP:journals/jflp/BrasselHH04}. However, the search tree traversal employed in this work is Curry-specific~\cite{DBLP:journals/jflp/BrasselHH04}.

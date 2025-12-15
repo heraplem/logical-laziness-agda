@@ -230,3 +230,90 @@ keywords = {Amortized Complexity, Defunctionalization, Finger Trees, Haskell, La
 location = {Singapore, Singapore},
 series = {Haskell '25}
 }
+
+@article{10.1145/3747530,
+author = {Lorenzen, Anton and Leijen, Daan and Swierstra, Wouter and Lindley, Sam},
+title = {First-Order Laziness},
+year = {2025},
+issue_date = {August 2025},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {9},
+number = {ICFP},
+url = {https://doi.org/10.1145/3747530},
+doi = {10.1145/3747530},
+abstract = {In strict languages, laziness is typically modeled with explicit thunks   that defer a computation until needed and memoize the result.   Such thunks are implemented using a closure. Implementing   lazy data structures using thunks thus has several disadvantages:   closures cannot be printed or inspected during debugging;   allocating closures requires additional memory, sometimes leading to poor performance;  reasoning about the performance of such lazy data structures is notoriously subtle.  These complications prevent wider adoption of lazy data structures,   even in settings where they should shine.   In this paper, we introduce lazy constructors as a simple first-order   alternative to lazy thunks. Lazy constructors enable the thunks of a lazy data structure  to be defunctionalized, yielding implementations of lazy data structures   that are not only significantly faster but can easily be inspected for debugging.},
+journal = {Proc. ACM Program. Lang.},
+month = aug,
+articleno = {261},
+numpages = {29},
+keywords = {Defunctionalization, Laziness, Perceus}
+}
+
+@inproceedings{DBLP:conf/ifipPACT/MasseyT94,
+  author       = {Barton C. Massey and
+                  Evan Tick},
+  title        = {Demand-Driven Dataflow for Concurrent Committed-Choice Code},
+  booktitle    = {Parallel Architectures and Compilation Techniques, Proceedings of
+                  the {IFIP} {WG10.3} Working Conference on Parallel Architectures and
+                  Compilation Techniques, PACT'94, Montr{\'{e}}al, Canada, 24-26
+                  August, 1994},
+  pages        = {215--224},
+  year         = {1994},
+  crossref     = {DBLP:conf/ifipPACT/1994},
+  url          = {http://dl.acm.org/citation.cfm?id=713810},
+  timestamp    = {Thu, 25 Sep 2014 17:21:57 +0200},
+  biburl       = {https://dblp.org/rec/conf/ifipPACT/MasseyT94.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@proceedings{DBLP:conf/ifipPACT/1994,
+  editor       = {Michel Cosnard and
+                  Guang R. Gao and
+                  Gabriel M. Silberman},
+  title        = {Parallel Architectures and Compilation Techniques, Proceedings of
+                  the {IFIP} {WG10.3} Working Conference on Parallel Architectures and
+                  Compilation Techniques, PACT'94, Montr{\'{e}}al, Canada, 24-26
+                  August, 1994},
+  series       = {{IFIP} Transactions},
+  volume       = {{A-50}},
+  publisher    = {North-Holland},
+  year         = {1994},
+  url          = {http://dl.acm.org/citation.cfm?id=647042},
+  isbn         = {0-444-81926-6},
+  timestamp    = {Mon, 15 Dec 2025 21:33:30 +0100},
+  biburl       = {https://dblp.org/rec/conf/ifipPACT/1994.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{DBLP:conf/fpca/JonesS89,
+  author       = {Simon L. Peyton Jones and
+                  Jon Salkild},
+  title        = {The Spineless Tagless G-Machine},
+  booktitle    = {Proceedings of the fourth international conference on Functional programming
+                  languages and computer architecture, {FPCA} 1989, London, UK, September
+                  11-13, 1989},
+  pages        = {184--201},
+  year         = {1989},
+  crossref     = {DBLP:conf/fpca/1989},
+  url          = {https://doi.org/10.1145/99370.99385},
+  doi          = {10.1145/99370.99385},
+  timestamp    = {Tue, 06 Nov 2018 11:07:48 +0100},
+  biburl       = {https://dblp.org/rec/conf/fpca/JonesS89.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@proceedings{DBLP:conf/fpca/1989,
+  editor       = {Joseph E. Stoy},
+  title        = {Proceedings of the fourth international conference on Functional programming
+                  languages and computer architecture, {FPCA} 1989, London, UK, September
+                  11-13, 1989},
+  publisher    = {{ACM}},
+  year         = {1989},
+  url          = {https://doi.org/10.1145/99370},
+  doi          = {10.1145/99370},
+  isbn         = {0-201-51389-7},
+  timestamp    = {Mon, 15 Dec 2025 21:55:05 +0100},
+  biburl       = {https://dblp.org/rec/conf/fpca/1989.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}

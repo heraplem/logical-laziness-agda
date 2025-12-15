@@ -33,30 +33,11 @@ semantics.
 \paragraph{Cost analysis.}
 
 \paragraph{Functional logic programming.}
-\ly{We probably don't have the space to discuss the history of functional logic
-  programming. On the other hand, I feel we should discuss what are some related
-  works to our approach/methodology; why we choose Curry, and what it means for
-  us to apply this methodology to other FLP systems.} Functional logic
-programming combines features common in functional programming, such as higher
-order functions, algebraic data types, and parametric polymorphism, with
-features of logic programming, including non-determinism and logic
-variables. Early examples of functional logic languages either added functional
-language features to a logic language based on predicate logic or added logic
-features to a function language based on \(\lambda\)-calculus. These languages
-include ALF~\cite{alf}, Babel~\cite{babel}, K-Leaf~\cite{kleaf},
-SLOG~\cite{slog}, caio~\cite{ciao}, mercury~\cite{mercury}, and
-HAL~\cite{hal}. Another approach, taken by Toy~\cite{toy}, Curry~\cite{curry},
-and Verse~\cite{verse}, is to integrate the features into a different
-formalism.\nc{What formalism?}
-
-In this paper we work with the language Curry, which grew out of the ideas of
-term rewriting and narrowing. Antoy~\cite{definitionalTrees} showed that term
-rewrite systems which belonging to the class of inductively sequential systems
-could be given an optimal rewriting strategy. Later, Antoy et al.~\cite{needed}
-extended this to an optimal narrowing strategy. Antoy~\cite{lois} showed how
-this class of rewriting systems could be extended to include rules with
-overlapping left hand sides, and that limited overlapping inductively sequential
-(LOIS) systems could be computed with a combination of narrowing and a search
-strategy. This narrowing plus search proved to be a good foundation for an
-implementation~\cite{pakcs}. For a more complete development,
-see~\cite{theoryToCurry,flp}.
+We implemented our examples in Curry~\cite{curry},
+however most of the techniques in this paper are not specific to Curry
+and could just as easily have been implemented in other functional logic languages
+such as Verse~\cite{verse} or mercury~\cite{mercury}.
+Because $\LL$ uses eager evaluation, we could even use a pure logic language like
+prolog for the translation~\cite{EagerFLPIsLogic}.
+The only technique that is specific to
+Curry is traversing the search tree~\cite{DBLP:journals/jflp/BrasselHH04}.

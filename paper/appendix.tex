@@ -1,7 +1,7 @@
 \appendix
 \crefalias{section}{appendix}
 
-\section{The Evaluation Semantics of $B$}\label{apx:eval-semantics}
+\section{The Evaluation Semantics of \(\LB\)}\label{apx:eval-semantics}
 
 \begin{align*}
   \EE{x}{\gamma} &= \gamma(x) \\
@@ -41,7 +41,7 @@
   \inferrule{\EC{\gamma}{t}{c}{v}}{\EC{\gamma}{\ttick{t}}{c + 1}{v}}{\textsc{C-Tick}} \\
 \end{mathpar}
 
-\section{The Evaluation Semantics of $L$}\label{apx:semantics-logic}
+\section{The Semantics of \(\LL\)}\label{apx:semantics-logic}
 
 \begin{mathpar}
   \inferrule{\EL{\gamma}{t}{v}}{\EL{\gamma}{\tresult{t}}{\sthunk{v}}}{\rulename{L-Result}}
@@ -49,6 +49,10 @@
   \inferrule{\\}{\EL{\gamma}{\tundefined}{\sundefined}}{\rulename{L-Undefined}} \\
   \inferrule{\EL{\gamma}{t_1}{\sthunk{v_1}} \\ \EL{\gamma, x \mapsto v_1}{t_2}{v_2}}{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v_2}}{\rulename{L-Case-Result}} \\
   \inferrule{\EL{\gamma}{t_1}{\sundefined} \\ \EL{\gamma}{t_3}{v}}{\EL{\gamma}{\tcase{t_1}{x}{t_2}{t_3}}{v}}{\rulename{L-Case-Undefined}}\\
+  \inferrule{\EL{\gamma}{t_1}{v} \\ \EL{\gamma}{t_2}{v}}{\EL{\gamma}{\teq{t_1}{t_2}}{\strue}}{\rulename{L-Eq-True}} \qquad
+  \inferrule{\EL{\gamma}{t_1}{v_1} \\ \EL{\gamma}{t_2}{v_2} \\ v_1 \neq v_2}{\EL{\gamma}{\teq{t_1}{t_2}}{\sfalse}}{\rulename{L-Eq-False}} \\
+  \inferrule{\EL{\gamma}{t_1}{v_1} \\ \EL{\gamma}{t_2}{v_2} \\ v_1 \le v_2}{\EL{\gamma}{\tle{t_1}{t_2}}{\strue}}{\rulename{L-Approx-True}} \\
+  \inferrule{\EL{\gamma}{t_1}{v_1} \\ \EL{\gamma}{t_2}{v_2} \\ v_1 \nleq v_2}{\EL{\gamma}{\tle{t_1}{t_2}}{\sfalse}}{\rulename{L-Approx-False}} \\
   \inferrule{v : A}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}} \qquad
   \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}}
   \qquad

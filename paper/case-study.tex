@@ -23,7 +23,8 @@ data T a = Undefined | Thunk a
 thunk :: Applicative f => f a -> f (T a)
 thunk f = pure Undefined ? fmap Thunk f
 
-newtype Tick a = Tick { runTick :: (a, Int) }
+newtype Tick a =
+  Tick { runTick :: (a, Int) }
   
 data List a = Nil | (:~) a (T (List a))
 \end{lstlisting}
@@ -35,8 +36,7 @@ class Data a => Approx a where
   (<~) :: a -> a -> Bool
 
   approx :: a -> a
-  approx x | y <~ x = y
-  where y free
+  approx x | y <~ x = y where y free
   
 instance Approx a => Approx (T a) where
   Undefined <~ _         = True

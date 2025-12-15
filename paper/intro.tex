@@ -324,15 +324,17 @@ Because these functions are deterministic, computation costs are easy to test. U
 complicated than the clairvoyance translation, which makes it more challenging
 to develop tools for or formally reason about code under demand semantics.
 
-\paragraph{Two sides of the same coin.}
-It is unsatisfying that even though we have two semantics that model lazy
+\paragraph{Our contributions.}
+It is unsatisfying that although we have two semantics that model lazy
 computation costs, they are very different and we have to choose between them
 depending on what we need. In this paper, we propose a novel approach of
-\emph{unifying} these two dissimilar semantics using \emph{functional logic
-  programming}. In this new approach, we translate a lazy functional program to
-a functional logic program that models clairvoyance semantics via a
-\emph{\transCname}. This functional logic program can be extended to obtain a
-new program that encodes demand semantics via a \emph{\transDname}.
+\emph{unifying} these two semantics using \emph{functional logic programming}.
+In this new approach, we translate a lazy functional program to a functional
+logic program that models clairvoyance semantics via a \emph{\transCname}. This
+functional logic program can be extended to obtain a new program that encodes
+demand semantics via a \emph{\transDname}. This finding reveals that these two
+independently proposed semantics are two sides of the same coin. We show this
+connection both in theory and in practice.
 
 We show an example of translating the Haskell \cdh{take} function to Curry~\cite{curry-lang} in \cref{fig:take-curry}. \Cref{fig:takeC-curry}
 shows the result of a \transCname, the definition of \cdc{takeC} in Curry.
@@ -343,19 +345,18 @@ some common definitions shown in \cref{fig:curry-thunk-func}.
 \ly{TODO: phrase these explanations better.} The \cdc{takeC} function takes an
 \cdc{Int}, and a \cdc{T (List a)} that represents a list with $\bot$s as
 arguments. It returns a new list \lai{What type?} with $\bot$s in the \cdc{Tick}
-monad, which encodes computation cost. The function works similarly to
-\cdh{take} for most parts. The key for implementing clairvoyance semantics is
-the recursive call \cdc{thunk (takeC n' xsT')}, which unfolds to:
+monad that encodes computation cost. The function works similarly to \cdh{take}
+for most parts. The key for implementing clairvoyance semantics is the recursive
+call \cdc{thunk (takeC n' xsT')}, which unfolds to:
 \begin{lstlisting}[language=Curry]
 pure Undefined ? fmap Thunk (takeC n' xsT') 
 \end{lstlisting}
-That is, every time we make a recursive call, we use Curry's nondeterministic
-choice operator \cdc{?} to either skip the evaluation by returning
-\cdc{Undefined}, or evaluate the recursive call and wrap the result inside the
-\cdc{Thunk} constructor.
+That is, we use Curry's nondeterministic choice operator \cdc{?} to either skip
+the evaluation and return \cdc{Undefined} (\ie~$\bot$), or evaluate the
+recursive call and wrap the result inside a \cdc{Thunk} constructor.
 
 The \cdc{takeD} function, on the other hand, relies on \cdc{takeC}. The core of
-\cdc{takeD} is in its guard expression: \cdc{takeC n xsTD =:= Tick (ysD, c)},
+\cdc{takeD} is in its guard condition: \cdc{takeC n xsTD =:= Tick (ysD, c)},
 where \cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, and \cdc{xsTD} and
 \cdc{c} are free variables~(also known as logical variables). In this way,
 \cdc{takeD} computes the input \cdc{xsTD} and parts of the output \cdc{c} of
@@ -406,8 +407,7 @@ forcing (Thunk v) f = f v
 \begin{subfigure}[b]{0.55\textwidth}
 \begin{lstlisting}[language=Curry]
 takeC :: Int -> T (List a) -> Tick (List a)
-takeC n xsT = do
-  tick
+takeC n xsT = tick >>
   fcase n `compare` 0 of
     EQ -> return Nil
     GT -> forcing xsT $ \xs ->
@@ -416,8 +416,8 @@ takeC n xsT = do
         x :~ xsT' -> do
           (x:~) <$> thunk (takeC (n - 1) xsT')
 \end{lstlisting}
-\caption{The \cdc{takeC} function obtained from a
-  \transCname.}\label{fig:takeC-curry}
+\caption{The \cdc{takeC} function obtained from a \transCname. The
+  \cdc{<$>} is the infix operator for \cdc{fmap}.}\label{fig:takeC-curry}
 \end{subfigure}
 \qquad
 \begin{subfigure}[b]{0.4\textwidth}
@@ -438,17 +438,18 @@ takeD n xsT ysD
   implemented in Curry.}\label{fig:take-curry}
 \end{figure}
 
-\paragraph{Our contributions.}
-Using functional logic programming, we show that clairvoyance
-and demand semantics can be represented as two ways of evaluating
-one functional logic program, revealing them as two sides of the same
-coin. We show this connection both in theory and in practice.
-
-In addition, our result shows a simple way of executing clairvoyance semantics utilizing functional logic language compilers like the KiCS2 Curry compiler,
+\ifextended
+In addition, our result shows a simple way of executing clairvoyance semantics
+utilizing functional logic language compilers like the KiCS2 Curry compiler,
 which supports flexible search strategies and features to encapsulate
 nondeterministic computations~\cite{kics2}. Our result also shows a simpler way
-to encode demand semantics using free variables in logic languages.
-Our evaluation shows that this simpler approach achieves acceptable performance.
+to encode demand semantics using free variables in logic languages. Our
+evaluation shows that this simpler approach achieves acceptable performance.
+\else
+  Thanks to functional logic programming compilers, we now have a simple way of
+  executing clairvoyance semantics. Our work also proposes a simpler way to
+  encode demand semantics.
+\fi
 
 More concretely, we make the following contributions:
 

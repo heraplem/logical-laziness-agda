@@ -97,8 +97,8 @@ and demand semantics~\cite{demand-semantics}.
 
 \subsection{The Logic Language \(\LL\)}\label{subsec:logic-lang}
 
-We show the syntax of \(\LL\) in \cref{fig:syntax-logic}. Compared with \(\LB\),
-language \(\LL\) has more types: a unit type \(\TUnit\), natural numbers
+We show the syntax of language \(\LL\) in \cref{fig:syntax-logic}. Compared with \(\LB\),
+\(\LL\) has more types: a unit type \(\TUnit\), natural numbers
 \(\TNat\), and product types \(\TProd{A}{B}\). \ifextended We need the natural
   number type to model computation costs, and we need product types to return
   computation results along with costs. Since we are going to model demand
@@ -106,12 +106,12 @@ language \(\LL\) has more types: a unit type \(\TUnit\), natural numbers
   unit type to model \emph{empty} contexts. \else We need natural numbers and
   products to represent computation costs associated with values, and we need
   products and the unit type to represent environments. Note that the types of
-  \(\LL\) are a superset of the types of \(\LB\); as a consequence, any valid
+  \(\LL\) are a superset of the types of \(\LB\). As a consequence, any valid
   typing context for \(\LB\) is also a valid typing context for \(\LL\). \fi
 
 In addition, we introduce two constructors for the \(\TThunkZ\) type:
 \(\tresultZ\) for the result of an expression that has been evaluated, and
-\(\tundefined\) the result of an expression that has been skipped~(\ie~the
+\(\tundefined\) for the result of an expression\lai{expression or evaluation?} that has been skipped~(\ie~the
 $\bot$ we used in \cref{sec:intro}). In the \transCname{}, these two
 constructors indicate whether a computation is evaluated or not. In the
 \transDname, they indicate whether a computation is demanded or not.
@@ -169,7 +169,7 @@ constructors indicate whether a computation is evaluated or not. In the
       \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \\
     \end{mathpar}
   \end{center}
-  \caption{The syntax of the logic language \(\LL\), along with typing rules and
+  \caption{The syntax of the logic language \(\LL\), along with typing and
     semantic rules related to the \TLazyZ{} datatype,
     approximations~(\(\tleZ\)), the choice operator~(\texttt{?}), and free
     variables. See \cref{subsec:values} for the meaning of the \(\le\)
@@ -184,7 +184,7 @@ failure~(\(\tfail\)). Free terms, which may evaluate to any value of a specified
 type, can be thought of as ``anonymous logic variables'': variables bound to
 free terms are equivalent to logic variables. Finally, we have a relational
 operator \(\tleZ\), which indicates whether its left-hand operand is less
-defined than its right-hand operand (in the sense defined in
+defined than its right-hand operand (as defined in
 \cref{subsec:values}).
 
 \stl{

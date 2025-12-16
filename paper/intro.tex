@@ -335,7 +335,7 @@ them to represent demands.
 % We do not need any power sets, as the demand semantics is deterministic.
 
 Because these demand functions are deterministic, computation costs are easy to
-test. Howver, the demand translation is much more complicated than the
+test. However, the demand translation is much more complicated than the
 clairvoyance translation, which makes it more challenging to develop tools for
 or formally reason about code under demand semantics.
 
@@ -362,7 +362,7 @@ The \cdc{takeC} function takes an \cdc{Int}, and a \cdc{T (List a)}. The \cdc{T}
 datatype, defined in \cref{fig:curry-thunk-func}, represents a value that could
 be $\bot$~(represented by \cdc{Undefined}). The type \cdc{List a} is the
 approximation of \cdh{[a]}. The function returns a new \cdc{List a} inside a
-\cdc{Tick} monad, which encodes the computation cost associated with returned
+\cdc{Tick} monad, which encodes the computation cost associated with the returned
 \cdc{List a}. The function works similarly to \cdh{take} for the most
 part.\ly{TODO: explain \cdc{fcase} and \cdc{=:=}.} The key to implementing
 clairvoyance semantics is the recursive call \cdc{thunk (takeC n' xsT')}, which

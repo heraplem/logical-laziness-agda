@@ -33,11 +33,11 @@ typed setting and proved its equivalence to clairvoyance semantics, in forms of
 cost existence and cost minimality theorems. We rely on these results in our
 correctness theorems in
 \cref{sec:equiv}~(\ie~\cref{prop:cost-existence,prop:cost-minimality}). They
-further uses demand semantics to mechanically verify amortized costs and
+further use demand semantics to mechanically verify amortized costs and
 persistence of two of Okasaki's data structures: the banker's queue and the
 implicit queue~\cite{purely-functional} in Rocq.
 
-There have also been works on applying property-based testing to lazy
+There has also been work on applying property-based testing to lazy
 computation cost analysis, such as Foner \textit{et al.}~\cite{foner2018} and
 Lorenzen~\cite{lazy-amortized-testing}. We leave it as future work to extend our
 work to property-based testing frameworks in Curry like
@@ -52,9 +52,9 @@ Tick~\cite{DBLP:conf/ifipPACT/MasseyT94}, and Lorenzen \textit{et
   al.}~\cite{10.1145/3747530}.
 
 \paragraph{Functional logic programming.}
-We implemented our examples in Curry; however, most of the techniques in this
-paper are not specific to Curry, and could have been implemented in other
-functional logic languages such as Verse~\cite{verse} or
-mercury~\cite{mercury}. Because \(\LL\) uses eager evaluation, we could have
-even translated to a pure logic language; \eg\ Prolog~\cite{EagerFLPIsLogic}.
+We implemented our examples in Curry, however, most of the techniques in this
+paper are not specific to Curry. Other
+functional logic languages, such as Verse~\cite{verse} or
+mercury~\cite{mercury}, could also have proven sufficient. Because \(\LL\) uses eager evaluation, we could have
+even translated to a pure logic language, such as Prolog~\cite{EagerFLPIsLogic}
 ~\cite{DBLP:journals/jflp/BrasselHH04}. However, the search tree traversal employed in this work is Curry-specific~\cite{DBLP:journals/jflp/BrasselHH04}.

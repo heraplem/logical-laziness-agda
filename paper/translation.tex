@@ -169,8 +169,8 @@ constructors indicate whether a computation is evaluated or not. In the
       \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \\
     \end{mathpar}
   \end{center}
-  \caption{The syntax of the logic language \(\LL\). Typing rules and semantic
-    rules that are related to the \TLazyZ{} datatype,
+  \caption{The syntax of the logic language \(\LL\), along with typing rules and
+    semantic rules related to the \TLazyZ{} datatype,
     approximations~(\(\tleZ\)), the choice operator~(\texttt{?}), and free
     variables. See \cref{subsec:values} for the meaning of the \(\le\)
     relation.}\label{fig:syntax-logic}\label{fig:logic-semantics}
@@ -389,9 +389,9 @@ simply run it and increment its accumulated cost by \(1\).
 \end{figure}
 
 We also define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
-in \cref{fig:demand-translation}. Unlike the \transCname, the \transDname also
+in \cref{fig:demand-translation}. Unlike the \transCname{}, the \transDname{ also
 takes as a parameter a typing context \(\Gamma\) such that \(\TB{\Gamma}{t}{A}\)
-(for some type \(A\)). This is because the \transDname must know the names and
+(for some type \(A\)). This is because the \transDname{} must know the names and
 types of \(t\)'s free variables. This treatment is the same as the demand
 translation of Xia \textit{et al.}~\cite{demand-semantics}. As output,
 \(\transD{t}{\Gamma}\) produces a term in \(\LB\) that has all the same free

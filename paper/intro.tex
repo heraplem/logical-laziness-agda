@@ -381,8 +381,7 @@ are free variables~(also known as logic variables). In this way, \cdc{takeD}
 computes the input \cdc{xsTD} and parts of the output \cdc{c} of \cdc{takeC},
 given the rest of its output \cdc{ysD}. Put differently, \cdc{takeD} is a kind
 of \emph{inversion} of \cdc{takeC}. In addition, we require \cdc{xsTD} to be an
-approximation of \cdc{xsT}, another argument of \cdc{takeD}, so that it is
-either \cdc{xsT} or ``less evaluated'' than \cdc{xsT}.
+approximation of \cdc{xsT}, another argument of \cdc{takeD}, so that it either is \cdc{xsT}, or is ``less evaluated'' than \cdc{xsT}.
 
 % Nondeterministic choices in functional logic programming are natural fit for
 % modeling the clairvoyance semantics. The demand semantics can be considered a
@@ -486,7 +485,7 @@ More concretely, we make the following contributions:
   queue~\cite{purely-functional}, to Curry~\cite{curry-lang} based on our
   translation strategies. We evaluate the performance of translated code using
   the KiCS2 Curry compiler~\cite{kics2}, finding it acceptable for computation
-  cost analysis despite simpler code~(\cref{sec:case-study}).
+  cost analysis while allowing for simpler code~(\cref{sec:case-study}).
 \end{itemize}
 
 In addition, we discuss related work in \cref{sec:related-work} and conclude in

@@ -245,14 +245,14 @@ type \(\TM{(\TThunk{A})}\). In addition, we define \tassertZ{}, which ensures
 that a given condition holds, causing the computation to fail if it does not.
 
 We show all the typing rules related to these derived terms in
-\cref{fig:logic-derived} as well. Readers who are familiar with monads might
+\cref{fig:logic-derived}. Readers who are familiar with monads might
 recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
 
 \subsection{Exact Values and Approximations}\label{subsec:values}
 
 Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
 and a set \(\Approx{A}\) of \emph{approximation values}, defined in
-\cref{fig:exact-approx}. The exact values are standard; \eg\ the exact values of
+\cref{fig:exact-approx}. The exact values are standard: the exact values of
 \(\TNat\) are natural numbers, and the exact values of \(\TList{A}\) are finite
 sequences with elements drawn from the exact values of \(A\). The approximation
 values are similar to the exact values, except some parts might be
@@ -322,7 +322,7 @@ environments that elementwise approximate \(\gamma\).
 
 Approximations come with a \emph{definedness} relation (\cref{fig:definedness}).
 It is conceptually similar to the approximation relation: \(a \le a'\),
-pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as
+pronounced ``\(a\) is less defined than \(a'\),'' if \(a\) has the same shape as
 \(a'\) with some parts replaced by \(\sundefined\). This relation is a partial order on approximations.
 
 We also extend \(\le\) to environments. Given \(\gamma \in \Eval{\Gamma}\) and

@@ -73,7 +73,7 @@ The \cdc{Tick} datatype is a product type which uses an \cdc{Int} to represent
 the computation cost associated with its value. It is essentially a writer
 monad~\cite{moggi-monad,wadler-monad}. \cdc{List a} is the approximation type of
 lists \cdc{[a]}. These types have all of the expected typeclass instances;
-\eg~\cdc{Tick} is a \cdc{Monad}. Those definitions are standard; we omit them
+\eg~\cdc{Tick} is a \cdc{Monad}. These definitions are standard, and we omit them
 for brevity.
 
 \paragraph{Examples implemented.}
@@ -111,7 +111,7 @@ Thus, we can always find the least result via a depth-first search.
 % 
 
 \paragraph{Guards vs.\ generators.}
-In Curry, there are two ways of implementing the logic demand functions: 
+In Curry, there are two ways of implementing the logical demand functions: 
 guards and generators. Even though they are semantically equivalent, there
 is a huge performance difference.
 

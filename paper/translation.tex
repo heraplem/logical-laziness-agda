@@ -389,14 +389,15 @@ simply run it and increment its accumulated cost by \(1\).
 \end{figure}
 
 We also define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
-in \cref{fig:demand-translation}. Unlike the \transCname{}, the \transDname{ also
-takes as a parameter a typing context \(\Gamma\) such that \(\TB{\Gamma}{t}{A}\)
-(for some type \(A\)). This is because the \transDname{} must know the names and
-types of \(t\)'s free variables. This treatment is the same as the demand
-translation of Xia \textit{et al.}~\cite{demand-semantics}. As output,
-\(\transD{t}{\Gamma}\) produces a term in \(\LB\) that has all the same free
-variables as \(t\), plus an additional free variable \(x\), which represents a
-demand on the output of \(t\).
+in \cref{fig:demand-translation}. Unlike the \transCname{}, the \transDname{}
+also takes as a parameter a typing context \(\Gamma\) such that
+\(\TB{\Gamma}{t}{A}\) (for some type \(A\)). This is because the \transDname{}
+must know the names and types of \(t\)'s free variables. This treatment is the
+same as the demand translation of Xia \textit{et
+  al.}~\cite{demand-semantics}. As output, \(\transD{t}{\Gamma}\) produces a
+term in \(\LB\) that has all the same free variables as \(t\), plus an
+additional free variable \(x\), which represents a demand on the output of
+\(t\).
 % (We make this precise in \cref{thm:transD-type}.)
 
 Intuitively, \(\transD{t}{\Gamma}\) operates as follows.

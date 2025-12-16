@@ -26,18 +26,18 @@ the correctness theorem, its proof, and the Adga development to
 We show the syntax of the base language \(\LB\) in \cref{fig:syntax-base}.
 Language \(\LB\) is a simply typed calculus with booleans, lists, and lazy
 thunks (\ie~suspended computations). Its terms include variables,
-\(\tletZ\)-bindings, conditionals, and recursions based on \(\tfoldrZ\). In
+\(\tletZ\)-bindings, conditionals, and recursion based on \(\tfoldrZ\). In
 addition, it contains \( \tlazyZ \) and \( \tforceZ \) operators, which wrap a
-computation in a lazy thunk and forcing a computation from a thunk,
+computation in a lazy thunk and force a computation from a thunk,
 respectively.
 % The \(\TThunkZ\) type represents thunks in lazy evaluation.
 Finally, the \( \ttickZ \) operator incurs one unit of computation cost. These
 explicit operators decouple our analysis from any particular evaluation model.
 
-\(\LB\) does not have higher-order functions or general recursion, because
+\(\LB\) does not have higher-order functions or general recursion because
 demand semantics does not support these
 features~\cite{bjerner1989,demand-semantics}. The lack of higher-order functions
-does not fundamentally limit \(\LB\)'s expressivity, since any higher-order
+does not fundamentally limit \(\LB\)'s expressivity, as any higher-order
 program can be
 defunctionalized~\cite{DBLP:conf/acm/Reynolds72,DBLP:conf/ppdp/DanvyN01} to an
 equivalent first-order program.\nc{The ``story of your function's life'' paper
@@ -46,7 +46,7 @@ equivalent first-order program.\nc{The ``story of your function's life'' paper
   mentioning defunctionalization here? I'm pretty sure this still isn't a
   fundamental limit on expressivity, though.} The lack of general recursion
 \emph{is} a fundamental limitation on expressivity, but it is not a problem for
-cost analysis: we can simulate general recursion without any change in
+cost analysis. We can simulate general recursion without any change in
 asymptotic complexity by providing a ``fuel'' parameter that decreases on every
 recursive call.
 
@@ -90,7 +90,7 @@ related to lazy evaluation and computation costs:
 \[
   \EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma} .
 \]
-We do not need to model the natural semantics of \(\LB\), because prior work has
+We do not need to model the natural semantics of \(\LB\) because prior work has
 established computation cost equivalence between natural semantics and
 clairvoyance semantics~\cite{clairvoyant}, and between clairvoyance semantics
 and demand semantics~\cite{demand-semantics}.

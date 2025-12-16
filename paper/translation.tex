@@ -9,9 +9,9 @@ In this section, we define two languages: a simple functional language
 \(\LB\)~(\cref{subsec:base-lang}) and a simple functional logic language
 \(\LL\)~(\cref{subsec:logic-lang}).\nc{Are they \emph{really} functional,
   though?} Next, we develop two translations from \(\LB\) to \(\LL\): a
-\emph{\transCname}, which produces terms modeling clairvoyance
-semantics~\cite{clairvoyant,forking-paths}, and a \emph{\transDname}, itself a
-wrapper around \transCname, which produces terms modeling demand
+\emph{\transCname} which produces terms modeling clairvoyance
+semantics~\cite{clairvoyant,forking-paths}, and a \emph{\transDname}, which is a
+wrapper around the \transCname, which produces terms modeling demand
 semantics~\cite{bjerner1989,demand-semantics}~(\cref{subsec:demand-translation}).
 
 \ifextended
@@ -24,7 +24,7 @@ the correctness theorem, its proof, and the Adga development to
 \subsection{The Base Language \(\LB\)}\label{subsec:base-lang}
 
 We show the syntax of the base language \(\LB\) in \cref{fig:syntax-base}.
-Language \(\LB\) is a simple typed calculus with booleans, lists, and lazy
+Language \(\LB\) is a simply typed calculus with booleans, lists, and lazy
 thunks (\ie~suspended computations). Its terms include variables,
 \(\tletZ\)-bindings, conditionals, and recursions based on \(\tfoldrZ\). In
 addition, it contains \( \tlazyZ \) and \( \tforceZ \) operators, which wrap a

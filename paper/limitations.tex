@@ -1,0 +1,19 @@
+\section{Limitations}\label{sec:equiv}
+
+A potential limitation of our technique is that the \transDname{} produces
+nondeterministic code that does not in general reduce \emph{only} to the result
+of demand semantics. Some logic languages have a built-in facility to collapse a
+nondeterministic computation into a deterministic one, returning either the
+first result found or a list of all possible results. In languages that also
+give the user control over the order in which branches are tried, we can arrange
+for less-defined results to always be tried first, thereby ensuring that we
+always obtain the minimal result. We take this approach in
+\cref{sec:case-study}.
+
+As discussed in \cref{sec:case-study}, our technique is somewhat slow with even
+modestly-sized inputs. Although unfortunate, we consider this to be
+acceptable. A major motivation behind this line of research was the desire to
+find a lightweight representation of demand functions that could be used to test
+their asymptotic bounds (constants included) \emph{before} trying to formally
+verify them. For this purpose, it usually suffices to test quite small inputs,
+where our technique performs quite well in absolute (wall-clock) terms.

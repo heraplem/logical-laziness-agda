@@ -181,7 +181,7 @@ no need for arbitrary functions on natural numbers, so we include only literals
 and addition. \(\LL\) also has constructs for logic programming: free
 terms~(\(\tfreeZ\)), nondeterministic choice~(\(\tchooseZ\)), and
 failure~(\(\tfail\)). Free terms, which may evaluate to any value of a specified
-type, can be thought of as ``anonymous logic variables'': variables bound to
+type, can be thought of as ``anonymous logic variables;'' variables bound to
 free terms are equivalent to logic variables. Finally, we have a relational
 operator \(\tleZ\), which indicates whether its left-hand operand is less
 defined than its right-hand operand (as defined in
@@ -199,8 +199,8 @@ Really we're using the functional logic part for the convenience.
 It already has the form of a functional language, but it can also do function inversion.}
 
 We define a simple logic language instead of using a specific functional logic
-language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics}, the Verse
-calculus~\cite{verse}) to keep our approach generally applicable.
+language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics} or the Verse
+calculus~\cite{verse}) to keep our approach generally applicable.\lai{Maybe move this earlier in the section? To the front? Maybe as a footnote?}
 
 We show the semantic rules of \(L\) that are related to the choice
 operator~(\tchooseZ) and free terms in \cref{fig:logic-semantics}.\ly{Did we

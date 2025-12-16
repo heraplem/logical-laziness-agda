@@ -1,11 +1,11 @@
 \section{Correctness}\label{sec:equiv}
 
 In this section, we prove that our \transCname{} and \transDname{} correctly
-implements clairvoyance semantics and demand semantics, respectively. All of our
-proofs are mechanized in the Agda proof
-assistant~\cite{DBLP:conf/tldi/Norell09}. All the formalizations, theorems, and
-proofs can be found in our publically-available artifact.\ly{TODO: Make sure we
-  have the code materials ready for submission as well.}
+implement clairvoyance semantics and demand semantics, respectively. All of our
+proofs are mechanized in the proof assistant
+Agda~\cite{DBLP:conf/tldi/Norell09}. All formalizations, theorems, and proofs
+can be found in our publically-available artifact.\ly{TODO: Make sure we have
+  the code materials ready for submission as well.}
 
 % In this section, we define clairvoyance and demand semantics on \(\LB\) and
 % establish the equivalence of our translation with respect to both semantics,
@@ -46,30 +46,20 @@ We show an overview of how we formally prove correctness theorems in
 \(\SC\llbracket\cdot\rrbracket\) on \(\LB\). We then show that starting from a
 term \(t\) in \(\LB\), we can translate it to a term in \(\LL\) using the
 \transCname{} \(\transC{t}\), that has the same meaning as
-\(\SC\llbracket t \rrbracket\). We also show a similar theorem between demand
-semantics and the \transDname.
+\(\SC\llbracket t \rrbracket\). We also prove a similar theorem relating demand
+semantics to the \transDname.
 
-We define clairvoyance semantics on \(\LB\) as a big-step operational semantics
-with the judgment schema \(\EC{\gamma}{t}{c}{v}\): intuitively, \(c\) is the
-number of \(\ttickZ\)s encountered while evaluating \(t\) to \(v\). As with
-Hackett and Hutton's original clairvoyance semantics, our definition is based on
-\emph{improvement theory}~\cite{moran1999}. We omit detailed definitions of
-clairvoyance semantics on \(\LB\) here because our semantics is essentially the
-same as that of Hackett and Hutton~\cite{clairvoyant}, except that we are based
-on a typed calculus with explicit \( \tlazyZ \) and \( \tforceZ \) operators.
-% We give the main rules for clairvoyance semantics in
-% \cref{fig:clairvoyance-base}. The \rulename{C-Lazy-Result} and
-% \rulename{C-Lazy-Undefined} rules state that, to evaluate a \( \tlazyZ \)
-% term, we nondeterministically evaluate its subterm and wrap it in a
-% \( \sthunkZ \)~(\rulename{C-Lazy-Result}), or substitute it with an ``empty''
-% value \( \sundefined \)~(\rulename{C-Lazy-Undefined}). This is the key to
-% clairvoyance semantics. The \rulename{C-Force} rule states that we can only
-% evaluate a value of \( \TThunkZ \) type if it \emph{is} a \( \sthunkZ \)
-% (\eg~we cannot \( \tforceZ \) \( \sundefined \)).
-Therefore, we must introduce nondeterminism at \( \tlazyZ \) terms. In contrast,
-Hackett and Hutton~\cite{clairvoyant} introduce nondeterminism at \( \tletZ \)
-bindings. Interested readers can find detailed definitions of clairvoyance
-semantics on \(\LB\) in \cref{apx:clairvoyance-semantics} and in our artifact.
+Clairvoyance semantics is a big-step operational semantics with the judgment
+schema \(\EC{\gamma}{t}{c}{v}\): intuitively, \(c\) is the number of
+\(\ttickZ\)s encountered while evaluating \(t\) to \(v\). Our semantics is
+similar to the original clairvoyance semantics of Hackett and
+Hutton~\cite{clairvoyant}; e.g., like their semantics, ours is based on
+improvement theory~\cite{moran1999}. The most significant difference is that,
+unlike Hackett and Hutton's calculus, our calculus has explicit \(\tlazyZ\) and
+\(\tforceZ\) operators; therefore, whereas Hacket and Hutton introduce
+nondeterminism at \(\tletZ\) bindings, we must introduce it at \(\tlazyZ\)
+terms. Readers can find detailed definitions of our clairvoyance semantics in
+\cref{apx:clairvoyance-semantics} and in our artifact.
 % when evaluating \( \tlet{x}{t_1}{t_2} \) in their semantics, either \( x \) is
 % either immediately bound to the result of evaluating \( t_1 \), or it s not
 % bound at all.
@@ -87,36 +77,39 @@ semantics on \(\LB\) in \cref{apx:clairvoyance-semantics} and in our artifact.
 % obtained by iterating over the rest of the list (or \( \sundefined \) if the
 % rest of the list is itself \( \sundefined \)).
 % 
-Demand semantics is a deterministic semantics that interprets a term \( t \)
-as a function \( \EDU{t} \) which takes two arguments: an \emph{exact}
-evaluation context \( \gamma \), and an approximation value that represents
-the output demand on the result of \( \EE{t}{\gamma} \). It produces a list of
-minimal demands on \( \gamma \) and a computation cost. In summary, demand
-semantics has the ``type'':
+Demand semantics is a deterministic semantics that interprets a term \( t \) as
+a function \( \EDU{t} \) that takes two arguments: an \emph{exact} evaluation
+context \( \gamma \) and an approximation value that represents the demand on
+the result of \( \EE{t}{\gamma} \). It produces a list of minimal demands on
+\( \gamma \) and a computation cost. In summary, demand semantics has the
+``type'':
 \[
   \EDU{-} : (t : \Gamma \vdash A) \to (\gamma : \Eval{\Gamma}) \times \Approx{A}_{\approxof{\relax}{\EE{t}{\gamma}}} \to \Approx{\Gamma}_{\approxof{\relax}{\gamma}} \times \N .
 \]
 Intuitively, demand semantics computes ``how much'' of the input \( \gamma \) is
-required to compute a desired ``amount'' of the output \( \EE{t}{\gamma} \). It
-also computes how much it costs to perform the computation.
+required to compute a desired ``amount'' of the output \( \EE{t}{\gamma} \), and
+also how much it costs to perform the computation.
 
-We omit detailed definitions of demand semantics on \(\LB\) as it is essentially
-the same as that of Xia \textit{et al.}~\cite{demand-semantics}, but interested
-readers can refer to them in \cref{apx:demand-semantics} and in our artifact.
+We omit detailed definitions of demand semantics on \(\LB\), as it is
+essentially the same as that of Xia \textit{et al.}~\cite{demand-semantics}; but
+interested readers can refer to them in \cref{apx:demand-semantics} and in our
+artifact.
 
 Our proof of the correctness of the \transDname{} builds on the following
 results proven by Xia \textit{et al.}~\cite{demand-semantics}, which we take as
 axioms in our Agda formalization (the proof of Xia \textit{et al.} was in
-Rocq~\cite{coq}): Let \( \Gamma \vdash t : A \), \( \gamma \in \Eval{\Gamma} \),
+Rocq~\cite{coq}). Let \( \Gamma \vdash t : A \), \( \gamma \in \Eval{\Gamma} \),
 and \( \approxof{a^A}{\EE{t}{\gamma}} \); and define
 \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \).
 
 \begin{proposition}[Cost existence]\label{prop:cost-existence}
-  Let \( \gamma^A \le {\gamma^A}' \prec \gamma \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EC{{\gamma^A}'}{t}{c}{{a^A}'} \).  In particular, \( \EC{\gamma^A}{t}{c}{a^A} \).
+  Let \( \gamma^A \le {\gamma^A}' \prec \gamma \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EC{{\gamma^A}'}{t}{c}{{a^A}'} \).
 \end{proposition}
 
 \begin{proposition}[Cost minimality]\label{prop:cost-minimality}
-  Let \( \approxof{{\gamma^A}'}{\gamma}, {a^A}' \ge a^A, c' \in \N \) such that \( \EC{{\gamma^A}'}{t}{c'}{{a^A}'} \). Then \( ({\gamma^A}', c') \ge (\gamma^A, c) \).
+  Let \( \approxof{{\gamma^A}'}{\gamma}, {a^A}' \ge a^A, c' \in \N \) such that
+  \( \EC{{\gamma^A}'}{t}{c'}{{a^A}'} \). Then
+  \( ({\gamma^A}', c') \ge (\gamma^A, c) \).
 \end{proposition}
 
 \Cref{prop:cost-existence,prop:cost-minimality} establish equivalence between
@@ -135,7 +128,8 @@ on the \transCname, is equivalent to the demand semantics.
 
 \begin{lemma}[Semantics of the \transDname]\label{prop:dem-trans-sem}
   \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \)
-  if and only if (1)~\( \gamma^A \le \gamma \), and (2)~\(  \EC{\gamma^A}{t}{c}{a^A} \).
+  if and only if (1)~\( \gamma^A \le \gamma \), and
+  (2)~\( \EC{\gamma^A}{t}{c}{a^A} \).
 \end{lemma}
 \begin{proof}
   By construction, applying \cref{prop:equiv-clairvoyance}.
@@ -145,7 +139,10 @@ We can then establish the correctness of the \transDname{} via two theorems:
 adequacy and soundness.
 
 \begin{theorem}[Adequacy of the \transDname]
-  Define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \) and let \( {\gamma^A}' \ge \gamma^A \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EL{\gamma, y^A \mapsto {a^A}'}{\transD{t}{\Gamma}}{({\gamma^A}', c)} \).  In particular, \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\gamma^A, c)} \).
+  Define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \) and let
+  \( {\gamma^A}' \ge \gamma^A \).  Then there exists some \( {a^A}' \ge a^A \)
+  such that
+  \( \EL{\gamma, y^A \mapsto {a^A}'}{\transD{t}{\Gamma}}{({\gamma^A}', c)} \).
 \end{theorem}
 \begin{proof}
   By \cref{prop:dem-trans-sem,prop:cost-existence}.
@@ -164,13 +161,13 @@ Note that the \transDname{} produces nondeterministic code, which does not
 reduce \emph{only} to the result of demand semantics. Some logic languages have
 a built-in facility to collapse a nondeterministic computation into a
 deterministic one, returning either the first result found or a list of all
-possible results. We can arrange for less-defined results to always be tried
-first, to ensure that the \transDname{} always returns the actual result of
-demand semantics. \stl{ Isn't the point of the demand translation that sometimes
-  we'll get unevaluated thunks which translate to undefined? In that case it
-  matches up with the fact that flp programs will fail. That's kind of what we
-  want. I think it's better to say that with a complete search strategy we get
-  all results. We don't need to rely on tools like set functions or findall that
+possible results. In languages that also give the user control over the order in
+which branches are tried, we can arrange for less-defined results to always be
+tried first, thereby ensuring that \transDname{} always returns the minimal
+result. \stl{ Isn't the point of the demand translation that sometimes we'll get
+  unevaluated thunks which translate to undefined? In that case it matches up
+  with the fact that flp programs will fail. That's kind of what we want. I
+  think it's better to say that with a complete search strategy we get all
+  results. We don't need to rely on tools like set functions or findall that
   way. Unless we're saying that demand semantics evaluates to an incomparable
   term.}
-

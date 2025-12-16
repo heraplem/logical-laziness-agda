@@ -10,6 +10,21 @@ for less-defined results to always be tried first, thereby ensuring that we
 always obtain the minimal result. We take this approach in
 \cref{sec:case-study}.
 
+As mentioned in \cref{subsec:base-lang}, demand semantics does not support
+higher-order functions or general recursion. The lack of higher-order functions
+does not fundamentally limit expressivity, as any higher-order program can be
+defunctionalized~\cite{DBLP:conf/acm/Reynolds72,DBLP:conf/ppdp/DanvyN01} to an
+equivalent first-order program.\nc{The ``story of your function's life'' paper
+  says that the language does not support higher-order functions; but, really,
+  it doesn't even support \emph{first-class} functions. So is it even worth
+  mentioning defunctionalization here? I'm pretty sure this still isn't a
+  fundamental limit on expressivity, though.} The lack of general recursion
+\emph{is} a fundamental limitation on expressivity, but it is not a problem for
+cost analysis: we can simulate general recursion without any change in
+asymptotic complexity by providing a ``fuel'' parameter that decreases on every
+recursive call. Nonetheless, extending demand semantics to include higher-order
+functions is an ongoing area of research.
+
 As discussed in \cref{sec:case-study}, our technique is somewhat slow with even
 modestly-sized inputs. Although unfortunate, we consider this to be
 acceptable. A major motivation behind this line of research was the desire to

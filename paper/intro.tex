@@ -50,8 +50,8 @@ evaluate a given expression depends on what has been evaluated previously.
   laziness, leading to the aforementioned difficulties in performance
   analysis.\ly{This claim does not make sense to me.  What cost models are you
     referring to?  Also: we can loosely say ``cost model'' later, but not in the
-    beginning; it's not cost models for any cost; it's specic to computation
-    costs. We cannot model space cost, for example.}
+    beginning; it's not cost models for any cost; it's specific to computation
+    costs. We cannot model space cost, for example.} \lai{It was a holdover from when we showed how O-notation fails when applied to Laziness - one of my pet examples to demonstrate the difficulty of lazy cost analysis. It got cut, but some of the discussion surrounding it was left in by mistake. :p}
 \fi
 Together, these characteristics mean that one cannot in general analyze a piece
 of lazy code in isolation; instead, one must consider the whole program. This

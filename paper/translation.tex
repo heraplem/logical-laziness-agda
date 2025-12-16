@@ -405,7 +405,7 @@ Intuitively, \(\transD{t}{\Gamma}\) operates as follows.
 \item For each variable \(x_i : A_i\) free in \(\Gamma\), introduce a new logic
   variable \(x_i' : A\) such that \(x_i' \le x_i\).
 \item Pass \(t\) through the \transCname\ and execute it, but with each \(x_i\)
-  replaced by the corresponding logiv variable \(x'_i\). This yields a
+  replaced by the corresponding logic variable \(x'_i\). This yields a
   result-cost pair \(u\).
 \item Constrain the result \(\tfst{u}\) to be equal to the input \(x\).
 \item Return a tuple containing the values of all the new logic variables, along
@@ -415,7 +415,7 @@ This is a special case of the common logic programming idiom of function
 inversion: \(\transD{t}{\Gamma}\) computes the inverse of \(\transC{t}\),
 constraining the result to be an approximation of the inputs to \(\transC{t}\).
 
-We prove that \transCname{} and \transDname{} preserve well-typedness of the
+We prove that \transCname{} and \transDname{} preserve the well-typedness of the
 original term in \(\LB\):
 \begin{theorem}
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).

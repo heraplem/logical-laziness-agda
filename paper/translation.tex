@@ -7,11 +7,11 @@
 
 In this section, we define two languagues: a simple functional language
 \(\LB\)~(\cref{subsec:base-lang}) and a simple functional logic language
-\(\LL\)~(\cref{subsec:logic-lang}). Next, we develop two translations from
-\(\LB\) to \(\LL\): a \emph{\transCname}, which produces terms modeling
-clairvoyance semantics~\cite{clairvoyant,forking-paths}, and a
-\emph{\transDname}, itself a thin wrapper around \transCname, which produces
-terms modeling demand
+\(\LL\)~(\cref{subsec:logic-lang}).\nc{Are they \emph{really} functional,
+  though?} Next, we develop two translations from \(\LB\) to \(\LL\): a
+\emph{\transCname}, which produces terms modeling clairvoyance
+semantics~\cite{clairvoyant,forking-paths}, and a \emph{\transDname}, itself a
+thin wrapper around \transCname, which produces terms modeling demand
 semantics~\cite{bjerner1989,demand-semantics}~(\cref{subsec:demand-translation}).
 
 \ifextended
@@ -178,12 +178,14 @@ constructors indicate whether a computation is evaluated or not. In the
 
 \(\LL\) has introduction and elimination forms for all of the new types. We have
 no need for arbitrary functions on natural numbers, so we include only literals
-and addition. We also have constructs for logic programming: free
-variables~(\(\tfreeZ\)), also known as logic variables; nondeterministic
-choice~(\(\tchooseZ\)); and failure~(\(\tfail\)). Note that free variables must
-be annotated with their types. Finally, we have a Boolean operator \(\tleZ\),
-which indicates whether its left-hand operand is less defined than its
-right-hand operand (in the sense defined in \cref{subsec:values}).
+and addition. \(\LL\) also has constructs for logic programming: free
+terms~(\(\tfreeZ\)), nondeterministic choice~(\(\tchooseZ\)), and
+failure~(\(\tfail\)). Free terms, which may evaluate to any value of a specified
+type, can be thought of as ``anonymous logic variables'': variables bound to
+free terms are equivalent to logic variables. Finally, we have a relational
+operator \(\tleZ\), which indicates whether its left-hand operand is less
+defined than its right-hand operand (in the sense defined in
+\cref{subsec:values}).
 
 \stl{
 So, any eager functional logic language is equivalent to a pure logic language
@@ -196,15 +198,14 @@ but since we fully evaluate the list in L, we don't get anything back.
 Really we're using the functional logic part for the convenience.
 It already has the form of a functional language, but it can also do function inversion.}
 
-We define a simple functional logic language \(\LL\) instead of using one
-specific functional logic
+We define a simple logic language instead of using a specific functional logic
 language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics}, the Verse
 calculus~\cite{verse}) to keep our approach generally applicable.
 
 We show the semantic rules of \(L\) that are related to the choice
-operator~(\tchooseZ) and free variables in \cref{fig:logic-semantics}.\ly{Did we
+operator~(\tchooseZ) and free terms in \cref{fig:logic-semantics}.\ly{Did we
   refer to any papers when we define this semantics? If so, cite them.} Note
-that this semantics is eager; furthermore, due to \( \tfail \), it is partial.
+that this semantics is eager; furthermore, due to \(\tfail\), it is partial.
 
 \begin{figure}[t] 
   \[
@@ -250,12 +251,14 @@ recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
 \subsection{Exact Values and Approximations}\label{subsec:values}
 
 Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
-and a set \(\Approx{A}\) of \emph{approximation values}, as defined in
-\cref{fig:exact-approx}. Approximation values \(\Approx{A}\) are similar to the
-exact values, except some parts might be ``discarded''~(represented by
-\(\sundefined\)).\ly{But what are exact values? Explain them as well.} They
-represent ``smaller'' values where certain computations are unneeded; \ie~they
-are approximations of the exact values.
+and a set \(\Approx{A}\) of \emph{approximation values}, defined in
+\cref{fig:exact-approx}. The exact values are standard; \eg\ the exact values of
+\(\TNat\) are natural numbers, and the exact values of \(\TList{A}\) are finite
+sequences with elements drawn from the exact values of \(A\). The approximation
+values are similar to the exact values, except some parts might be
+``discarded''~(represented by \(\sundefined\)).\ly{But what are exact values?
+  Explain them as well.} They represent ``smaller'' values where certain
+computations are unneeded; \ie~they are approximations of the exact values.
 
 \begin{figure}[t]
 \begin{center}
@@ -305,66 +308,29 @@ environments that elementwise approximate \(\gamma\).
     \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\spair{a_1}{a_2}}{\spair{e_1}{e_2}}} \qquad
     \inferrule{\\}{\approxof{\snil}{\snil}} \qquad
     \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\scons{a_1}{a_2}}{\scons{e_1}{e_2}}} \\
-    \inferrule{\\}{\sundefined \le \sundefined} \qquad
+    \inferrule{\\}{\sundefined \le a} \qquad
     \inferrule{a \le a'}{\sthunk{a} \le \sthunk{a'}} \qquad
     \inferrule{a \in \Approx{\TUnit} \cup \Eval{\TBool} \cup \Eval{\TNat} }{a \le a} \\
     \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\spair{a_1}{a_2} \le \spair{a_1'}{a_2'}} \qquad
     \inferrule{\\}{\snil \le \snil} \qquad
-    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\scons{a_1}{a_2} \le \scons{a_1'}{a_2'}} \\
-    \\
-    \bot_{\stt} = \stt \qquad
-    \bot_{\sfalse} = \sfalse \qquad
-    \bot_{\strue} = \strue \qquad
-    \bot_n = n \\
-    \bot_{\spair{e_1}{e_2}} = \spair{\bot_{e_1}}{\bot_{e_2}} \qquad
-    \bot_\snil = \snil \qquad
-    \bot_{\scons{e_1}{e_2}} = \scons{\bot_{e_1}}{\bot_{e_2}}
+    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\scons{a_1}{a_2} \le \scons{a_1'}{a_2'}}
   \end{mathpar}
   \caption{The approximation relation \(\approxofZ\) between approximations and
-    exact values, and the less defined relation \(\le\) between
+    exact values, and the definedness relation \(\le\) between
     approximations.}\label{fig:approx}\label{fig:definedness}
 \end{figure}
 
-\paragraph{The lattice of approximations.}
 Approximations come with a \emph{definedness} relation (\cref{fig:definedness}).
 It is conceptually similar to the approximation relation: \(a \le a'\),
 pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as
-\(a'\) with some parts replaced by \(\sundefined\).
-
-The definedness relation \(\le\) has the following properties.
-\begin{itemize}
-  \item If \(\approxof{a}{e}\) and \(a' \le a\), then \(\approxof{a'}{e}\).
-  \item The definedness relation \(\le\) is a partial order.
-  \item Any two approximations \(a_1, a_2 \prec e\) have a least upper bound
-        \(a_1 \sqcup a_2\).
-  \item For any exact value \(e \in \Eval{A}\), there is a least element in
-        \(\Approx{A}\) that approximates \(e\), denoted by \(\bot_e\), or just
-        \(\bot\) when \(e\) is clear from context.
-\end{itemize}
-Thus, the set of approximations of any exact value forms a bounded
-join-semilattice.
+\(a'\) with some parts replaced by \(\sundefined\). This relation is a partial order on approximations.
 
 We also extend \(\le\) to environments. Given \(\gamma \in \Eval{\Gamma}\) and
 \(\gamma^A_1, \gamma^A_2 \prec \gamma\), we say that
 \(\gamma^A_1 \le \gamma^A_2\) if each value in \(\gamma^A_1\) is less defined
-than the corresponding value in \(\gamma^A_2\). The definedness relation on
-environments inherits all of the properties of \(\le\) on approximations; in
-particular, it is a bounded join-semilattice.
-
-% We can show that the evaluations semantics of \(\LB\) and that of \(\LL\)
-% satisfy the following properties:
-
-% \begin{lemma}[The evaluation semantics of \(\LB\) is an exact
-%   semantics]\label{lem:evaluation-exact}
-%   If \( \TB{\Gamma}{t}{A} \) and \( \gamma \in \Eval{\Gamma} \), then
-%   \( \EE{t}{\gamma} \in \Eval{A} \).
-% \end{lemma}
-
-% \begin{lemma}[The evaluation semantics of \(\LL\) is an approximation semantics]
-%   If \( \TL{\Gamma}{t}{A} \), \( \gamma \in \Approx{\Gamma} \), and
-%   \( \EL{\gamma}{t}{v} \), then \( v \in \Approx{A} \).
-% \end{lemma}
-
+than the corresponding value in \(\gamma^A_2\). This relation inherits all of
+the algebraic properties of \(\le\) on environments; in particular, it is a
+partial order.
 
 \subsection{\TransCname{} and \TransDname{}}\label{subsec:clairvoyance-translation}\label{subsec:demand-translation}
 
@@ -372,24 +338,22 @@ We define the \transCname{} \(\transC{\cdot}\) in \cref{fig:transC}. The
 \transCname{} translates terms in \(\LB\) to terms in \(\LL\) that simulate
 clairvoyance semantics. Values and variables are translated using \treturnZ.
 Variable bindings~(\tletZ) and conditionals~(\tifZ) are translated via
-sequencing (\tdo{\cdot}{\cdot}{\cdot}). A \tfoldrZ{} expression is translated to
-the derived term construct \tfoldMZ. Readers familiar with monads might
-recognize that this is essentially a monadic
+sequencing (\tdo{\cdot}{\cdot}{\cdot}). Folds (\tfoldrZ{}) are translated to the
+derived term construct \tfoldMZ. Readers familiar with monads might recognize
+that this is essentially a monadic
 translation~\cite{moggi-monad,malias,wadler-monad} with adaptations for the
 \TLazyZ{} type~\cite{forking-paths}.
 
-The most important cases are those for \(\tlazyZ\) and \(\tforceZ\). When the
-original term is \(\tlazy{t}\), we use the nondeterministic choice operator
-\texttt{?} to either skip the inner term's
-evaluation~(\(\treturn{\tundefined}\)) or evaluate the inner term and wrap the
-result inside a \tresultZ. When the original term is \(\tforce{t}\), we first
-evaluate \(t\) and pattern match on the result \(y_1\). If \(y_1\) evaluates to
-\(\tresult{y_2}\), we return \(y_2\); otherwise, we \tfail. Note that \tfail{}
-only terminates the current nondeterministic branch, so any branches that
-contain a \tresultZ{} will continue\lai{Can either be a partial sentence in
-  parentheses, a full sentence, or a footnote. Can't put a whole sentence in
-  parentheses}. To \ttickZ{} a computation, we simply run it and increment its
-accumulated cost by \(1\).
+The most important cases of the translation are those for \(\tlazyZ\) and
+\(\tforceZ\). When the original term is \(\tlazy{t}\), we use the
+nondeterministic choice operator \texttt{?} to either skip the inner term
+(\(\treturn{\tundefined}\)) or evaluate the inner term and wrap the result
+inside a \tresultZ. When the original term is \(\tforce{t}\), we first evaluate
+\(t\) and then pattern match on the result \(y_1\): if \(y_1\) evaluates to
+\(\tresult{y_2}\), then we return \(y_2\); otherwise, we \tfail. Note that
+\tfail{} only terminates the current computation branch, so any branches where
+\(y_1\) evaluates to a \tresultZ{} will continue. To \ttickZ{} a computation, we
+simply run it and increment its accumulated cost by \(1\).
 
 \begin{figure}[t]
   \TransCname:
@@ -437,19 +401,18 @@ demand on the output of \(t\).
 
 Intuitively, \(\transD{t}{\Gamma}\) operates as follows.
 \begin{itemize}
-  \item For each variable \(x_i : A_i\) in \(\Gamma\), introduce a new free
-        variable \(x_i' : A\) such that \(x_i' \le x_i\).
-  \item Pass \(t\) through the \transCname\ and execute it, but with each
-        \(x_i\) replaced by the corresponding free variable \(x'_i\). This
-        yields a result-cost pair \(u\).
-  \item Constrain the result \(\tfst{u}\) to be equal to the input \(x\).
-  \item Return a tuple containing the values of all new free variables, along
-        with the cost \(\tsnd{u}\).
+\item For each variable \(x_i : A_i\) free in \(\Gamma\), introduce a new logic
+  variable \(x_i' : A\) such that \(x_i' \le x_i\).
+\item Pass \(t\) through the \transCname\ and execute it, but with each \(x_i\)
+  replaced by the corresponding logiv variable \(x'_i\). This yields a
+  result-cost pair \(u\).
+\item Constrain the result \(\tfst{u}\) to be equal to the input \(x\).
+\item Return a tuple containing the values of all the new logic variables, along
+  with the cost \(\tsnd{u}\).
 \end{itemize}
 This is a special case of the common logic programming idiom of function
-inversion: \(\transD{t}{\Gamma}\) computes the inverse of \(\transC{t}\), but
-constrains the result to be an approximation of inputs to
-\(\transC{t}\).
+inversion: \(\transD{t}{\Gamma}\) computes the inverse of \(\transC{t}\),
+constraining the result to be an approximation of the inputs to \(\transC{t}\).
 
 We prove that \transCname{} and \transDname{} preserve well-typedness of the
 original term in \(\LB\):

@@ -4,7 +4,7 @@ In this section, we prove that our \transCname{} and \transDname{} correctly
 implement clairvoyance semantics and demand semantics, respectively. All of our
 proofs are mechanized in the proof assistant
 Agda~\cite{DBLP:conf/tldi/Norell09}. All formalizations, theorems, and proofs
-can be found in our publically-available artifact.\ly{TODO: Make sure we have
+can be found in our publicly-available artifact.\ly{TODO: Make sure we have
   the code materials ready for submission as well.}
 
 % In this section, we define clairvoyance and demand semantics on \(\LB\) and
@@ -45,18 +45,18 @@ We show an overview of how we formally prove correctness theorems in
 \cref{fig:proof-overview}. We first define clairvoyance semantics
 \(\SC\llbracket\cdot\rrbracket\) on \(\LB\). We then show that starting from a
 term \(t\) in \(\LB\), we can translate it to a term in \(\LL\) using the
-\transCname{} \(\transC{t}\), that has the same meaning as
+\transCname{} \(\transC{t}\) that has the same meaning as
 \(\SC\llbracket t \rrbracket\). We also prove a similar theorem relating demand
 semantics to the \transDname.
 
 Clairvoyance semantics is a big-step operational semantics with the judgment
-schema \(\EC{\gamma}{t}{c}{v}\): intuitively, \(c\) is the number of
+schema \(\EC{\gamma}{t}{c}{v}\). Intuitively, \(c\) is the number of
 \(\ttickZ\)s encountered while evaluating \(t\) to \(v\). Our semantics is
 similar to the original clairvoyance semantics of Hackett and
 Hutton~\cite{clairvoyant}; e.g., like their semantics, ours is based on
 improvement theory~\cite{moran1999}. The most significant difference is that,
 unlike Hackett and Hutton's calculus, our calculus has explicit \(\tlazyZ\) and
-\(\tforceZ\) operators; therefore, whereas Hacket and Hutton introduce
+\(\tforceZ\) operators. Therefore, whereas Hackett and Hutton introduce
 nondeterminism at \(\tletZ\) bindings, we must introduce it at \(\tlazyZ\)
 terms. Readers can find detailed definitions of our clairvoyance semantics in
 \cref{apx:clairvoyance-semantics} and in our artifact.
@@ -88,7 +88,7 @@ the result of \( \EE{t}{\gamma} \). It produces a list of minimal demands on
 \]
 Intuitively, demand semantics computes ``how much'' of the input \( \gamma \) is
 required to compute a desired ``amount'' of the output \( \EE{t}{\gamma} \), and
-also how much it costs to perform the computation.
+how much it costs to perform the computation.
 
 We omit detailed definitions of demand semantics on \(\LB\), as it is
 essentially the same as that of Xia \textit{et al.}~\cite{demand-semantics}; but

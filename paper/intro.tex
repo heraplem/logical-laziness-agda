@@ -53,7 +53,7 @@ evaluate a given expression depends on what has been evaluated previously.
     beginning; it's not cost models for any cost; it's specific to computation
     costs. We cannot model space cost, for example.} \lai{It was a holdover from when we showed how O-notation fails when applied to Laziness - one of my pet examples to demonstrate the difficulty of lazy cost analysis. It got cut, but some of the discussion surrounding it was left in by mistake. :p}
 \fi
-Together, these characteristics mean that one cannot in general analyze a piece
+Together, these characteristics mean that one cannot generally analyze a piece
 of lazy code in isolation; instead, one must consider the whole program. This
 makes performance analysis difficult.
 
@@ -263,22 +263,22 @@ mutable heaps, sharing, or our-of-order executions.
 \paragraph{Clairvoyance semantics.} Clairvoyance semantics, or clairvoyant
 call-by-value, builds on the observation that, for analyzing computation costs,
 it matters only \emph{whether} a computation cost is incurred, not
-\emph{when}. Clairvoyance semantics evaluates terms eagerly; but when there is a
+\emph{when}. Clairvoyance semantics evaluates terms eagerly, but when there is a
 lazy operation, it makes a \emph{nondeterministic} choice to either evaluate the
 computation or skip it.
 
-To evaluate \cdh{take 2 ([1,2,3] ++ [4,5])} in clairvoyance semantics, first
-evaluate \cdh{[1,2,3] ++ [4,5]}. Each recursive function application is
+To evaluate \cdh{take 2 ([1,2,3] ++ [4,5])} in clairvoyance semantics, we first
+evaluate \cdh{[1,2,3] ++ [4,5]}. Each recursive function application is then
 nondetermistically evaluated or skipped, as illustrated in
 \cref{fig:forking-paths}. The possible results of \cdh{[1,2,3] ++ [4,5]} are
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$},
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:2:$\bot$}, $\cdots$,
 \cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is
-skipped. Next, run \cdh{take 2} over all the nondeterministic results of
+skipped. Next, we run \cdh{take 2} over all the nondeterministic results of
 \cdh{[1,2,3] ++ [4,5]}. If a branch gets ``stuck'', \eg~forcing the second
 element from
-\lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)},
-discard it. When all is said and done, one computation branch will have
+\lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)}, we
+discard it. In the end, one computation branch will have
 succeeded in the same amount of time as a standard lazy evaluation.
 
 Clairvoyance semantics can be used as a recipe for a mechanical translation from

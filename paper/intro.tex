@@ -276,9 +276,10 @@ nondetermistically evaluated or skipped, as illustrated in
 \cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is
 skipped. Next, run \cdh{take 2} over all the nondeterministic results of
 \cdh{[1,2,3] ++ [4,5]}. If a branch gets ``stuck'', \eg~forcing the second
-element from \lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2
-  (1:$\bot$)}, discard it. When all is said and done, one computation branch
-will have succeeded in the same amount of time as a standard lazy evaluation.
+element from
+\lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)},
+discard it. When all is said and done, one computation branch will have
+succeeded in the same amount of time as a standard lazy evaluation.
 
 Clairvoyance semantics can be used as a recipe for a mechanical translation from
 a pure program to a program with reified computation
@@ -318,8 +319,8 @@ $\bot$ represents parts of the list that are not evaluated. We then run the
 \cdh{take} function ``backward'' to find that the minimal input demand required
 for \cdh{take 2} is also
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. We then run
-\cdh{(++)} function ``backward'' as well to find that the minimal input demands
-required for the two input lists are
+the \cdh{(++)} function ``backward'' as well to find that the minimal input
+demands required for the two input lists are
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$} and $\bot$,
 respectively. Throughout this process, the associated computation cost is also
 evaluated and carried forward.

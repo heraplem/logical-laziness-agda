@@ -293,18 +293,17 @@ represent lists that are potentially ``less evaluated'', like
 formal definition of approximations to \cref{subsec:values}. A natural
 number~($\mathbb{N}$) in the result represents the associated computation
 cost. Because the evaluation is nondeterministic, each translated function
-returns a power set of result-cost pairs.
+returns a power set of result-cost pairs. Still, we can use these translated functions to formally reason about the computation cost of lazy programs.
 
-We can use these translated functions to formally reason about the computation
-cost of lazy programs. One major drawback of this approach is that power sets in
+One major drawback of this approach is that power sets in
 return types make execution expensive. This makes it hard to use clairvoyance
-semantics in testing.
+semantics in testing, which may push us to seek out alternatives.
 
 \begin{figure}[t]
   \centering
   \includegraphics[page=1,width=0.7\textwidth]{Figs/forking-paths.pdf}
   \caption{An overview of clairvoyance evaluation for \cdh{[1,2,3] ++
-      [4,5]}. $\bot$ to represents skipped
+      [4,5]}. $\bot$ to represent skipped
     values.}\label{fig:forking-paths}
 \end{figure}
 

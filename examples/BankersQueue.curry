@@ -1,58 +1,57 @@
 module BankersQueue where
 
-import Nat
 import Tick
 import T
 import List
 
 data Queue a = Queue
-  { frontLen :: Nat
+  { frontLen :: Int
   , front :: T (List a)
-  , backLen :: Nat
+  , backLen :: Int
   , back :: T (List a)
   }
   deriving (Eq, Ord, Read, Show)
 
-mkQueueM :: Nat -> T (List a) -> Nat -> T (List a) -> Tick (Queue a)
-mkQueueM frontLen front backLen back = do
+mkQueueC :: Int -> T (List a) -> Int -> T (List a) -> Tick (Queue a)
+mkQueueC frontLen front backLen back = do
   tick
   if frontLen >= backLen
     then return (Queue frontLen front backLen back)
     else do
-      back' <- withForced back reverseM
-      front' <- withForced front (`toListM'` back')
-      back'' <- nilM
+      back' <- with back reverseC
+      front' <- with front (`toListC'` back')
+      back'' <- nilC
       return (Queue (frontLen + backLen) front' 0 back'')
 
-toListM :: Queue a -> Tick (T (List a))
-toListM q = do
+toListC :: Queue a -> Tick (T (List a))
+toListC q = do
   tick
-  withForced (front q) (`toListM'` back q)
+  withForced (front q) (`toListC'` back q)
 
-toListM' :: List a -> T (List a) -> Tick (List a)
-toListM' front back = do
+toListC' :: List a -> T (List a) -> Tick (List a)
+toListC' front back = do
   tick
-  back' <- withForced back reverseM
-  front `appendM` back'
+  back' <- with back reverseM
+  front `appendC` back'
 
-emptyM :: Tick (Queue a)
-emptyM = do
-  front <- nilM
-  back <- nilM
+emptyC :: Tick (Queue a)
+emptyC = do
+  front <- nilC
+  back <- nilC
   return (Queue 0 front 0 back)
 
-pushM :: a -> Queue a -> Tick (Queue a)
-pushM x q = do
+pushC :: a -> Queue a -> Tick (Queue a)
+pushC x q = do
   tick
   back' <- thunk (return (x :~ back q))
-  mkQueueM (frontLen q) (front q) (1 + backLen q) back'
+  mkQueueC (frontLen q) (front q) (backLen q + 1) back'
 
-popM :: Queue a -> Tick (Maybe (a, Queue a))
-popM q = do
+popC :: Queue a -> Tick (Maybe (a, Queue a))
+popC q = do
   tick
   front <- force (front q)
   case front of
     Nil -> return Nothing
     x :~ front' -> do
-      q' <- mkQueueM (frontLen q - 1) front' (backLen q) (back q)
+      q' <- mkQueueC (frontLen q - 1) front' (backLen q) (back q)
       return (Just (x, q'))

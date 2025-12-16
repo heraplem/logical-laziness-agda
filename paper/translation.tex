@@ -11,7 +11,7 @@ In this section, we define two languagues: a simple functional language
   though?} Next, we develop two translations from \(\LB\) to \(\LL\): a
 \emph{\transCname}, which produces terms modeling clairvoyance
 semantics~\cite{clairvoyant,forking-paths}, and a \emph{\transDname}, itself a
-thin wrapper around \transCname, which produces terms modeling demand
+wrapper around \transCname, which produces terms modeling demand
 semantics~\cite{bjerner1989,demand-semantics}~(\cref{subsec:demand-translation}).
 
 \ifextended
@@ -256,9 +256,9 @@ and a set \(\Approx{A}\) of \emph{approximation values}, defined in
 \(\TNat\) are natural numbers, and the exact values of \(\TList{A}\) are finite
 sequences with elements drawn from the exact values of \(A\). The approximation
 values are similar to the exact values, except some parts might be
-``discarded''~(represented by \(\sundefined\)).\ly{But what are exact values?
-  Explain them as well.} They represent ``smaller'' values where certain
-computations are unneeded; \ie~they are approximations of the exact values.
+``discarded''~(represented by \(\sundefined\)). They represent ``smaller''
+values where certain computations are unneeded; \ie~they are approximations of
+the exact values.
 
 \begin{figure}[t]
 \begin{center}

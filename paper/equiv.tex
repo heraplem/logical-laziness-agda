@@ -156,18 +156,3 @@ adequacy and soundness.
 \begin{proof}
   By \cref{prop:dem-trans-sem,prop:cost-minimality}.
 \end{proof}
-
-Note that the \transDname{} produces nondeterministic code, which does not
-reduce \emph{only} to the result of demand semantics. Some logic languages have
-a built-in facility to collapse a nondeterministic computation into a
-deterministic one, returning either the first result found or a list of all
-possible results. In languages that also give the user control over the order in
-which branches are tried, we can arrange for less-defined results to always be
-tried first, thereby ensuring that \transDname{} always returns the minimal
-result. \stl{ Isn't the point of the demand translation that sometimes we'll get
-  unevaluated thunks which translate to undefined? In that case it matches up
-  with the fact that flp programs will fail. That's kind of what we want. I
-  think it's better to say that with a complete search strategy we get all
-  results. We don't need to rely on tools like set functions or findall that
-  way. Unless we're saying that demand semantics evaluates to an incomparable
-  term.}

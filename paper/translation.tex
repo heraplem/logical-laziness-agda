@@ -36,7 +36,7 @@ explicit operators decouple our analysis from any particular evaluation model.
 
 Note that \(\LB\) does not have higher-order functions or general recursion
 because demand semantics does not support these
-features~\cite{bjerner1989,demand-semantics}; see \cref{sec:equiv} for details.
+features~\cite{bjerner1989,demand-semantics}.
 
 \begin{figure}[t]
 \begin{center}
@@ -85,17 +85,18 @@ and demand semantics~\cite{demand-semantics}.
 
 \subsection{The Logic Language \(\LL\)}\label{subsec:logic-lang}
 
-We show the syntax of language \(\LL\) in \cref{fig:syntax-logic}. Compared with \(\LB\),
-\(\LL\) has more types: a unit type \(\TUnit\), natural numbers
-\(\TNat\), and product types \(\TProd{A}{B}\). \ifextended We need the natural
-  number type to model computation costs, and we need product types to return
-  computation results along with costs. Since we are going to model demand
-  semantics, we also need products to model evaluation contexts, and we need the
-  unit type to model \emph{empty} contexts. \else We need natural numbers and
-  products to represent computation costs associated with values, and we need
-  products and the unit type to represent environments. Note that the types of
-  \(\LL\) are a superset of the types of \(\LB\). As a consequence, any valid
-  typing context for \(\LB\) is also a valid typing context for \(\LL\). \fi
+We show the syntax of language \(\LL\) in \cref{fig:syntax-logic}. Compared with
+\(\LB\), language \(\LL\) has more types: a unit type \(\TUnit\), natural
+numbers \(\TNat\), and product types \(\TProd{A}{B}\). \ifextended We need the
+  natural number type to model computation costs, and we need product types to
+  return computation results along with costs. Since we are going to model
+  demand semantics, we also need products to model evaluation contexts, and we
+  need the unit type to model \emph{empty} contexts. \else We need natural
+  numbers and products to represent computation costs associated with values,
+  and we need products and the unit type to represent environments. Note that
+  the types of \(\LL\) are a superset of the types of \(\LB\). As a consequence,
+  any valid typing context for \(\LB\) is also a valid typing context for
+  \(\LL\). \fi
 
 In addition, we introduce two constructors for the \(\TThunkZ\) type:
 \(\tresultZ\) for the result of an expression that has been evaluated, and
@@ -169,10 +170,10 @@ no need for arbitrary functions on natural numbers, so we include only literals
 and addition. \(\LL\) also has constructs for logic programming: free
 terms~(\(\tfreeZ\)), nondeterministic choice~(\(\tchooseZ\)), and
 failure~(\(\tfail\)). Free terms, which may evaluate to any value of a specified
-type, can be thought of as ``anonymous logic variables;'' variables bound to
+type, can be thought of as ``anonymous logic variables''; variables bound to
 free terms are equivalent to logic variables. Finally, we have a relational
 operator \(\tleZ\), which indicates whether its left-hand operand is less
-defined than its right-hand operand (as defined in
+defined than its right-hand operand (we defer detailed definitions to
 \cref{subsec:values}).
 
 \stl{
@@ -187,8 +188,9 @@ Really we're using the functional logic part for the convenience.
 It already has the form of a functional language, but it can also do function inversion.}
 
 We define a simple logic language instead of using a specific functional logic
-language~(\eg~Curry~\cite{curry-lang,curry-monadic-semantics} or the Verse
-calculus~\cite{verse}) to keep our approach generally applicable.\lai{Maybe move this earlier in the section? To the front? Maybe as a footnote?}
+language like Curry~\cite{curry-lang,curry-monadic-semantics} or the Verse
+calculus~\cite{verse} to keep our approach generally applicable.\lai{Maybe move
+  this earlier in the section? To the front? Maybe as a footnote?}
 
 We show the semantic rules of \(L\) that are related to the choice
 operator~(\tchooseZ) and free terms in \cref{fig:logic-semantics}.\ly{Did we
@@ -277,7 +279,7 @@ variables to exact values:
 
 Exact values and approximations are connected by the relation \(\approxofZ\)
 (\cref{fig:approx}). Intuitively, \(\approxof{a}{e}\), pronounced ``\(a\)
-approximates \(e\)'', if \(a\) has the same shape as \(e\), but with some parts
+approximates \(e\),'' if \(a\) has the same shape as \(e\), but with some parts
 possibly replaced by \(\sundefined\). If \(e \in \Eval{A}\), we write
 \(\Approx{A}_{\approxof{\relax}{e}}\) to denote the set of values in
 \(\Approx{A}\) that approximate \(e\):

@@ -260,20 +260,21 @@
 
 \begin{abstract}
   Clairvoyance semantics and demand semantics are both pure and time-cost
-  equivalent to lazy evaluation, offering an
-  alternative to the stateful natural semantics of lazy evaluation for
-  analyzing computation cost. Tragically, clairvoyance semantics is simple
-  but hard to execute, and demand semantics is executable but
-  very complicated. In this paper, we propose a novel approach for unifying
-  these two semantics using functional logic programming. We propose (1)~a
-  logical clairvoyance translation, which translates lazy functional programs to
-  functional logic programs where the computation cost can be evaluated, and
-  (2)~a logical demand translation, which is a simple extension to the logical
-  clairvoyance translation. We prove that these two translations correctly
-  implement clairvoyance and demand semantics, respectively, using Agda. We also
-  conduct case studies based on Curry/KiCS2 to show how these translations can
-  be used in practice. \keywords{Functional Logic Programming, Lazy Evaluation,
-    Cost Analysis}
+  equivalent to lazy evaluation, offering alternatives to the stateful natural
+  semantics of lazy evaluation for analyzing computation cost. Tragically,
+  clairvoyance semantics is simple but hard to execute, and demand semantics is
+  executable but complicated. In this paper, we propose a novel approach for
+  unifying these two semantics using functional logic programming. We propose
+  (1)~a logical clairvoyance translation, which translates lazy functional
+  programs to functional logic programs where the computation cost is reified,
+  and (2)~a logical demand translation, which is a simple extension to the
+  logical clairvoyance translation. We prove that these two translations
+  correctly implement clairvoyance and demand semantics, respectively, using
+  Agda. We also conduct case studies on examples including insertion sort and
+  Okasaki's banker's queue using Curry/KiCS2 to show how these translations can
+  be used in practice.
+
+  \keywords{Functional Logic Programming, Lazy Evaluation, Cost Analysis}
 \end{abstract}
 
 \subfile{intro}
@@ -293,7 +294,12 @@
 
 \section{Conclusion}\label{sec:conclusion}
 
-We have shown that clairvoyance and demand semantics are two sides of the same coin using logic programming as an intermediary. Where once one would be forced to choose between these two semantics for lazy cost analysis, they can now use both interchangeably. This demonstrates a previously unknown benefit of logic programming, and that its concepts often have value in seemingly unrelated areas.
+We have shown that clairvoyance and demand semantics are two sides of the same
+coin using logic programming as an intermediary. This connection is both
+theoretically interesting and practically useful: it demonstrates functional
+logic programming concepts have values in seemingly unrelated areas; we also
+obtain an executable clairvoyance semantics and a simpler demand semantics built
+on functional logic programming semantics.
 
 \bibliographystyle{splncs04}
 \bibliography{yao,ref,steven}

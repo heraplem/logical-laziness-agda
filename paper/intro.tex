@@ -26,7 +26,7 @@ Lazy evaluation is demand-driven, performing only those operations required to
 compute a final result~\cite{launchbury1993}. This gives programmers the luxury
 of writing highly compositional code that performs comparably to, or even better
 than, code written in an eagerly-evaluated language~\cite{fp-matters}. Sadly, as
-a ``side-effect'', it presents challenges for performance \emph{analysis}.
+a ``side-effect'', it presents challenges for performance analysis.
 
 For example, consider the Haskell functions \cdh{take} and \cdh{(++)}, defined
 in \cref{fig:hs-example-original}. Suppose that we want to evaluate the
@@ -96,7 +96,7 @@ appendC :: [a]$^A$ -> [a]$^A$ -> $\mathcal{P}$([a]$^A$, $\mathbb{N}$)
 \begin{subfigure}[b]{\textwidth}
 \begin{minipage}[b]{\textwidth}
 \begin{lstlisting}[language=Haskell,mathescape]
-takeD   :: Int -> [a] -> [a]$^A$ -> ((Int, [a]$^A$), $\mathbb{N}$)
+takeD   :: Int -> [a] -> [a]$^A$ -> ([a]$^A$, $\mathbb{N}$)
 appendD :: [a] -> [a] -> [a]$^A$ -> (([a]$^A$, [a]$^A$), $\mathbb{N}$)
 \end{lstlisting}
 \end{minipage}
@@ -113,11 +113,11 @@ appendD :: [a] -> [a] -> [a]$^A$ -> (([a]$^A$, [a]$^A$), $\mathbb{N}$)
 \end{figure}
 
 How can we bring locality, purity, order, and compositionality to lazy
-computation time costs when these properties seem fundamentally at odds with
-laziness? Some recent work proposes that, instead of working with the stateful
-natural semantics of lazy evaluation~\cite{launchbury1993}, we can use simpler
-\emph{alternative semantics} that are equivalent to lazy evaluation in terms of
-computation cost. Here, we focus on two such semantics: clairvoyance
+computation time costs when these properties fundamentally missing? Some recent
+work proposes that, instead of working with the stateful natural semantics of
+lazy evaluation~\cite{launchbury1993}, we can use simpler \emph{alternative
+  semantics} that are equivalent to lazy evaluation in terms of computation
+cost. Here, we focus on two such semantics: clairvoyance
 semantics~\cite{clairvoyant,forking-paths} and demand
 semantics~\cite{bjerner1989,demand-semantics}.
 
@@ -282,22 +282,24 @@ discard it. In the end, one computation branch will have
 succeeded in the same amount of time as a standard lazy evaluation.
 
 Clairvoyance semantics can be used as a recipe for a mechanical translation from
-a pure program to a program with reified computation
-costs~\cite{forking-paths}. We show pseudo type signatures of translated
-\cdh{take} and \cdh{(++)} in \cref{fig:hs-example-clairvoyance} as \cdh{takeC}
-and \cdh{appendC}, respectively. These translated functions use
-\emph{approximations} of lists, denoted as
-\lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}. They
-represent lists that are potentially ``less evaluated'', like
+a pure program to a program with reified computation costs~\cite{forking-paths}.
+We show pseudo type signatures of translated \cdh{take} and \cdh{(++)} in
+\cref{fig:hs-example-clairvoyance} as \cdh{takeC} and \cdh{appendC},
+respectively. These translated functions use \emph{approximations} of lists,
+denoted as \lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}.
+They represent lists that are potentially ``less evaluated'', like
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. We defer a
 formal definition of approximations to \cref{subsec:values}. A natural
-number~($\mathbb{N}$) in the result represents the associated computation
-cost. Because the evaluation is nondeterministic, each translated function
-returns a power set of result-cost pairs. Still, we can use these translated functions to formally reason about the computation cost of lazy programs.
+number~($\mathbb{N}$) in the result represents the associated computation cost.
+Because the evaluation is nondeterministic, each translated function returns a
+power set of result-cost pairs. Still, we can use these translated functions to
+formally reason about the computation cost of lazy programs, as illustrated by
+Li \textit{et al.}~\cite{forking-paths}
 
 One major drawback of this approach is that power sets in
 return types make execution expensive. This makes it hard to use clairvoyance
-semantics in testing, which may push us to seek out alternatives.
+semantics in testing.
+% which may push us to seek out alternatives.
 
 \begin{figure}[t]
   \centering
@@ -333,6 +335,13 @@ translation also uses approximations like
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}, but it uses
 them to represent demands.
 % We do not need any power sets, as the demand semantics is deterministic.
+For example, \cdc{takeD} takes the input of \cdh{take}~(\cdh{Int} and
+\cdh{[a]}), a demand on \cdh{take}'s
+output~(\lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}), and
+returns the minimal demand on its
+input~(\lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}) and
+the cost~(\(\mathbb{N}\)). Note that \cdh{Int} datatype is not lazy, so there's
+no demand on it.
 
 Because these demand functions are deterministic, computation costs are easy to
 test. However, the demand translation is much more complicated than the
@@ -480,13 +489,21 @@ More concretely, we make the following contributions:
   with respect to clairvoyance and demand semantics, respectively. All theorems
   and proofs are mechanized in the proof assistant
   Agda~\cite{DBLP:conf/tldi/Norell09}~(\cref{sec:equiv}).
-\item We conduct several case studies by manually translating lazy Haskell
-  programs, including insertion sort and Okasaki's banker's
-  queue~\cite{purely-functional}, to Curry~\cite{curry-lang} based on our
-  translation strategies. We evaluate the performance of translated code using
-  the KiCS2 Curry compiler~\cite{kics2}, finding it acceptable for computation
-  cost analysis while allowing for simpler code~(\cref{sec:case-study}).
+  \item We conduct case studies by manually translating lazy Haskell programs,
+        including insertion sort and Okasaki's banker's
+        queue~\cite{purely-functional}, to Curry~\cite{curry-lang} based on our
+        translation strategies. We evaluate the performance of translated code
+        using the KiCS2 Curry compiler~\cite{kics2}, showing that \transDname{}
+        trades off performance for simplicity, but the performance is usable for
+        lazy cost analysis while allowing for simpler
+        code~(\cref{sec:case-study}).
 \end{itemize}
 
-In addition, we discuss related work in \cref{sec:related-work} and conclude in
-\cref{sec:conclusion}.
+In addition, we discuss limitations in \cref{sec:limitations}, related work in
+\cref{sec:related-work}, and conclude in \cref{sec:conclusion}. All the Agda
+formalizations and Curry code of this paper can be found in our publicly
+available artifact:
+
+\begin{center}
+\url{https://github.com/heraplem/unifying-hindisght-and-foresight}
+\end{center}

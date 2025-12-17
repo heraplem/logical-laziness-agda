@@ -43,6 +43,7 @@ Lorenzen~\cite{lazy-amortized-testing}. We leave it as future work to extend our
 work to property-based testing frameworks in Curry like
 EasyCheck~\cite{easy-check} and CurryCheck~\cite{curry-check}.
 
+\ifextended
 \paragraph{Lazy performance.}
 Beyond just analyzing costs, there is great value in improving the performance
 of lazy programs. The work in this area is far too vast to summarize succinctly;
@@ -50,11 +51,13 @@ see Jones and Salkild~\cite{DBLP:conf/fpca/JonesS89}, Jones and
 Partain~\cite{strictness-analysis}, Massey and
 Tick~\cite{DBLP:conf/ifipPACT/MasseyT94}, and Lorenzen \textit{et
   al.}~\cite{10.1145/3747530}.
+\fi
 
 \paragraph{Functional logic programming.}
 We implemented our examples in Curry, however, most of the techniques in this
-paper are not specific to Curry. Other
-functional logic languages, such as Verse~\cite{verse} or
-mercury~\cite{mercury}, could also have proven sufficient. Because \(\LL\) uses eager evaluation, we could have
-even translated to a pure logic language, such as Prolog~\cite{EagerFLPIsLogic}
-~\cite{DBLP:journals/jflp/BrasselHH04}. However, the search tree traversal employed in this work is Curry-specific~\cite{DBLP:journals/jflp/BrasselHH04}.
+paper are not specific to Curry. Other functional logic languages, such as
+Verse~\cite{verse} or mercury~\cite{mercury}, could also have proven sufficient.
+Because \(\LL\) uses eager evaluation, we could have even translated to a pure
+logic language, such as Prolog~\cite{EagerFLPIsLogic}. However, the search tree
+traversal employed in this work is
+Curry-specific~\cite{DBLP:journals/jflp/BrasselHH04}.

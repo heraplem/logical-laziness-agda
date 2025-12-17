@@ -83,8 +83,7 @@ implemented include appending lists, insertion sort, and Okasaki's banker's
 queue~\cite{purely-functional}. We omit definitions of these translated
 functions for space, but interested readers can view an insertion sort case
 study in \cref{apx:case-study-insertion-sort}, and more in our publicly
-available
-artifact\footnote{https://github.com/heraplem/unifying-hindisght-and-foresight}.
+available artifact.
 
 \paragraph{Running computations.}
 All the translated functions can be executed using the KiCS2 Curry compiler,
@@ -201,8 +200,8 @@ executions.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.45\textwidth]{Figs/insertionSortD_runtime.png}
-  \includegraphics[width=0.45\textwidth]{Figs/pushPopD_runtime.png}
+  \includegraphics[width=0.38\textwidth]{Figs/insertionSortD_runtime.png}
+  \includegraphics[width=0.4\textwidth]{Figs/pushPopD_runtime.png}
   \caption{The runtime of
     \cdc{insertionSortD} and \cdc{pushPopD}.}\label{fig:insertionSortD_runtime}
 \end{figure}
@@ -217,6 +216,6 @@ measured. \cdc{pushPopD}, meanwhile, takes \(12.30\) seconds to execute on
 
 This result is not surprising, as the original demand semantics is specialized
 to computing minimal input demands, but the \transDname{} is built on a
-general-purpose logic language. This experiment may reveal potential
-optimization opportunities for Curry compilers. See \cref{sec:equiv} for a full
-discussion.
+general-purpose logic language. This shows that the logical demand functions
+trade off performance for simplicity. However, the performance is still useful
+for cost analysis. We discuss this in more details in \cref{sec:limitations}.

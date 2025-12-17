@@ -110,11 +110,9 @@ Thus, we can always find the least result via a depth-first search.
 % 
 
 \paragraph{Guards vs.\ generators.}
-In Curry, there are two ways of implementing the logical demand functions: 
-guards and generators. Even though they are semantically equivalent, there
-is a huge performance difference.
-
-Na\"ively, we can implement \cdc{takeD} as follows:
+In Curry, there are two ways of implementing logical demand functions: guards
+and generators. Although they are semantically equivalent, there is a huge
+performance difference. Na\"ively, we can implement \cdc{takeD} as follows:
 \begin{lstlisting}[language=Curry]
 takeD' :: Approx a => Int -> T (List a) -> List a -> Tick (T (List a))
 takeD' xsT ysD |  xsTD <~ xsT
@@ -190,8 +188,8 @@ question remains whether it is reasonably efficient, as it depends on the
 \transCname{} and free variables. To evaluate\lai{Maybe choose another word,
   since 'evaluate' is a technical term} this, we ran \cdc{insertionSortD} on
 lists of the form \cdc{[n, n-1 .. 1]} with sizes ranging from \(1\) to \(100\),
-demanding the full list each time. We also ran \cdc{pushPopD}, the demand
-translation of a function that pushes \(n\) elements onto a banker's
+demanding the full list each time. We also ran \cdc{pushPopD}, the logical
+demand translation of a function that pushes \(n\) elements onto a banker's
 queue~\cite{purely-functional} and then pops them all. We show the result of our
 performance evaluation in \cref{fig:insertionSortD_runtime}. All experiments
 were performed on an AMD Ryzen 3900X running Linux 6.12.58 using the built-in
@@ -211,11 +209,11 @@ interpolation estimates it well. This asymptotic bound is shared by the original
 demand translation. However, the constants are much worse: \cdc{insertionSortD}
 takes \(6.44\) seconds on a \(100\)-element list, while the original demand
 translation version in Curry is fast enough that its runtime cannot be reliably
-measured. \cdc{pushPopD}, meanwhile, takes \(12.30\) seconds to execute on
-\(10\) elements.
+measured. Meanwhile, the \cdc{pushPopD} function takes \(12.30\) seconds to
+execute on \(10\) elements.
 
 This result is not surprising, as the original demand semantics is specialized
 to computing minimal input demands, but the \transDname{} is built on a
-general-purpose logic language. This shows that the logical demand functions
-trade off performance for simplicity. However, the performance is still useful
-for cost analysis. We discuss this in more details in \cref{sec:limitations}.
+general-purpose logic language. In other words, logical demand functions trade
+off performance for simplicity. However, the performance is still useful for
+cost analysis. We discuss this in more details in \cref{sec:limitations}.

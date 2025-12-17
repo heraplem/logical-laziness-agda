@@ -186,30 +186,34 @@ input demand, performing poorly. On the other hand, our implementation in
 
 \paragraph{Performance.}
 
-Although the \transDname{} is simpler than the original demand translation,
-the question remains whether it is reasonably efficient, as it depends on the
-\transCname{} and free variables. To evaluate\lai{Maybe choose another word, since 'evaluate' is a technical term} this, we ran \cdc{insertionSortD}
-on lists of the form \cdc{[n, n-1 .. 1]} with sizes ranging from \(1\) to
-\(100\), demanding the full list each time. We show the result of our
+Although the \transDname{} is simpler than the original demand translation, the
+question remains whether it is reasonably efficient, as it depends on the
+\transCname{} and free variables. To evaluate\lai{Maybe choose another word,
+  since 'evaluate' is a technical term} this, we ran \cdc{insertionSortD} on
+lists of the form \cdc{[n, n-1 .. 1]} with sizes ranging from \(1\) to \(100\),
+demanding the full list each time. We also ran \cdc{pushPopD}, the demand
+translation of a function that pushes \(n\) elements onto a banker's
+queue~\cite{purely-functional} and then pops them all. We show the result of our
 performance evaluation in \cref{fig:insertionSortD_runtime}. All experiments
 were performed on an AMD Ryzen 3900X running Linux 6.12.58 using the built-in
-timing functionality of KiCS2 (version 3.5.0), running each evaluation once.
+timing functionality of KiCS2 (version 3.5.0), taking the average of 10
+executions.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.55\textwidth]{Figs/insertionSortD_runtime.png}
+  \includegraphics[width=0.45\textwidth]{Figs/insertionSortD_runtime.png}
+  \includegraphics[width=0.45\textwidth]{Figs/pushPopD_runtime.png}
   \caption{The runtime of
-    \cdc{insertionSortD}.}\label{fig:insertionSortD_runtime}
+    \cdc{insertionSortD} and \cdc{pushPopD}.}\label{fig:insertionSortD_runtime}
 \end{figure}
 
 Asymptotically, \cdc{insertionSortD} appears to run in \(O(n^3)\) time: a cubic
 interpolation estimates it well. This asymptotic bound is shared by the original
-demand translation.
-%, which, in the worst case, must call the pure \cdc{insertionSort} function \(n\) times.
-However, the constants are much worse: \cdc{insertionSortD} takes \(6.44\)
-seconds on a \(100\)-element list, while the 
-original demand translation version in Curry is fast enough that its runtime cannot be
-reliably measured.
+demand translation. However, the constants are much worse: \cdc{insertionSortD}
+takes \(6.44\) seconds on a \(100\)-element list, while the original demand
+translation version in Curry is fast enough that its runtime cannot be reliably
+measured. \cdc{pushPopD}, meanwhile, takes \(12.30\) seconds to execute on
+\(10\) elements.
 
 This result is not surprising, as the original demand semantics is specialized
 to computing minimal input demands, but the \transDname{} is built on a

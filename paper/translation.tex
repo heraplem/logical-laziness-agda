@@ -34,21 +34,9 @@ respectively.
 Finally, the \( \ttickZ \) operator incurs one unit of computation cost. These
 explicit operators decouple our analysis from any particular evaluation model.
 
-\(\LB\) does not have higher-order functions or general recursion because
-demand semantics does not support these
-features~\cite{bjerner1989,demand-semantics}. The lack of higher-order functions
-does not fundamentally limit \(\LB\)'s expressivity, as any higher-order
-program can be
-defunctionalized~\cite{DBLP:conf/acm/Reynolds72,DBLP:conf/ppdp/DanvyN01} to an
-equivalent first-order program.\nc{The ``story of your function's life'' paper
-  says that the language does not support higher-order functions; but, really,
-  it doesn't even support \emph{first-class} functions. So is it even worth
-  mentioning defunctionalization here? I'm pretty sure this still isn't a
-  fundamental limit on expressivity, though.} The lack of general recursion
-\emph{is} a fundamental limitation on expressivity, but it is not a problem for
-cost analysis. We can simulate general recursion without any change in
-asymptotic complexity by providing a ``fuel'' parameter that decreases on every
-recursive call.
+Note that \(\LB\) does not have higher-order functions or general recursion
+because demand semantics does not support these
+features~\cite{bjerner1989,demand-semantics}; see \cref{sec:equiv} for details.
 
 \begin{figure}[t]
 \begin{center}

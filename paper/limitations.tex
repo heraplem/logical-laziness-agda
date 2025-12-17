@@ -26,9 +26,11 @@ recursive call. Nonetheless, extending demand semantics to include higher-order
 functions is an ongoing area of research.
 
 As discussed in \cref{sec:case-study}, our technique is somewhat slow with even
-modestly-sized inputs. Although unfortunate, we consider this to be
-acceptable. A major motivation behind this line of research was the desire to
-find a lightweight representation of demand functions that could be used to test
-their asymptotic bounds (constants included) \emph{before} trying to formally
-verify them. For this purpose, it usually suffices to test quite small inputs,
-where our technique performs quite well in absolute (wall-clock) terms.
+modestly-sized inputs. Although unfortunate, this may be acceptable. A major
+motivation behind this line of research was the desire to find a lightweight
+representation of demand functions that could be used to test their asymptotic
+bounds (constants included) \emph{before} trying to formally verify them. For
+this purpose, it usually suffices to test quite small inputs, where our
+technique performs quite well in absolute (wall-clock) terms. However, some
+applications seem to perform much worse than others, for reasons that we do not
+yet understand. Further investigation is required.

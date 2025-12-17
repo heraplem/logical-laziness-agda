@@ -1,7 +1,11 @@
 module BankersQueue where
 
-import Tick
+import Control.Monad
+import Data.Maybe
+
+import Approx
 import T
+import Tick
 import List
 
 data Queue a = Queue
@@ -26,13 +30,16 @@ mkQueueC frontLen front backLen back = do
 toListC :: Queue a -> Tick (T (List a))
 toListC q = do
   tick
-  withForced (front q) (`toListC'` back q)
+  with (front q) (`toListC'` back q)
 
 toListC' :: List a -> T (List a) -> Tick (List a)
 toListC' front back = do
   tick
-  back' <- with back reverseM
+  back' <- with back reverseC
   front `appendC` back'
+
+emptyQueue :: Queue a
+emptyQueue = Queue 0 (Thunk Nil) 0 (Thunk Nil)
 
 emptyC :: Tick (Queue a)
 emptyC = do
@@ -55,3 +62,15 @@ popC q = do
     x :~ front' -> do
       q' <- mkQueueC (frontLen q - 1) front' (backLen q) (back q)
       return (Just (x, q'))
+
+pushPopC :: [a] -> Tick (Queue a)
+pushPopC xs = do
+  q0 <- emptyC
+  q1 <- foldM (flip pushC) q0 xs
+  foldM (\q _ -> snd . fromJust <$> popC q) q1 xs
+
+pushPopDG :: Approx a => [a] -> Queue a -> Tick [a]
+pushPopDG xs qD | pushPopC xsD =:= Tick (qD, c)
+                = Tick (xsD, c)
+  where xsD = approx xs
+        c free

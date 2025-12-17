@@ -34,7 +34,7 @@ respectively.
 Finally, the \( \ttickZ \) operator incurs one unit of computation cost. These
 explicit operators decouple our analysis from any particular evaluation model.
 
-Note that \(\LB\) does not have higher-order functions or general recursion
+Note that language \(\LB\) does not have higher-order functions or general recursion
 because demand semantics does not support these
 features~\cite{bjerner1989,demand-semantics}.
 
@@ -60,11 +60,11 @@ features~\cite{bjerner1989,demand-semantics}.
     A}{\textsc{tick}}
 \end{mathpar}
 \end{center}
-\caption{The syntax of \(\LB\) and typing rules related to lazy thunks and
+\caption{The syntax of language \(\LB\) and typing rules related to lazy thunks and
   costs.}\label{fig:typing-base}\label{fig:syntax-base}
 \end{figure}
 
-Most of the typing rules for \(\LB\) are standard, so we omit them. We show the
+Most of the typing rules for language \(\LB\) are standard, so we omit them. We show the
 typing rules for thunks and computation costs in \cref{fig:typing-base}.
 Notably, lists are lazy: the cons of lists \(\tcons{t_1}{t_2}\) takes a term
 \(t_1\) of type \(A\) and a term \(t_2\) of type \(\TThunk{(\TList{A})}\), so
@@ -78,7 +78,7 @@ related to lazy evaluation and computation costs:
 \[
   \EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma} .
 \]
-We do not need to model the natural semantics of \(\LB\) because prior work has
+We do not need to model the natural semantics of language \(\LB\) because prior work has
 established computation cost equivalence between natural semantics and
 clairvoyance semantics~\cite{clairvoyant}, and between clairvoyance semantics
 and demand semantics~\cite{demand-semantics}.
@@ -94,9 +94,9 @@ numbers \(\TNat\), and product types \(\TProd{A}{B}\). \ifextended We need the
   need the unit type to model \emph{empty} contexts. \else We need natural
   numbers and products to represent computation costs associated with values,
   and we need products and the unit type to represent environments. Note that
-  the types of \(\LL\) are a superset of the types of \(\LB\). As a consequence,
+  the types of language \(\LL\) are a superset of the types of \(\LB\). As a consequence,
   any valid typing context for \(\LB\) is also a valid typing context for
-  \(\LL\). \fi
+  language \(\LL\). \fi
 
 In addition, we introduce two constructors for the \(\TThunkZ\) type:
 \(\tresultZ\) for the result of an expression that has been evaluated, and
@@ -165,9 +165,9 @@ constructors indicate whether a computation is evaluated or not. In the
     relation.}\label{fig:syntax-logic}\label{fig:logic-semantics}
 \end{figure}
 
-\(\LL\) has introduction and elimination forms for all of the new types. We have
+Language \(\LL\) has introduction and elimination forms for all of the new types. We have
 no need for arbitrary functions on natural numbers, so we include only literals
-and addition. \(\LL\) also has constructs for logic programming: free
+and addition. Language \(\LL\) also has constructs for logic programming: free
 terms~(\(\tfreeZ\)), nondeterministic choice~(\(\tchooseZ\)), and
 failure~(\(\tfail\)). Free terms, which may evaluate to any value of a specified
 type, can be thought of as ``anonymous logic variables''; variables bound to
@@ -245,7 +245,7 @@ and a set \(\Approx{A}\) of \emph{approximation values}, defined in
 \cref{fig:exact-approx}. The exact values are standard: the exact values of
 \(\TNat\) are natural numbers, and the exact values of \(\TList{A}\) are finite
 sequences with elements drawn from the exact values of \(A\). The approximation
-values are similar to the exact values, except some parts might be
+values are similar to the exact values, except that some parts might be
 ``discarded''~(represented by \(\sundefined\)). They represent ``smaller''
 values where certain computations are unneeded; \ie~they are approximations of
 the exact values.
@@ -275,6 +275,7 @@ variables to exact values:
 \[
   \Eval{\Gamma} = \setbuilder{x_1 \mapsto e_1, \ldots, x_n \mapsto e_n}{e_1 \in \Eval{A_1}, \ldots, e_n \in \Eval{A_n}}.
 \]
+
 \(\Approx{\Gamma}\) is defined similarly.
 
 Exact values and approximations are connected by the relation \(\approxofZ\)

@@ -105,8 +105,8 @@ appendD :: [a] -> [a] -> [a]$^A$ -> (([a]$^A$, [a]$^A$), $\mathbb{N}$)
 \end{subfigure}
 
 \caption{The definitions of \cdh{take} and \cdh{(++)} in Haskell, together with
-  the type signatures their clairvoyance translation and deman translation. We
-  use $\mathcal{P}$ to represent power set; $\mathbb{N}$ to represnt natural
+  the type signatures their clairvoyance translation and demand translation. We
+  use $\mathcal{P}$ to represent power set; $\mathbb{N}$ to represent natural
   numbers. A type with superscript $^A$ represents an \emph{approximation} of
   that type, whose definition will be introduced in later
   sections.\ly{TODO: mention which section.}}\label{fig:hs-example}
@@ -305,7 +305,7 @@ semantics in testing.
   \centering
   \includegraphics[page=1,width=0.7\textwidth]{Figs/forking-paths.pdf}
   \caption{An overview of clairvoyance evaluation for \cdh{[1,2,3] ++
-      [4,5]}. $\bot$ to represent skipped
+      [4,5]}. $\bot$ represents skipped
     values.}\label{fig:forking-paths}
 \end{figure}
 
@@ -340,7 +340,7 @@ For example, \cdc{takeD} takes the input of \cdh{take}~(\cdh{Int} and
 output~(\lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}), and
 returns the minimal demand on its
 input~(\lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}) and
-the cost~(\(\mathbb{N}\)). Note that \cdh{Int} datatype is not lazy, so there's
+the cost~(\(\mathbb{N}\)). Note that \cdh{Int} datatype is not lazy, so there is
 no demand on it.
 
 Because these demand functions are deterministic, computation costs are easy to
@@ -380,7 +380,7 @@ unfolds to:
 pure Undefined ? fmap Thunk (takeC n' xsT') 
 \end{lstlisting}
 That is, we use Curry's nondeterministic choice operator \cdc{?} to either skip
-the evaluation and return \cdc{Undefined} (\ie~$\bot$), or evaluate the
+the evaluation and return \cdc{Undefined} (\ie~$\bot$), or to evaluate the
 recursive call and wrap the result inside a \cdc{Thunk} constructor.
 
 The \cdc{takeD} function is implemented in terms of \cdc{takeC}. The core of
@@ -442,7 +442,7 @@ takeC n xsT = tick >>
         x :~ xsT' -> do
           (x:~) <$> thunk (takeC (n - 1) xsT')
 \end{lstlisting}
-\caption{The \cdc{takeC} function obtained from a \transCname. The
+\caption{The \cdc{takeC} function obtained from a \transCname.
   \cdc{<$>} is the infix operator for \cdc{fmap}.}\label{fig:takeC-curry}
 \end{subfigure}
 \qquad
@@ -460,7 +460,7 @@ takeD n xsT ysD
 \caption{The \cdc{takeD} function obtained from a
   \transDname.}\label{fig:takeD-curry}
 \end{subfigure}
-\caption{The \transCname{} and \transDname{} of the \cdh{take} function
+\caption{The \transCname{} and \transDname{} of the \cdh{take} function,
   implemented in Curry.}\label{fig:take-curry}
 \end{figure}
 

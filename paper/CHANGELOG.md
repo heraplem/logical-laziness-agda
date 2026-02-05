@@ -1,0 +1,1 @@
+- Correct margins (by removing `\usepackage{geometry}`).

@@ -40,6 +40,10 @@
 \newboolean{appendix}
 \input{directives.tex}
 
+\ifdraft
+  \usepackage[showframe,pass]{geometry}
+\fi
+
 \usepackage{simplebnf}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%

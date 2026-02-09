@@ -3,3 +3,4 @@
 - Removed restated thunk and T definitions in Section 3
 - Removed the definitions of `take` and `(++)` from Figure 1, leaving only the type signatures (with corresponding changes to the text).
 - Cut Figure 2 (`forking-paths.pdf`).
+- Removed True, False, and If definitions from clairvoyance/demand translation figure in section 2

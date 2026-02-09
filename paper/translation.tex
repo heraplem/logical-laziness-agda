@@ -350,10 +350,7 @@ simply run it and increment its accumulated cost by \(1\).
   \begin{align*}
     \transC{x} = \treturn{x} &\qquad
     \transC{\tnil{}} = \treturn{\tnil{}} \\
-    \transC{\ttrue{}} = \treturn{\ttrue{}} &\qquad
-    \transC{\tfalse{}} = \treturn{\tfalse{}} \\
     \transC{\tlet{x}{t_1}{t_2}} &= \tdo{x}{\transC{t_1}}{\transC{t_2}} \\
-    \transC{\tif{t_1}{t_2}{t_3}} &= \tdo{y}{t_1}{\tif{y}{\transC{t_2}}{\transC{t_3}}} \\
     \transC{\tcons{t_1}{t_2}} &= \tdo{y_1}{\transC{t_1}}{\tdo{y_2}{\transC{t_2}}{\treturn{(\tcons{y_1}{y_2})}}} \\
     \transC{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}} &= \tdo{y}{\transC{t_3}}{\tfoldM{x_1}{x_2}{\transC{t_1}}{\transC{t_2}}{y}} \\
     \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t}{\treturn(\tresult{y})}} \\

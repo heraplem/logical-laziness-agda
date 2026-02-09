@@ -50,7 +50,7 @@ features~\cite{bjerner1989,demand-semantics}.
 \begin{mathpar}
   \textit{Typing}
   \\ \inferrule{\Gamma \vdash^\LB t_1 : A \\ \Gamma \vdash^\LB t_2 :
-    \TThunk{(\TList{A})}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}{\textsc{cons}} \\
+    \TThunk{\texttt{(\(\TList{A}\))}}}{\Gamma \vdash^\LB \tcons{t_1}{t_2} : \TList{A}}{\textsc{cons}} \\
   \inferrule{\Gamma, x_1 : A, x_2 : \TThunk{B} \vdash^\LB t_1 : B \\ \Gamma
     \vdash^\LB t_2 : B \\ \Gamma \vdash^\LB t_3 : \TList{A}}{\Gamma \vdash^\LB \tfoldr{x_1}{x_2}{t_1}{t_2}{t_3} : B}{\textsc{foldr}} \\
   \inferrule{\Gamma \vdash^\LB t : A}{\Gamma \vdash^\LB \tlazy{t} :
@@ -204,7 +204,7 @@ that this semantics is eager; furthermore, due to \(\tfail\), it is partial.
       \treturn{t} &= &\tpair{t}{0} \\
       \tdo{x}{t_1}{t_2} &= &\tlet{y_1}{t_1}{\relax} \\ &&\tlet{x}{\tfst{t_1}}{\relax} \\ &&\tlet{y_2}{t_2}{\relax} \\ && \tpair{\tfst{y_2}}{\tadd{\tsnd{y_1}}{\tsnd{y_2}}} \\
       \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} &= &\tfoldr{x_1}{y_2}{\tdo{x_2}{\ttranspose{y_2}}{t_1}}{t_2}{t_3} \\
-      \ttranspose{t} &= &\texttt{case \(t\) of } \\ &&\texttt{thunk \(y_1\) -> (\tdo{y_2}{y_1}{\treturn{(\tthunk{y_2})}});} \\ &&\texttt{undefined -> return undefined} \\
+      \ttranspose{t} &= &\texttt{case \(t\) of } \\ &&\texttt{thunk \(y_1\) -> (\tdo{y_2}{y_1}{\treturn{\texttt{(\(\tthunk{y_2}\))}}});} \\ &&\texttt{undefined -> return undefined} \\
       \tassert{t_1}{t_2} &= &\tif{t_1}{t_2}{\tfail} \\
     \end{array}
   \]
@@ -213,7 +213,7 @@ that this semantics is eager; furthermore, due to \(\tfail\), it is partial.
     \inferrule{\TL{\Gamma}{t}{A}}{\TL{\Gamma}{\treturn{t}}{\TM{A}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TM{A}} \\ \TL{\Gamma, x : A}{t_2}{\TM{B}}}{\TL{\Gamma}{\texttt{\tdo{x}{t_1}{t_2}}}{\TM{B}}} \\
     \inferrule{\TL{\Gamma, x_1 : A, x_2 : \TThunk{B}}{t_1}{\TM{B}} \\ \TL{\Gamma}{t_2}{\TM{B}} \\ \TL{\Gamma}{t_3}{\TList{A}}}{\TL{\Gamma}{\tfoldM{x_1}{x_2}{t_1}{t_2}{t_3}}{\TM{B}}} \\
-    \inferrule{\TL{\Gamma}{t}{\TThunk{(\TM{A})}}}{\TL{\Gamma}{\ttranspose{t}}{\TM{(\TThunk{A})}}} \qquad
+    \inferrule{\TL{\Gamma}{t}{\TThunk{\texttt{(\(\TM{A}\))}}}}{\TL{\Gamma}{\ttranspose{t}}{\TM{(\TThunk{A})}}} \qquad
     \inferrule{\TL{\Gamma}{t_1}{\TBool} \\ \TL{\Gamma}{t_2}{A}}{\TL{\Gamma}{\tassert{t_1}{t_2}}{A}}
   \end{mathpar}
   \caption{Derived constructs in \(\LL\) and their typing rules. Readers who are
@@ -261,7 +261,7 @@ the exact values.
     \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}} \\ \\
     \Approx{\TLazy{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
     \Approx{\TProd{A}{B}} &= \Approx{A} \times \Approx{B} \\
-    \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{(\TList{A})}}}
+    \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{\texttt{(\(\TList{A}\))}}}}
   \end{align*}
 \end{center}
 \caption{Exact and approximation values. \(\Approx{A} = \Eval{A}\)

@@ -28,9 +28,8 @@ of writing highly compositional code that performs comparably to, or even better
 than, code written in an eagerly-evaluated language~\cite{fp-matters}. Sadly, as
 a ``side-effect'', it presents challenges for performance analysis.
 
-For example, consider the Haskell functions \cdh{take} and \cdh{(++)}, defined
-in \cref{fig:hs-example-original}. Suppose that we want to evaluate the
-following code:
+For example, consider the Haskell functions \cdh{take} and \cdh{(++)}. Suppose
+that we want to evaluate the following code:
 \begin{lstlisting}[language=Haskell]
 take 2 ([1,2,3] ++ [4,5]) 
 \end{lstlisting}
@@ -58,58 +57,20 @@ of lazy code in isolation; instead, one must consider the whole program. This
 makes performance analysis difficult.
 
 \begin{figure}[t]
-\begin{subfigure}[b]{\textwidth}
-\begin{minipage}[b]{0.5\textwidth}
-\begin{lstlisting}[language=Haskell]
+\begin{lstlisting}[language=Haskell,mathescape]
 take :: Int -> [a] -> [a]
-take 0 _  = []
-take _ [] = []
-take n (x:xs) = x : take (n - 1) xs
-\end{lstlisting}
-\end{minipage}
-\begin{minipage}[b]{0.45\textwidth}
-\begin{lstlisting}[language=Haskell]
-(++) :: [a] -> [a] -> [a]
-[]     ++ ys = ys
-(x:xs) ++ ys = x : (xs ++ ys)
-\end{lstlisting}
-\end{minipage}
-\caption{The definitions of \cdh{take} and \cdh{(++)} in Haskell.}\label{fig:hs-example-original}
-\end{subfigure}
-
-\begin{subfigure}[b]{\textwidth}
-\begin{minipage}[b]{0.5\textwidth}
-\begin{lstlisting}[language=Haskell,mathescape]
 takeC :: Int -> [a]$^A$ -> $\mathcal{P}$([a]$^A$, $\mathbb{N}$)
-\end{lstlisting}
-\end{minipage}
-\begin{minipage}[b]{0.45\textwidth}
-\begin{lstlisting}[language=Haskell,mathescape]
-appendC :: [a]$^A$ -> [a]$^A$ -> $\mathcal{P}$([a]$^A$, $\mathbb{N}$)    
-\end{lstlisting}
-\end{minipage}
-\caption{Pseudo type signatures of \cdh{takeC} and \cdh{appendC} derived from
-  the clairvoyance
-  translation~\cite{forking-paths}.}\label{fig:hs-example-clairvoyance}
-\end{subfigure}
+takeD :: Int -> [a] -> [a]$^A$ -> ([a]$^A$, $\mathbb{N}$)
 
-\begin{subfigure}[b]{\textwidth}
-\begin{minipage}[b]{\textwidth}
-\begin{lstlisting}[language=Haskell,mathescape]
-takeD   :: Int -> [a] -> [a]$^A$ -> ([a]$^A$, $\mathbb{N}$)
+(++) :: [a] -> [a] -> [a]
+appendC :: [a]$^A$ -> [a]$^A$ -> $\mathcal{P}$([a]$^A$, $\mathbb{N}$)
 appendD :: [a] -> [a] -> [a]$^A$ -> (([a]$^A$, [a]$^A$), $\mathbb{N}$)
 \end{lstlisting}
-\end{minipage}
-\caption{Pseudo type signatures of \cdh{takeD} and \cdh{appendD} derived from
-  the demand translation~\cite{demand-semantics}.}\label{fig:hs-example-demand}
-\end{subfigure}
-
-\caption{The definitions of \cdh{take} and \cdh{(++)} in Haskell, together with
-  the type signatures their clairvoyance translation and demand translation. We
-  use $\mathcal{P}$ to represent power set; $\mathbb{N}$ to represent natural
-  numbers. A type with superscript $^A$ represents an \emph{approximation} of
-  that type, whose definition will be introduced in later
-  sections.\ly{TODO: mention which section.}}\label{fig:hs-example}
+\caption{The Haskell type signatures of \cdh{take}, \cdh{(++)}, and their
+  respective clairvoyance and demand translations. $\mathcal{P}$ is the power
+  set operator. The superscript $^A$ denotes the \emph{approximation} of a
+  type.\ly{TODO: mention which section.}}\label{fig:hs-example}
+\label{fig:hs-example-clairvoyance}
 \end{figure}
 
 How can we bring locality, purity, order, and compositionality to lazy

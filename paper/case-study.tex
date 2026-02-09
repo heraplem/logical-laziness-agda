@@ -18,11 +18,6 @@ our case studies can be found in our publicly-available artifact.\ly{TODO:
 \begin{figure}[t]
 \begin{minipage}[b]{0.45\textwidth}
 \begin{lstlisting}[language=Curry]
-data T a = Undefined | Thunk a
-
-thunk :: Applicative f => f a -> f (T a)
-thunk f = pure Undefined ? fmap Thunk f
-
 newtype Tick a =
   Tick { runTick :: (a, Int) }
   
@@ -53,14 +48,9 @@ instance Approx a => Approx (T a) where
 We begin by building a framework for representing the logical clairvoyance
 semantics and the logical demand semantics in Curry.
 
-We show key definitions of this framework in \cref{fig:curry-foundations}. The
-\cdc{T} datatype represents a value whose evaluation may be
-skipped~(\cdc{Undefined}) or evaluated~(\cdc{Thunk}). The \cdc{thunk} combinator
-uses Curry's nondeterministic choice operator to either skip an effectful
-computation~(represented by the applicative functor \cdc{f}) or run it.
+We show key definitions of this framework in \cref{fig:curry-foundations}, with \cdc{thunk} and \cdc{T} defined in \cref{fig:take-curry}. 
 % The \cdc{with} combinator pushes an effectful computation through a \cdc{T},
 % yielding \cdc{Undefined} if no value is present.
-
 We represent approximation types using the \cdc{Approx} typeclass. The typeclass
 contains an \cdc{<~} operator, which indicates its left-hand operand
 approximates its right-hand operand. The other method, \cdc{approx}

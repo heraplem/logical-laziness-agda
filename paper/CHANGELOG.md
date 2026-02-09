@@ -6,3 +6,4 @@
 - Removed True, False, and If definitions from clairvoyance/demand translation figure in section 2
 - Removed many rules from approximation relation figure
 - Cut "we do not need to model the natural semantics of language B".
+- Cut some of the explanation of approximation values.

@@ -1,4 +1,5 @@
 - Correct margins (by removing `\usepackage{geometry}`).
 - Remove the `[t]` specification from Figure 3 so that the figures are all placed at least vaguely correctly.
 - Removed restated thunk and T definitions in Section 3
-- Removed the definitions of `take` and `(++)` from Figure 1, leaving only the type signatures. (with corresponding changes to the text).
+- Removed the definitions of `take` and `(++)` from Figure 1, leaving only the type signatures (with corresponding changes to the text).
+- Cut Figure 2 (`forking-paths.pdf`).

@@ -248,18 +248,13 @@ values are similar to the exact values, except that some parts might be
 \begin{center}
   \begin{align*}
     \Eval{\TThunk{A}} &= \Eval{A} \\
-    \Eval{\TUnit} &= \SUnit \\
-    \Eval{\TBool} &= \SBool \\
-    \Eval{\TProd{A}{B}} &= \Eval{A} \times \Eval{B} \\
-    \Eval{\TNat} &= \N \\
     \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}} \\ \\
     \Approx{\TLazy{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
-    \Approx{\TProd{A}{B}} &= \Approx{A} \times \Approx{B} \\
     \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{\texttt{(\(\TList{A}\))}}}}
   \end{align*}
 \end{center}
-\caption{Exact and approximation values. \(\Approx{A} = \Eval{A}\)
-  wherever \(\Approx{A}\) is not otherwise specified.}\label{fig:exact-approx}
+\caption{Essential cases for exact values and approximation
+  values.}\label{fig:exact-approx}
 \end{figure}
 
 We extend \(\Eval{\cdot}\) and \(\Approx{\cdot}\) to typing contexts. If

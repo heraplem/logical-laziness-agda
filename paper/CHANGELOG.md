@@ -1,2 +1,3 @@
 - Correct margins (by removing `\usepackage{geometry}`).
 - Remove the `[t]` specification from Figure 3 so that the figures are all placed at least vaguely correctly.
+- Removed restated thunk and T definitions in Section 3

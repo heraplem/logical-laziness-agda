@@ -40,7 +40,8 @@ instance Approx a => Approx (T a) where
 \end{lstlisting}
 \end{minipage}
 \caption{Key definitions for implementing the logical clairvoyance semantics and
-  the logical demand semantics in Curry.}\label{fig:curry-foundations}
+  the logical demand semantics in Curry. Refer to \cref{fig:take-curry} for the
+  definitions of \cdc{thunk} and \cdc{T}.}\label{fig:curry-foundations}
 \end{figure}
 
 \paragraph{Foundations.}
@@ -48,12 +49,12 @@ instance Approx a => Approx (T a) where
 We begin by building a framework for representing the logical clairvoyance
 semantics and the logical demand semantics in Curry.
 
-We show key definitions of this framework in \cref{fig:curry-foundations}, with \cdc{thunk} and \cdc{T} defined in \cref{fig:take-curry}. 
+We show key definitions of this framework in \cref{fig:curry-foundations}.
 % The \cdc{with} combinator pushes an effectful computation through a \cdc{T},
 % yielding \cdc{Undefined} if no value is present.
 We represent approximation types using the \cdc{Approx} typeclass. The typeclass
 contains an \cdc{<~} operator, which indicates its left-hand operand
-approximates its right-hand operand. The other method, \cdc{approx}
+approximates its right-hand operand. The other method, \cdc{approx},
 nondeterministically returns a value that approximates its argument. We include
 a default implementation of \cdc{approx} using free variables, but a specialized
 implementation can be much faster. The \cdc{Approx} typeclass depends on the

@@ -279,14 +279,12 @@ demands required for the two input lists are
 respectively. Throughout this process, the associated computation cost is also
 evaluated and carried forward.
 
-Demand semantics is also useful as a translation
-strategy~\cite{demand-semantics}. We show pseudo type signatures of the
-translated functions \cdh{takeD} and \cdh{appendD} in
-\cref{fig:hs-example-demand}. As in the clairvoyance translation, we use a
-natural number in the result to represent computation cost. The demand
-translation also uses approximations like
-\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}, but it uses
-them to represent demands.
+Demand semantics is also useful as a translation strategy~\cite{demand-semantics}. We show pseudo
+type signatures of the translated functions \cdh{takeD} and \cdh{appendD} in
+\cref{fig:hs-example-clairvoyance}. As in the clairvoyance translation, we use a natural number in
+the result to represent computation cost. The demand translation also uses approximations like
+\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}, but it uses them to represent
+demands.
 % We do not need any power sets, as the demand semantics is deterministic.
 For example, \cdc{takeD} takes the input of \cdh{take}~(\cdh{Int} and
 \cdh{[a]}), a demand on \cdh{take}'s

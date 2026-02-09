@@ -28,8 +28,9 @@ of writing highly compositional code that performs comparably to, or even better
 than, code written in an eagerly-evaluated language~\cite{fp-matters}. Sadly, as
 a ``side-effect'', it presents challenges for performance analysis.
 
-For example, consider the Haskell functions \cdh{take} and \cdh{(++)}. Suppose
-that we want to evaluate the following code:
+For example, consider the Haskell functions \cdh{take} and \cdh{(++)}, which
+respectively take the length-\(n\) prefix of a list and concatenate two lists.
+Suppose that we want to evaluate the following code:
 \begin{lstlisting}[language=Haskell]
 take 2 ([1,2,3] ++ [4,5]) 
 \end{lstlisting}

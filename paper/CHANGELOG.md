@@ -4,5 +4,5 @@
 - Removed the definitions of `take` and `(++)` from Figure 1, leaving only the type signatures (with corresponding changes to the text).
 - Cut Figure 2 (`forking-paths.pdf`).
 - Removed True, False, and If definitions from clairvoyance/demand translation figure in section 2
-- Removed nil and basic values from approximation relation figure
+- Removed many rules from approximation relation figure
 - Cut "we do not need to model the natural semantics of language B".

@@ -38,9 +38,10 @@
 \newboolean{extended}
 \newboolean{mainpaper}
 \newboolean{appendix}
+\newboolean{showmargins}
 \input{directives.tex}
 
-\ifdraft
+\ifshowmargins
   \usepackage[showframe,pass]{geometry}
 \fi
 

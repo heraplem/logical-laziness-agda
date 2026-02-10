@@ -95,28 +95,6 @@ essentially the same as that of Xia \textit{et al.}~\cite{demand-semantics}.
 Interested readers can refer to them in \cref{apx:demand-semantics} and in our
 artifact.
 
-Our proof of correctness for the \transDname{} builds on the following
-results proven by Xia \textit{et al.}~\cite{demand-semantics}, which we take as
-axioms in our Agda formalization (the proof of Xia \textit{et al.} was in
-Rocq~\cite{coq}). Let \( \Gamma \vdash t : A \), \( \gamma \in \Eval{\Gamma} \),
-and \( \approxof{a^A}{\EE{t}{\gamma}} \); and define
-\( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \).
-
-\begin{proposition}[Cost existence]\label{prop:cost-existence}
-  Let \( \gamma^A \le {\gamma^A}' \prec \gamma \).  Then there exists some \( {a^A}' \ge a^A \) such that \( \EC{{\gamma^A}'}{t}{c}{{a^A}'} \).
-\end{proposition}
-
-\begin{proposition}[Cost minimality]\label{prop:cost-minimality}
-  Let \( \approxof{{\gamma^A}'}{\gamma}, {a^A}' \ge a^A, c' \in \N \) such that
-  \( \EC{{\gamma^A}'}{t}{c'}{{a^A}'} \). Then
-  \( ({\gamma^A}', c') \ge (\gamma^A, c) \).
-\end{proposition}
-
-\Cref{prop:cost-existence,prop:cost-minimality} establish equivalence between
-clairvoyance semantics and demand semantics. Together with
-\cref{prop:equiv-clairvoyance}, we can show that the \transDname{}, which relies
-on the \transCname, is equivalent to the demand semantics.
-
 \ifextended
 \begin{lemma}
   Let \( \Gamma = x_1 : A_1, \ldots, x_n : A_n \).  If \( \TB{\Gamma}{t}{B} \)
@@ -144,15 +122,11 @@ adequacy and soundness.
   such that
   \( \EL{\gamma, y^A \mapsto {a^A}'}{\transD{t}{\Gamma}}{({\gamma^A}', c)} \).
 \end{theorem}
-\begin{proof}
-  By \cref{prop:dem-trans-sem,prop:cost-existence}.
-\end{proof}
-\stl{I don't understand what $A'$ is doing here.  It seems like we could just say
-\( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\gamma^A, c)} \)}
 
 \begin{theorem}[Soundness of the \transDname]
   If \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \), then \( \ED{t}{\gamma}{a^A} \le (\gamma^A, c) \).
 \end{theorem}
-\begin{proof}
-  By \cref{prop:dem-trans-sem,prop:cost-minimality}.
-\end{proof}
+
+The proofs of these theorems depend on \cref{prop:dem-trans-sem} and the
+theorems of cost existence and cost minimality in Xia \textit{et
+  al.}~\cite{demand-semantics}.

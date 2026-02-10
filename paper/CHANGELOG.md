@@ -8,3 +8,4 @@
 - Cut "we do not need to model the natural semantics of language B".
 - Cut some of the explanation of approximation values.
 - Cut most cases in the definition of exact and approximation values (Fig. 6).
+- Cut the formal statements of the cost existence and cost minimality theorems, instead merely citing them at the point where they are used.

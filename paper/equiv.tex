@@ -118,13 +118,15 @@ adequacy and soundness.
 
 \begin{theorem}[Adequacy of the \transDname]
   Define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \) and let
-  \( {\gamma^A}' \ge \gamma^A \).  Then there exists some \( {a^A}' \ge a^A \)
+  \( {\gamma^A}' \ge \gamma^A \). Then there exists some \( {a^A}' \ge a^A \)
   such that
   \( \EL{\gamma, y^A \mapsto {a^A}'}{\transD{t}{\Gamma}}{({\gamma^A}', c)} \).
 \end{theorem}
 
 \begin{theorem}[Soundness of the \transDname]
-  If \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \), then \( \ED{t}{\gamma}{a^A} \le (\gamma^A, c) \).
+  If
+  \( \EL{\gamma, y^A \mapsto a^A}{\transD{t}{\Gamma}}{(\verts{\gamma^A}, c)} \),
+  then \( \ED{t}{\gamma}{a^A} \le (\gamma^A, c) \).
 \end{theorem}
 
 The proofs of these theorems depend on \cref{prop:dem-trans-sem} and the

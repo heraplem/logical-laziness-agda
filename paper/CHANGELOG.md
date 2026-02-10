@@ -10,3 +10,4 @@
 - Cut most cases in the definition of exact and approximation values (Fig. 6).
 - Cut the formal statements of the cost existence and cost minimality theorems, instead merely citing them at the point where they are used.
 - Set `\sloppy` to discourage margin overruns.
+- Fix artifact URL.

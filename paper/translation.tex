@@ -114,28 +114,10 @@ constructors indicate whether a computation is evaluated or not. In the
       ;;
 
       $t$ ::=
-      | $x$
-      // \tlet{x}{t}{t}
-      // \tunit{}
-      // \ttrue{}
-      // \tfalse{}
-      // \tif{t}{t}{t}
-      // \tpair{t}{t}
-      // \tfst{t}
-      // \tsnd{t}
-      | \tresult{t}
-      // \tundefined{}
-      // \teq{t}{t}
-      // \tle{t}{t}
-      // \tcase{t}{x}{t}{t}
-      | $n$
-      // \tadd{t}{t}
-      // \tnil{}
-      // \tcons{t}{t}
-      // \tfoldr{x}{x}{t}{t}{t}
-      // \tchoose{t}{t}
-      // \tfree{A}
-      // \tfail{}
+      | $x$ // \tlet{x}{t}{t} // \tunit{} // \ttrue{} // \tfalse{} // \tif{t}{t}{t}
+      | \teq{t}{t} // \tle{t}{t} // \tpair{t}{t} // \tfst{t} // \tsnd{t} // \tresult{t} // \tundefined{}
+      | \tcase{t}{x}{t}{t} // $n$ // \tadd{t}{t} // \tnil{} // \tcons{t}{t}
+      | \tfoldr{x}{x}{t}{t}{t} // \tchoose{t}{t} // \tfree{A} // \tfail{}
     \end{bnf}
     \begin{mathpar}
       \textit{Typing}\\
@@ -147,11 +129,11 @@ constructors indicate whether a computation is evaluated or not. In the
       \inferrule{\\}{\TL{\Gamma}{\tfail}{A}} \\
       \textit{Semantics}\\
       \inferrule{\EL{\gamma}{t_1}{v_1} \\ \EL{\gamma}{t_2}{v_2} \\ v_1 \le v_2}{\EL{\gamma}{\tle{t_1}{t_2}}{\strue}} \qquad
-      \inferrule{\EL{\gamma}{t_1}{v_1} \\ \EL{\gamma}{t_2}{v_2} \\ v_1 \nleq v_2}{\EL{\gamma}{\tle{t_1}{t_2}}{\sfalse}} \\
-      \inferrule{v \in \Approx{A}}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}} \qquad
-      \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}}
-      \qquad
-      \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \\
+      \inferrule{\EL{\gamma}{t_1}{v_1} \\ \EL{\gamma}{t_2}{v_2} \\ v_1 \nleq v_2}{\EL{\gamma}{\tle{t_1}{t_2}}{\sfalse}}
+      \\
+      \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \qquad
+      \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}} \\
+      \inferrule{v \in \Approx{A}}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}}
     \end{mathpar}
   \end{center}
   \caption{The syntax of the logic language \(\LL\), along with typing and

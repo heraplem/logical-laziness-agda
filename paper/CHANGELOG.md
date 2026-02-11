@@ -12,3 +12,4 @@
 - Set `\sloppy` to discourage margin overruns.
 - Fix artifact URL.
 - Fix margin overruns in Figure 4.
+- Cut some of the math notation in "Exact Values and Approximations".

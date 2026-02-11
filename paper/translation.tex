@@ -242,22 +242,15 @@ values are similar to the exact values, except that some parts might be
 We extend \(\Eval{\cdot}\) and \(\Approx{\cdot}\) to typing contexts. If
 \(\Gamma = x_1 : A_1, \ldots, x_n : A_n \) is a typing context, then
 \(\Eval{\Gamma}\) is the set of environments of shape \(\Gamma\) that bind
-variables to exact values:
-\[
-  \Eval{\Gamma} = \setbuilder{x_1 \mapsto e_1, \ldots, x_n \mapsto e_n}{e_1 \in \Eval{A_1}, \ldots, e_n \in \Eval{A_n}}.
-\]
-\(\Approx{\Gamma}\) is defined similarly.
+variables to exact values. \(\Approx{\Gamma}\) is defined similarly.
 
 Exact values and approximations are connected by the relation \(\approxofZ\)
 (\cref{fig:approx}). Intuitively, \(\approxof{a}{e}\), pronounced ``\(a\)
 approximates \(e\),'' if \(a\) has the same shape as \(e\), but with some parts
 possibly replaced by \(\sundefined\). If \(e \in \Eval{A}\), we write
 \(\Approx{A}_{\approxof{\relax}{e}}\) to denote the set of values in
-\(\Approx{A}\) that approximate \(e\):
-\[
-  \Approx{A}_{\approxof{\relax}{e}} = \setbuilder{a \in \Approx{A}}{\approxof{a}{e}} .
-\]
-Similarly, if \(\gamma \in \Eval{\Gamma}\), we write
+\(\Approx{A}\) that approximate \(e\). Similarly, if
+\(\gamma \in \Eval{\Gamma}\), we write
 \(\Approx{\Gamma}_{\approxof{\relax}{\gamma}}\) to denote the set of
 environments that elementwise approximate \(\gamma\).
 

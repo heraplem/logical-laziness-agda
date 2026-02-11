@@ -1,0 +1,22 @@
+\section{Conclusion}\label{sec:conclusion}
+
+We have shown that clairvoyance and demand semantics are two sides of the same
+coin using logic programming as an intermediary. This connection is both
+theoretically interesting and practically useful: it demonstrates that
+functional logic programming concepts have value in seemingly unrelated
+areas. We also obtain an executable clairvoyance semantics and a simpler demand
+semantics built on functional logic programming semantics.
+
+As discussed in \cref{sec:case-study}, our technique is slow with even
+modestly-sized inputs. Although unfortunate, this may be acceptable. A major
+motivation behind this line of research was the desire to find a lightweight
+representation of demand functions that could be used to test their asymptotic
+bounds (constants included) \emph{before} trying to formally verify them. For
+this purpose, it usually suffices to test quite small inputs, where our
+technique performs quite well in absolute (wall-clock) terms. However,some
+applications seem to perform much worse than others for reasons that we do not
+yet understand. Further investigation is left as future work.
+
+Our findings allow for previously unattainable flexibility between demand and
+clairvoyance semantics, thus providing more flexibility in time cost analysis
+for lazy programs.

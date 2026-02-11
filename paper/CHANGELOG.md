@@ -17,3 +17,4 @@
 - Cut the corresponding explanation in the "Limitations" section. (I don't like doing this, but the explanation in the previous section is now so brief that it makes no sense to use up so much space here.)
 - Cut even more from "Exact Values and Approximations".
 - Merge "Limitations" and "Conclusion".
+- Cut all explanation of exact and approximation values, leaving only the briefest explanation of the ≤ relation in the correctness section.

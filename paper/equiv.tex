@@ -49,6 +49,8 @@ term \(t\) in \(\LB\), we can translate it to a term in \(\LL\) using the
 \(\SC\llbracket t \rrbracket\). We also prove a similar theorem relating demand
 semantics to the \transDname.
 
+\subsection{The \transCname{}}
+
 Clairvoyance semantics is a big-step operational semantics with the judgment
 schema \(\EC{\gamma}{t}{c}{v}\). Intuitively, \(c\) is the number of
 \(\ttickZ\)s encountered while evaluating \(t\) to \(v\). Our semantics is
@@ -76,24 +78,26 @@ terms. Readers can find detailed definitions of our clairvoyance semantics in
 % takes two arguments: an element of the list, and a \( \sthunkZ \)
 % obtained by iterating over the rest of the list (or \( \sundefined \) if the
 % rest of the list is itself \( \sundefined \)).
-% 
+%
+
+\subsection{The \transDname{}}\label{subsec:values}
+
 Demand semantics is a deterministic semantics that interprets a term \( t \) as
 a function \( \EDU{t} \) that takes two arguments: an \emph{exact} evaluation
-context \( \gamma \) and an approximation value that represents the demand on
-the result of \( \EE{t}{\gamma} \). It produces a list of minimal demands on
-\( \gamma \) and a computation cost. In summary, demand semantics has the
-``type'':
-\[
-  \EDU{\cdot} : (t : \Gamma \vdash A) \to (\gamma : \Eval{\Gamma}) \times \Approx{A}_{\approxof{\relax}{\EE{t}{\gamma}}} \to \Approx{\Gamma}_{\approxof{\relax}{\gamma}} \times \N .
-\]
-Intuitively, demand semantics computes ``how much'' of the input \( \gamma \) is
-required to compute a desired ``amount'' of the output \( \EE{t}{\gamma} \), and
-how much it costs to perform the computation.
+context \( \gamma \) (containing values with no \(\sundefined parts\)) and an
+\emph{approximation} value that represents the demand on the result of
+\( \EE{t}{\gamma} \); it produces a list \(\gamma^A\) of minimal demands on
+\(\gamma\) and a computation cost. Intuitively, demand semantics computes ``how
+much'' of the input \( \gamma \) is required to compute a desired ``amount'' of
+the output \( \EE{t}{\gamma} \), and how much it costs to perform the
+computation.
 
 We omit detailed definitions of demand semantics on \(\LB\), as it is
 essentially the same as that of Xia \textit{et al.}~\cite{demand-semantics}.
 Interested readers can refer to them in \cref{apx:demand-semantics} and in our
 artifact.
+
+In the following, given values \(a, a'\), we write \(a \le a'\) to mean that \(a\) is \emph{less defined} than \(a'\); \ie \(a\) ``has the same shape as'' \(a'\), except with some \(\sthunkZ\) parts possibly replaced by \(\sundefined\). This relation extends to environments in the obvious way.
 
 \ifextended
 \begin{lemma}

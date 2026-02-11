@@ -133,7 +133,7 @@ constructors indicate whether a computation is evaluated or not. In the
       \\
       \inferrule{\EL{\gamma}{t_2}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-R}} \qquad
       \inferrule{\EL{\gamma}{t_1}{v}}{\EL{\gamma}{\tchoose{t_1}{t_2}}{v}}{\rulename{L-Choice-L}} \\
-      \inferrule{v \in \Approx{A}}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}}
+      \inferrule{\text{\(v\) is a value in \(A\)}}{\EL{\gamma}{\tfree{A}}{v}}{\rulename{L-Free}}
     \end{mathpar}
   \end{center}
   \caption{The syntax of the logic language \(\LL\), along with typing and
@@ -215,59 +215,6 @@ that a given condition holds, causing the computation to fail if it does not.
 We show all the typing rules related to these derived terms in
 \cref{fig:logic-derived}. Readers who are familiar with monads might
 recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
-
-\subsection{Exact Values and Approximations}\label{subsec:values}
-
-Each type \(A\) comes equipped with a set \(\Eval{A}\) of \emph{exact values}
-and a set \(\Approx{A}\) of \emph{approximation values}, defined in
-\cref{fig:exact-approx}. The exact values are standard: the exact values of
-\(\TNat\) are natural numbers, and the exact values of \(\TList{A}\) are finite
-sequences with elements drawn from the exact values of \(A\). The approximation
-values are similar to the exact values, except that some parts might be
-``discarded''~(represented by \(\sundefined\)). \(\Eval{\cdot}\) and \(\Approx{\cdot}\) extend to environments in the obvious way.
-
-\begin{figure}[t]
-\begin{center}
-  \begin{align*}
-    \Eval{\TThunk{A}} &= \Eval{A} \\
-    \Eval{\TList{A}} &= \braces{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Eval{A}, v_2 \in \Eval{\TList{A}}} \\ \\
-    \Approx{\TLazy{A}} &= \set{\sundefined} \cup \setbuilder{\sthunk{v}}{v \in \Approx{A}} \\
-    \Approx{\TList{A}} &= \set{\snil} \cup \setbuilder{\scons{v_1}{v_2}}{v_1 \in \Approx{A}, v_2 \in \Approx{\TThunk{\texttt{(\(\TList{A}\))}}}}
-  \end{align*}
-\end{center}
-\caption{Essential cases for exact values and approximation
-  values.}\label{fig:exact-approx}
-\end{figure}
-
-Exact values and approximations are connected by the relation \(\approxofZ\)
-(\cref{fig:approx}). Intuitively, \(\approxof{a}{e}\), pronounced ``\(a\)
-approximates \(e\),'' if \(a\) has the same shape as \(e\), but with some parts
-possibly replaced by \(\sundefined\). If \(e \in \Eval{A}\), we write
-\(\Approx{A}_{\approxof{\relax}{e}}\) to denote the set of values in
-\(\Approx{A}\) that approximate \(e\). Similarly, if
-\(\gamma \in \Eval{\Gamma}\), we write
-\(\Approx{\Gamma}_{\approxof{\relax}{\gamma}}\) to denote the set of
-environments that elementwise approximate \(\gamma\).
-
-\begin{figure}[t]
-  \begin{mathpar}
-    \inferrule{\\}{\approxof{\sundefined}{e}} \qquad
-    \inferrule{\approxof{a}{e}}{\approxof{\sthunk{e}}{a}} \qquad
-    \inferrule{\approxof{a_1}{e_1} \\ \approxof{a_2}{e_2}}{\approxof{\scons{a_1}{a_2}}{\scons{e_1}{e_2}}} \\
-    \inferrule{\\}{\sundefined \le a} \qquad
-    \inferrule{a \le a'}{\sthunk{a} \le \sthunk{a'}} \qquad
-    \inferrule{a_1 \le a_1' \\ a_2 \le a_2'}{\scons{a_1}{a_2} \le \scons{a_1'}{a_2'}}
-  \end{mathpar}
-  \caption{Essential rules for the approximation relation \(\approxofZ\)
-    (between approximations and exact values) and the definedness relation
-    \(\le\) (between approximations).}\label{fig:approx}\label{fig:definedness}
-\end{figure}
-
-Approximations come with a \emph{definedness} relation (\cref{fig:definedness}).
-It is conceptually similar to the approximation relation: \(a \le a'\),
-pronounced ``\(a\) is less defined than \(a'\),'' if \(a\) has the same shape as
-\(a'\) with some parts replaced by \(\sundefined\). The relation \(\le\) extends
-to approximation environments (of a fixed exact environment) in the obvious way.
 
 \subsection{\TransCname{} and \TransDname{}}\label{subsec:clairvoyance-translation}\label{subsec:demand-translation}
 

@@ -224,7 +224,7 @@ and a set \(\Approx{A}\) of \emph{approximation values}, defined in
 \(\TNat\) are natural numbers, and the exact values of \(\TList{A}\) are finite
 sequences with elements drawn from the exact values of \(A\). The approximation
 values are similar to the exact values, except that some parts might be
-``discarded''~(represented by \(\sundefined\)).
+``discarded''~(represented by \(\sundefined\)). \(\Eval{\cdot}\) and \(\Approx{\cdot}\) extend to environments in the obvious way.
 
 \begin{figure}[t]
 \begin{center}
@@ -238,11 +238,6 @@ values are similar to the exact values, except that some parts might be
 \caption{Essential cases for exact values and approximation
   values.}\label{fig:exact-approx}
 \end{figure}
-
-We extend \(\Eval{\cdot}\) and \(\Approx{\cdot}\) to typing contexts. If
-\(\Gamma = x_1 : A_1, \ldots, x_n : A_n \) is a typing context, then
-\(\Eval{\Gamma}\) is the set of environments of shape \(\Gamma\) that bind
-variables to exact values. \(\Approx{\Gamma}\) is defined similarly.
 
 Exact values and approximations are connected by the relation \(\approxofZ\)
 (\cref{fig:approx}). Intuitively, \(\approxof{a}{e}\), pronounced ``\(a\)
@@ -271,14 +266,8 @@ environments that elementwise approximate \(\gamma\).
 Approximations come with a \emph{definedness} relation (\cref{fig:definedness}).
 It is conceptually similar to the approximation relation: \(a \le a'\),
 pronounced ``\(a\) is less defined than \(a'\),'' if \(a\) has the same shape as
-\(a'\) with some parts replaced by \(\sundefined\). This relation is a partial order on approximations.
-
-We also extend \(\le\) to environments. Given \(\gamma \in \Eval{\Gamma}\) and
-\(\gamma^A_1, \gamma^A_2 \prec \gamma\), we say that
-\(\gamma^A_1 \le \gamma^A_2\) if each value in \(\gamma^A_1\) is less defined
-than the corresponding value in \(\gamma^A_2\). This relation inherits all of
-the algebraic properties of \(\le\) on environments; in particular, it is a
-partial order.
+\(a'\) with some parts replaced by \(\sundefined\). The relation \(\le\) extends
+to approximation environments (of a fixed exact environment) in the obvious way.
 
 \subsection{\TransCname{} and \TransDname{}}\label{subsec:clairvoyance-translation}\label{subsec:demand-translation}
 

@@ -20,6 +20,14 @@ our case studies can be found in our publicly-available artifact.\ly{TODO:
 \begin{lstlisting}[language=Curry]
 newtype Tick a =
   Tick { runTick :: (a, Int) }
+
+data T a = Undefined | Thunk a
+
+thunk :: Applicative f => f a -> f (T a)
+thunk m = pure Undefined ? Thunk <$> m
+
+force :: Applicative f => T a -> f a
+force (Thunk x) = pure x
   
 data List a = Nil | (:~) a (T (List a))
 \end{lstlisting}

@@ -242,20 +242,18 @@ element from
 discard it. In the end, one computation branch will have succeeded in the same
 amount of time as a standard lazy evaluation.
 
-Clairvoyance semantics can be used as a recipe for a mechanical translation from
-a pure program to a program with reified computation costs~\cite{forking-paths}.
-We show pseudo type signatures of translated \cdh{take} and \cdh{(++)} in
-\cref{fig:hs-example-clairvoyance} as \cdh{takeC} and \cdh{appendC},
-respectively. These translated functions use \emph{approximations} of lists,
-denoted as \lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}.
-They represent lists that are potentially ``less evaluated'', like
-\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. We defer a
-formal definition of approximations to \cref{subsec:values}. A natural
-number~($\mathbb{N}$) in the result represents the associated computation cost.
-Because the evaluation is nondeterministic, each translated function returns a
-power set of result-cost pairs. Still, we can use these translated functions to
-formally reason about the computation cost of lazy programs, as illustrated by
-Li \textit{et al.}~\cite{forking-paths}
+Clairvoyance semantics can be used as a recipe for a mechanical translation from a pure program to a
+program with reified computation costs~\cite{forking-paths}.  We show pseudo type signatures of
+translated \cdh{take} and \cdh{(++)} in \cref{fig:hs-example-clairvoyance} as \cdh{takeC} and
+\cdh{appendC}, respectively. These translated functions use \emph{approximations} of lists, denoted
+as \lstinline[language=Haskell,breakatwhitespace,mathescape]{[a]$^A$}.  They represent lists that
+are potentially ``less evaluated'', like
+\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. We defer a formal definition of
+approximations to \cref{subsec:values}. A natural number~($\mathbb{N}$) in the result represents the
+associated computation cost.  Because the evaluation is nondeterministic, each translated function
+returns a power set of result-cost pairs. Still, we can use these translated functions to formally
+reason about the computation cost of lazy programs, as illustrated by Li \textit{et
+  al.}~\cite{forking-paths}
 
 One major drawback of this approach is that power sets in
 return types make execution expensive. This makes it hard to use clairvoyance
@@ -300,46 +298,14 @@ clairvoyance translation, which makes it more challenging to develop tools for
 or formally reason about code under demand semantics.
 
 \paragraph{Our contributions.}
-It is unsatisfying that, although we have two semantics that model lazy
-computation costs, they are very different and we have to choose between them
-depending on what we need. In this paper, we propose a novel approach of
-\emph{unifying} these two semantics using \emph{functional logic programming}.
-In this new approach, we translate a lazy functional program to a functional
-logic program that models clairvoyance semantics via a \emph{\transCname}. This
-functional logic program can then be extended to obtain a new program that
-encodes demand semantics via a \emph{\transDname}. This finding reveals that
-these two independently proposed semantics are two sides of the same coin. We
-show this connection both in theory and in practice.
-
-We show an example of translating the Haskell \cdh{take} function to
-Curry~\cite{curry-lang} in \cref{fig:take-curry}. \Cref{fig:takeC-curry} shows
-the result of a \transCname, the definition of \cdc{takeC} in Curry.
-\Cref{fig:takeD-curry} shows the the result of a \transDname, \cdc{takeD}, which
-is a simple wrapper around \cdc{takeC}. Both \cdc{takeC} and \cdc{takeD} rely on
-some common definitions shown in \cref{fig:curry-thunk-func}.
-
-The \cdc{takeC} function takes an \cdc{Int} and a \cdc{T (List a)}. The \cdc{T} datatype, defined in
-\cref{fig:curry-thunk-func}, represents a value that could be $\bot$~(represented by
-\cdc{Undefined}). The type \cdc{List a} is the approximation of \cdh{[a]}. The function returns a
-new \cdc{List a} inside a \cdc{Tick} monad, which encodes the computation cost associated with the
-returned \cdc{List a}. The function works similarly to \cdh{take} for the most part.\ly{TODO:
-  explain \cdc{fcase} and \cdc{=:=}.} The key to implementing clairvoyance semantics is the
-recursive call \cdc{thunk (takeC n' xsT')}, which unfolds to:
-\begin{lstlisting}[language=Curry]
-pure Undefined ? fmap Thunk (takeC n' xsT') 
-\end{lstlisting}
-That is, we use Curry's nondeterministic choice operator \cdc{?} to either skip
-the evaluation and return \cdc{Undefined} (\ie~$\bot$), or to evaluate the
-recursive call and wrap the result inside a \cdc{Thunk} constructor.
-
-The \cdc{takeD} function is implemented in terms of \cdc{takeC}. The core of
-\cdc{takeD} is its guard condition: \cdc{takeC n xsTD =:= Tick (ysD, c)}, where
-\cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, and \cdc{xsTD} and \cdc{c}
-are free variables~(also known as logic variables). In this way, \cdc{takeD}
-computes the input \cdc{xsTD} and parts of the output \cdc{c} of \cdc{takeC},
-given the rest of its output \cdc{ysD}. Put differently, \cdc{takeD} is a kind
-of \emph{inversion} of \cdc{takeC}. In addition, we require \cdc{xsTD} to be an
-approximation of \cdc{xsT}, another argument of \cdc{takeD}, so that it either is \cdc{xsT}, or is ``less evaluated'' than \cdc{xsT}.
+It is unsatisfying that, although we have two semantics that model lazy computation costs, they are
+very different and we have to choose between them depending on what we need. In this paper, we
+propose a novel approach of \emph{unifying} these two semantics using \emph{functional logic
+  programming}.  In this new approach, we translate a lazy functional program to a functional logic
+program that models clairvoyance semantics via a \emph{\transCname}. This functional logic program
+can then be extended to obtain a new program that encodes demand semantics via a
+\emph{\transDname}. This finding reveals that these two independently proposed semantics are two
+sides of the same coin. We show this connection both in theory and in practice.
 
 % Nondeterministic choices in functional logic programming are natural fit for
 % modeling the clairvoyance semantics. The demand semantics can be considered a
@@ -360,58 +326,55 @@ approximation of \cdc{xsT}, another argument of \cdc{takeD}, so that it either i
 % connection both in theory and in practice.
 
 \begin{figure}
-  \centering
-  \begin{subfigure}[b]{\textwidth}
-\begin{minipage}[b]{0.45\textwidth}    
-\begin{lstlisting}[language=Curry]
-data T a = Undefined | Thunk a
+  \begin{lstlisting}[language=Curry]
+    takeC :: Int -> T (List a) -> Tick (List a)
+    takeC n xsT = tick >>
+      fcase n `compare` 0 of
+        EQ -> return Nil
+        GT -> do
+          xs <- force xsT
+          fcase xs of
+            Nil -> return Nil
+            x :~ xsT' -> (x:~) <$> thunk (takeC (n - 1) xsT')
 
-thunk :: Applicative f => f a -> f (T a)
-thunk f = pure Undefined ? fmap Thunk f
+    takeD :: Approx a => Int -> T (List a) -> List a -> Tick (T (List a))
+    takeD n xsT ysD
+        | takeC n xsTD =:= Tick (ysD, c)
+        = Tick (xsTD, c)
+      where xsTD = approx xsT
+            c free
 \end{lstlisting}
-\end{minipage}
-\qquad
-\begin{minipage}[b]{0.45\textwidth}    
-\begin{lstlisting}[language=Curry]
-forcing :: T a -> (a -> b) -> b
-forcing (Thunk v) f = f v
-\end{lstlisting}
-\end{minipage}
-\caption{Some basic Curry definitions.}\label{fig:curry-thunk-func}
-\end{subfigure}
-\begin{subfigure}[b]{0.55\textwidth}
-\begin{lstlisting}[language=Curry]
-takeC :: Int -> T (List a) -> Tick (List a)
-takeC n xsT = tick >>
-  fcase n `compare` 0 of
-    EQ -> return Nil
-    GT -> forcing xsT $ \xs ->
-      fcase xs of
-        Nil -> return Nil
-        x :~ xsT' -> do
-          (x:~) <$> thunk (takeC (n - 1) xsT')
-\end{lstlisting}
-\caption{The \cdc{takeC} function obtained from a \transCname.
-  \cdc{<$>} is the infix operator for \cdc{fmap}.}\label{fig:takeC-curry}
-\end{subfigure}
-\qquad
-\begin{subfigure}[b]{0.4\textwidth}
-\begin{lstlisting}[language=Curry]
-takeD :: Approx a =>
-         Int -> T (List a) ->
-         List a -> Tick (T (List a))
-takeD n xsT ysD
-      | takeC n xsTD =:= Tick (ysD, c)
-      = Tick (xsTD, c)
-  where xsTD = approx xsT
-        c free
-\end{lstlisting}
-\caption{The \cdc{takeD} function obtained from a
-  \transDname.}\label{fig:takeD-curry}
-\end{subfigure}
-\caption{The \transCname{} and \transDname{} of the \cdh{take} function,
+\caption{The \transCname{} (\cdc{takeC}) and \transDname{} (\cdc{takeD}) of the \cdh{take} function,
   implemented in Curry.}\label{fig:take-curry}
 \end{figure}
+
+We show an example of translating the Haskell \cdh{take} function to Curry~\cite{curry-lang} in
+\cref{fig:take-curry}. \cdc{takeC} is the result of a \transCname{}; while \cdc{takeD} is the result
+of a \transDname{}. Both \cdc{takeC} and \cdc{takeD} rely on some common definitions, which can be
+found in \cref{sec:case-study}.
+
+The \cdc{takeC} function takes an \cdc{Int} and a \cdc{T (List a)}. The \cdc{T} datatype, defined in
+\cref{fig:curry-thunk-func}, represents a value that could be $\bot$~(represented by
+\cdc{Undefined}). The type \cdc{List a} is the approximation of \cdh{[a]}. The function returns a
+new \cdc{List a} inside a \cdc{Tick} monad, which encodes the computation cost associated with the
+returned \cdc{List a}. The function works similarly to \cdh{take} for the most part.\ly{TODO:
+  explain \cdc{fcase} and \cdc{=:=}.} The key to implementing clairvoyance semantics is the
+recursive call \cdc{thunk (takeC n' xsT')}, which unfolds to:
+\begin{lstlisting}[language=Curry]
+pure Undefined ? fmap Thunk (takeC n' xsT')
+\end{lstlisting}
+That is, we use Curry's nondeterministic choice operator \cdc{?} to either skip
+the evaluation and return \cdc{Undefined} (\ie~$\bot$), or to evaluate the
+recursive call and wrap the result inside a \cdc{Thunk} constructor.
+
+The \cdc{takeD} function is implemented in terms of \cdc{takeC}. The core of
+\cdc{takeD} is its guard condition: \cdc{takeC n xsTD =:= Tick (ysD, c)}, where
+\cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, and \cdc{xsTD} and \cdc{c}
+are free variables~(also known as logic variables). In this way, \cdc{takeD}
+computes the input \cdc{xsTD} and parts of the output \cdc{c} of \cdc{takeC},
+given the rest of its output \cdc{ysD}. Put differently, \cdc{takeD} is a kind
+of \emph{inversion} of \cdc{takeC}. In addition, we require \cdc{xsTD} to be an
+approximation of \cdc{xsT}, another argument of \cdc{takeD}, so that it either is \cdc{xsT}, or is ``less evaluated'' than \cdc{xsT}.
 
 \ifextended
 In addition, our result shows a simple way of executing clairvoyance semantics

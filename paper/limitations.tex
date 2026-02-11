@@ -17,15 +17,6 @@ extend to demand semantics as future work.
   call. Nonetheless, extending demand semantics to include higher-order
   functions is an ongoing area of research. \fi
 
-The \transDname{} produces nondeterministic code that does not reduce
-\emph{only} to the result of demand semantics in general. Some logic languages
-have a built-in facility to collapse a nondeterministic computation into a
-deterministic one, returning either the first result found or a list of all
-possible results. In languages that also give the user control over the order in
-which branches are tried, we can arrange for less-defined results to always be
-tried first, thereby ensuring that we always obtain the minimal result. We take
-this approach in \cref{sec:case-study}.
-
 As discussed in \cref{sec:case-study}, our technique is slow with even
 modestly-sized inputs. Although unfortunate, this may be acceptable. A major
 motivation behind this line of research was the desire to find a lightweight

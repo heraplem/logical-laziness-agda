@@ -14,3 +14,4 @@
 - Fix margin overruns in Figure 4.
 - Cut some of the math notation in "Exact Values and Approximations".
 - Cut most of the explanation of Curry's search trees.
+- Cut the corresponding explanation in the "Limitations" section. (I don't like doing this, but the explanation in the previous section is now so brief that it makes no sense to use up so much space here.)

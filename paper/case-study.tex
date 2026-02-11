@@ -77,17 +77,11 @@ available artifact.
 
 \paragraph{Running computations.}
 All the translated functions can be executed using the KiCS2 Curry compiler,
-including all the logical clairvoyance functions. In addition, even though 
-clairvoyance semantics returns a set of value-cost pairs due to nondeterminism,
-we can use Curry's \emph{search tree}
-functionality~\cite{DBLP:journals/jflp/BrasselHH04} to compute only the least
-result, which is the true cost of lazy evaluation. In particular, the
-\cdc{someValueWith} function defined in \cdc{Control.Search.SearchTree}
-collapses a nondeterministic computation into a deterministic one according to a
-given \emph{search strategy}, which tells Curry how to navigate a tree of
-nondeterministic computations. In our implementation, we arrange our definitions
-so that the less-defined result is always on the left branch of a search tree.
-Thus, we can always find the least result via a depth-first search.
+including all the logical clairvoyance functions. In our implementation, we
+arrange our definitions so that the less-defined result is always on the left
+branch of a search tree; thus, by using Curry's \emph{search tree}
+package~\cite{DBLP:journals/jflp/BrasselHH04}, we can always find the least
+result via a depth-first search.
 
 % \ly{TODO: rewrite these now that the code is shown in \cref{sec:intro}.} Now we
 % can start defining some functions. \cdc{takeC} is the clairvoyance

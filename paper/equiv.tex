@@ -84,8 +84,8 @@ terms. Readers can find detailed definitions of our clairvoyance semantics in
 
 Demand semantics is a deterministic semantics that interprets a term \( t \) as
 a function \( \EDU{t} \) that takes two arguments: an \emph{exact} evaluation
-context \( \gamma \) (containing values with no \(\sundefined parts\)) and an
-\emph{approximation} value that represents the demand on the result of
+context \( \gamma \) (containing only values with no \(\sundefined\) parts) and
+an \emph{approximation} value that represents the demand on the result of
 \( \EE{t}{\gamma} \); it produces a list \(\gamma^A\) of minimal demands on
 \(\gamma\) and a computation cost. Intuitively, demand semantics computes ``how
 much'' of the input \( \gamma \) is required to compute a desired ``amount'' of
@@ -96,8 +96,6 @@ We omit detailed definitions of demand semantics on \(\LB\), as it is
 essentially the same as that of Xia \textit{et al.}~\cite{demand-semantics}.
 Interested readers can refer to them in \cref{apx:demand-semantics} and in our
 artifact.
-
-In the following, given values \(a, a'\), we write \(a \le a'\) to mean that \(a\) is \emph{less defined} than \(a'\); \ie \(a\) ``has the same shape as'' \(a'\), except with some \(\sthunkZ\) parts possibly replaced by \(\sundefined\). This relation extends to environments in the obvious way.
 
 \ifextended
 \begin{lemma}
@@ -117,7 +115,7 @@ In the following, given values \(a, a'\), we write \(a \le a'\) to mean that \(a
   By construction, applying \cref{prop:equiv-clairvoyance}.
 \end{proof}
 
-We can then establish the correctness of the \transDname{} via two theorems:
+We can now establish the correctness of the \transDname{} via two theorems:
 adequacy and soundness.
 \begin{theorem}[Adequacy of the \transDname]
   Define \( (\gamma^A, c) = \ED{t}{\gamma}{a^A} \) and let

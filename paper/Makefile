@@ -10,6 +10,7 @@ DIFF = diff
 DIFFTEX = $(DIFF).tex
 DIFFPDF = $(DIFF).pdf
 
+main: $(PAPERPDF)
 all: $(PAPERPDF) $(DIFFPDF)
 
 $(DIFFTEX): $(TEXS) $(BIBFILES)

@@ -67,7 +67,7 @@ features~\cite{bjerner1989,demand-semantics}.
 Most of the typing rules for language \(\LB\) are standard, so we omit them. We show the
 typing rules for thunks and computation costs in \cref{fig:typing-base}.
 Notably, lists are lazy: the cons of lists \(\tcons{t_1}{t_2}\) takes a term
-\(t_1\) of type \(A\) and a term \(t_2\) of type \(\TThunk{\texttt{(\(\TList{A}\))}}\), so
+\(t_1\) of type \(A\) and a term \(t_2\) of type $\TThunk{\texttt{(\(\TList{A}\))}}$, so
 the tail of a list must always be wrapped in a \(\TThunkZ\). Similarly, the
 ``function'' argument to \(\tfoldrZ\) always requires that its second parameter
 be wrapped in a \(\TThunkZ\).
@@ -208,8 +208,8 @@ computation that costs \(0\). We use \tdo{x}{t_1}{t_2} to chain computations
 \(t_1\) and \(t_2\) while accumulating their costs. We use
 \tfoldM{x_1}{x_2}{t_1}{t_2}{t_3} to chain a list of computations, accumulating
 all of their costs. The \tfoldMZ{} operation employs an auxiliary construct
-\ttransposeZ, which converts terms of type \(\TThunk{\texttt{(\(\TM{A}\))}}\) to terms of
-type \(\TM{\texttt{(\(\TThunk{A}\))}}\). In addition, we define \tassertZ{}, which ensures
+\ttransposeZ, which converts terms of type $\TThunk{\texttt{(\(\TM{A}\))}}$ to terms of
+type $\TM{\texttt{(\(\TThunk{A}\))}}$. In addition, we define \tassertZ{}, which ensures
 that a given condition holds, causing the computation to fail if it does not.
 
 We show all the typing rules related to these derived terms in

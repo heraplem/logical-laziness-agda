@@ -49,3 +49,6 @@ latex.out/
 ## Beamer auxiliary files
 *.nav
 *.snm
+
+# Generated LaTeX files
+diff.tex

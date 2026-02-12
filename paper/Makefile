@@ -2,17 +2,22 @@
 
 BIBFILES =yao.bib ref.bib
 TEXS =paper.tex intro.tex motivating-example.tex translation.tex equiv.tex case-study.tex directives.tex appendix.tex related-work.tex conclusion.tex
+PAPER = paper
+PAPERTEX = $(PAPER).tex
+PAPERPDF = $(PAPER).pdf
+DIFF_REVISION = flops-submission
+DIFF = diff
+DIFFTEX = $(DIFF).tex
+DIFFPDF = $(DIFF).pdf
 
-TOP=paper
-PDFS=paper.pdf 
+all: $(PAPERPDF) $(DIFFPDF)
 
-all: $(TOP).pdf
-main: $(TOP).pdf
+$(DIFFTEX): $(TEXS) $(BIBFILES)
+	./latexdiff-vc -c latexdiff.cfg --flatten --git --force -r $(DIFF_REVISION) $(PAPERTEX)
+	mv $(PAPER)-diff$(DIFF_REVISION).tex $@
 
-paper.pdf : $(TEXS) $(BIBFILES) lstcoq.sty
-	latexmk -shell-escape -bibtex -pdf paper.tex
+%.pdf: %.tex $(TEXS) $(BIBFILES)
+	latexmk -shell-escape -bibtex -pdf $<
 
-paperclean:
-	rm -if *.log ./*~ *.aux $(PDFS) *.bbl *.blg *.fdb_latexmk *.fls *.out
-
-clean: paperclean
+clean:
+	rm -if *.log ./*~ *.aux *.dvi *.pdf *.bbl *.blg *.fdb_latexmk *.fls *.out $(DIFFTEX)

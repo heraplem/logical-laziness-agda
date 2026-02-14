@@ -262,31 +262,50 @@ simply run it and increment its accumulated cost by \(1\).
 \end{figure}
 
 We also define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
-in \cref{fig:demand-translation}. Unlike the \transCname{}, the \transDname{}
-also takes as a parameter a typing context \(\Gamma\) such that
-\(\TB{\Gamma}{t}{A}\) (for some type \(A\)). This is because the \transDname{}
-must know the names and types of \(t\)'s free variables. This treatment is the
-same as the demand translation of Xia \textit{et
-  al.}~\cite{demand-semantics}. As output, \(\transD{t}{\Gamma}\) produces a
-term in \(\LB\) that has all the same free variables as \(t\), plus an
-additional free variable \(x\), which represents a demand on the output of
-\(t\).
-% (We make this precise in \cref{thm:transD-type}.)
+in \cref{fig:demand-translation}. In general, the \transDname{} operates on open
+terms with an arbitrary number of free variables, but we can build an intuition
+for how it works by considering terms with just one free variable. In the following, we adopt function notation open terms; \eg{} \(t(x)\) will denote a term with a single free variable \(x\).
 
-Intuitively, \(\transD{t}{\Gamma}\) operates as follows.
-\begin{itemize}
-\item For each variable \(x_i : A_i\) free in \(\Gamma\), introduce a new logic
-  variable \(x_i' : A\) such that \(x_i' \le x_i\).
-\item Pass \(t\) through the \transCname\ and execute it, but with each \(x_i\)
-  replaced by the corresponding logic variable \(x'_i\). This yields a
-  result-cost pair \(u\).
-\item Constrain the result \(\tfst{u}\) to be equal to the input \(x\).
-\item Return a tuple containing the values of all the new logic variables, along
-  with the cost \(\tsnd{u}\).
-\end{itemize}
-This is a special case of the common logic programming idiom of function
-inversion: \(\transD{t}{\Gamma}\) computes the inverse of \(\transC{t}\),
-constraining the result to be an approximation of the inputs to \(\transC{t}\).
+\paragraph{Term relaxation.}
+Given a term \(t(x)\), we may want to compute \(t\)'s behavior on certain \emph{sets} of inputs. We can achieve this via the following construction:
+\[
+  t'(x) = \tlet{x'}{\tfree{A}}{\tassert{R(x, x')}{t(x')}}.
+\]
+The idea is that, for a given argument \(x\), we evaluate \(t(x')\), where \(x'\) is (nondeterministically) any value that is related to \(x\) in some way \(R\). In the case of the \transDname{}, we take \(x\) to be an upper bound on the set of inputs under consideration, so the above construction becomes
+\[
+  t'(x) = \tlet{x'}{\tfree{A}}{\tassert{\tle{x'}{x}}{t(x')}}.
+\]
+
+\paragraph{Term inversion.}
+A term \(t'(y)\) is an \emph{inverse} of a term \(t(x)\) just if \(\EL{y \mapsto b}{t'}{a}\) if and only if \(\EL{x \mapsto a}{t}{b}\). We can \emph{compute} a canonical inverse of \(t\) by
+\[
+  t^{-1}(y) = \tlet{x}{\tfree{A}}{\tassert{\teq{t(x)}{y}}{x}};
+\]
+or, a little more verbosely,
+\begin{align*}
+  t^{-1}(y) = &\tlet{x}{\tfree{A}}{\relax} \\
+              &\tlet{u}{t(x)}{\relax} \\
+              &\tassert{\teq{u}{y}}{x} .
+\end{align*}
+
+\paragraph{Putting it together.}
+The \transDname{} is essentially a combination of the preceding concepts. Given a term \(t(x)\), we construct a term \(t'(x, y)\) that behaves like a ``generalized inverse'' of \(t\) in the sense that it finds \emph{any} \(x'\) such that \(t(x')\) evaluates to \(y\), provided that \(x' \le x\).
+\begin{align*}
+  t'(x, y) = &\tlet{x'}{\tfree{A}}{\relax} \\
+             &\tassert{\tle{x'}{x}}{\relax} \\
+             &\tlet{u}{t(x')}{\relax} \\
+             &\tassert{\teq{u}{y}}{\relax} \\
+             &x' .
+\end{align*}
+The only missing piece is that we must pass \(t\) through the \transCname{}, and we must make a few minor adjustments to deal with the fact that \(\transC{t}\) has type \(\TM{B}\) rather than just \(B\).
+\begin{align*}
+  \transD{t}{\relax} = &\tlet{x'}{\tfree{A}}{\relax} \\
+                       &\tassert{\tle{x'}{x}}{\relax} \\
+                       &\tlet{u}{\transC{t}(x')}{\relax} \\
+                       &\tassert{\teq{\tfst{u}}{y}}{\relax} \\
+                       &(x', \tsnd{u}) .
+\end{align*}
+This is essentially the single-variable case of the \transDname{}.
 
 We prove that \transCname{} and \transDname{} preserve the well-typedness of the
 original term in \(\LB\):
@@ -304,3 +323,56 @@ publicly-available artifact.
 %   \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} ,
 % \]
 % with the degenerate case \( \verts{\varepsilon} = \TUnit \).
+
+% \begin{align*}
+%   &\tlet{x'}{\tfree{A}}{\relax} \\
+%   &\tassert{\tle{x'}{x}}{\relax} \\
+%   &
+% \end{align*}
+
+% If \(t(x)\) is injective (\ie{}, for any \(y\), there is at most one \(x\) such that \(t(x)\) evaluates to \(y\)), then \(t^{-1}(y)\) is clearly deterministic (\ie{}, for any \(y\), \(t^{-1}(y)\) evaluates to at most one value). But if it is not, then we may want to restrict our attention
+
+
+
+% Unlike the \transCname{}, the \transDname{}
+% also takes as a parameter a typing context \(\Gamma\) such that
+% \(\TB{\Gamma}{t}{A}\) (for some type \(A\)). This is because the \transDname{}
+% must know the names and types of \(t\)'s free variables. This treatment is the
+% same as the demand translation of Xia \textit{et
+%   al.}~\cite{demand-semantics}. As output, \(\transD{t}{\Gamma}\) produces a
+% term in \(\LB\) that has all the same free variables as \(t\), plus an
+% additional free variable \(x\), which represents a demand on the output of
+% \(t\).
+% % (We make this precise in \cref{thm:transD-type}.)
+
+% Intuitively, \(\transD{t}{\Gamma}\) operates as follows.
+% \begin{itemize}
+% \item For each variable \(x_i : A_i\) free in \(\Gamma\), introduce a new logic
+%   variable \(x_i' : A\) such that \(x_i' \le x_i\).
+% \item Pass \(t\) through the \transCname\ and execute it, but with each \(x_i\)
+%   replaced by the corresponding logic variable \(x'_i\). This yields a
+%   result-cost pair \(u\).
+% \item Constrain the result \(\tfst{u}\) to be equal to the input \(x\).
+% \item Return a tuple containing the values of all the new logic variables, along
+%   with the cost \(\tsnd{u}\).
+% \end{itemize}
+% This is a special case of the common logic programming idiom of function
+% inversion: \(\transD{t}{\Gamma}\) computes the inverse of \(\transC{t}\),
+% constraining the result to be an approximation of the inputs to \(\transC{t}\).
+
+% We prove that \transCname{} and \transDname{} preserve the well-typedness of the
+% original term in \(\LB\):
+% \begin{theorem}
+%   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma}{\transC{t}}{\TM{A}} \).
+% \end{theorem}
+
+% \begin{theorem}\label{thm:transD-type}
+%   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma, x : A}{\transD{t}{\Gamma}}{\TM{\verts{\Gamma}}} \).
+% \end{theorem}
+% The operation \( \verts{\cdot} \) turns typing contexts into product types. Both
+% theorems are formalized and proven in Agda, which is included in our
+% publicly-available artifact.
+% % \[
+% %   \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} ,
+% % \]
+% % with the degenerate case \( \verts{\varepsilon} = \TUnit \).

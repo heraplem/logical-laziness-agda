@@ -298,7 +298,7 @@ of the \transDname{}:
   \begin{array}{rcl}
     \transD{t}{\relax}(x, y) & = & \tlet{x'}{\tfree{A}}{\relax} \\
                              &   & \tassert{\tle{x'}{x}}{\relax} \\
-                             &   & \tlet{z}{t(x')}{\relax} \\
+                             &   & \tlet{z}{\transC{t}(x')}{\relax} \\
                              &   & \tassert{\teq{\tfst{z}}{y}}{\relax} \\
                              &   & \tpair{x'}{\tsnd{z}} .
   \end{array}

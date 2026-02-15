@@ -241,7 +241,7 @@ simply run it and increment its accumulated cost by \(1\).
     \transC{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}} &= \tdo{y}{\transC{t_3}}{\tfoldM{x_1}{x_2}{\transC{t_1}}{\transC{t_2}}{y}} \\
     \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t}{\treturn{\texttt{(\(\tresult{y}\))}}}} \\
     \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}} \\
-    \transC{\ttick{t}} &= \tlet{u}{\transC{t}}{\tpair{\tfst{u}}{\tsnd{u} + 1}}
+    \transC{\ttick{t}} &= \tlet{y}{\transC{t}}{\tpair{\tfst{y}}{\tsnd{u} + 1}}
   \end{align*}
   \TransDname:
     \[
@@ -264,48 +264,45 @@ simply run it and increment its accumulated cost by \(1\).
 We also define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
 in \cref{fig:demand-translation}. In general, the \transDname{} operates on open
 terms with an arbitrary number of free variables, but we can build an intuition
-for how it works by considering terms with just one free variable. In the following, we adopt function notation open terms; \eg{} \(t(x)\) will denote a term with a single free variable \(x\).
-
-\paragraph{Term relaxation.}
-Given a term \(t(x)\), we may want to compute \(t\)'s behavior on certain \emph{sets} of inputs. We can achieve this via the following construction:
+for how it works by considering terms with just one free variable. Let \(t(x)\)
+denote a ``function'' of \(x\). Intuitively, the demand semantics interpretation
+of \(t\) should be a ``function'' \(t'(x, y)\) that takes, in addition to the
+original parameter \(x\), a new \emph{demand} parameter \(y\) representing ``how
+much'' of \(t(x)\) will ultimately be needed; and it should compute ``how much''
+of \(x\) is needed in order to produce \(y\). From this specification, we can
+see that \(t'(x, y)\) acts sort of like an \emph{inverse} of \(t\) in the
+parameter \(y\). In general, any term \(t(x)\) has a canonical inverse term
+\(t^{-1}(y)\) given by
 \[
-  t'(x) = \tlet{x'}{\tfree{A}}{\tassert{R(x, x')}{t(x')}}.
+  t^{-1}(y) = \tlet{x}{\tfree{A}}{\tassert{\teq{t(x)}{y}}{x}} .
 \]
-The idea is that, for a given argument \(x\), we evaluate \(t(x')\), where \(x'\) is (nondeterministically) any value that is related to \(x\) in some way \(R\). In the case of the \transDname{}, we take \(x\) to be an upper bound on the set of inputs under consideration, so the above construction becomes
+But \(t'(x, y)\) cannot produce just any value inverse to \(y\):
+it must produce one that is less defined than \(x\). We add this as a
+constraint:
 \[
-  t'(x) = \tlet{x'}{\tfree{A}}{\tassert{\tle{x'}{x}}{t(x')}}.
+  \begin{array}{rcl}
+    t'(x, y) & = & \tlet{x'}{\tfree{A}}{\relax} \\
+             &   & \tassert{\tle{x'}{x}}{\relax} \\
+             &   & \tassert{\teq{t(x')}{y}}{\relax} \\
+             &   & x' .
+  \end{array}
 \]
-
-\paragraph{Term inversion.}
-A term \(t'(y)\) is an \emph{inverse} of a term \(t(x)\) just if \(\EL{y \mapsto b}{t'}{a}\) if and only if \(\EL{x \mapsto a}{t}{b}\). We can \emph{compute} a canonical inverse of \(t\) by
+This is most of the way to the \transDname{}. The missing piece is that, being a
+\emph{translation}, the \transDname{} must take terms in \(\LB\) to terms in
+\(\LL\). We could achieve this by composing \(t'\) with some previously-defined
+translation; and, as we show in \cref{sec:equiv}, the \transCname{} is exactly
+the translation that we need. After adjusting for the fact that the
+\transCname{} produces terms in \(\TMZ\), we arrive at the single-variable case
+of the \transDname{}:
 \[
-  t^{-1}(y) = \tlet{x}{\tfree{A}}{\tassert{\teq{t(x)}{y}}{x}};
+  \begin{array}{rcl}
+    \transD{t}{\relax}(x, y) & = & \tlet{x'}{\tfree{A}}{\relax} \\
+                             &   & \tassert{\tle{x'}{x}}{\relax} \\
+                             &   & \tlet{z}{t(x)}{\relax} \\
+                             &   & \tassert{\teq{\tfst{z}}{y}}{\relax} \\
+                             &   & \tpair{x'}{\tsnd{z}} .
+  \end{array}
 \]
-or, a little more verbosely,
-\begin{align*}
-  t^{-1}(y) = &\tlet{x}{\tfree{A}}{\relax} \\
-              &\tlet{u}{t(x)}{\relax} \\
-              &\tassert{\teq{u}{y}}{x} .
-\end{align*}
-
-\paragraph{Putting it together.}
-The \transDname{} is essentially a combination of the preceding concepts. Given a term \(t(x)\), we construct a term \(t'(x, y)\) that behaves like a ``generalized inverse'' of \(t\) in the sense that it finds \emph{any} \(x'\) such that \(t(x')\) evaluates to \(y\), provided that \(x' \le x\).
-\begin{align*}
-  t'(x, y) = &\tlet{x'}{\tfree{A}}{\relax} \\
-             &\tassert{\tle{x'}{x}}{\relax} \\
-             &\tlet{u}{t(x')}{\relax} \\
-             &\tassert{\teq{u}{y}}{\relax} \\
-             &x' .
-\end{align*}
-The only missing piece is that we must pass \(t\) through the \transCname{}, and we must make a few minor adjustments to deal with the fact that \(\transC{t}\) has type \(\TM{B}\) rather than just \(B\).
-\begin{align*}
-  \transD{t}{\relax} = &\tlet{x'}{\tfree{A}}{\relax} \\
-                       &\tassert{\tle{x'}{x}}{\relax} \\
-                       &\tlet{u}{\transC{t}(x')}{\relax} \\
-                       &\tassert{\teq{\tfst{u}}{y}}{\relax} \\
-                       &(x', \tsnd{u}) .
-\end{align*}
-This is essentially the single-variable case of the \transDname{}.
 
 We prove that \transCname{} and \transDname{} preserve the well-typedness of the
 original term in \(\LB\):

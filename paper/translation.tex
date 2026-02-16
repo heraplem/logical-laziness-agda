@@ -265,14 +265,14 @@ We also define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
 in \cref{fig:demand-translation}. In general, the \transDname{} operates on open
 terms with an arbitrary number of free variables, but we can build an intuition
 for how it works by considering terms with just one free variable. Let \(t(x)\)
-denote a ``function'' of \(x\). Intuitively, the demand semantics interpretation
-of \(t\) should be a ``function'' \(t'(x, y)\) that takes, in addition to the
-original parameter \(x\), a new \emph{demand} parameter \(y\) representing ``how
-much'' of \(t(x)\) will ultimately be needed; and it should compute ``how much''
-of \(x\) is needed in order to produce \(y\). From this specification, we can
-see that \(t'(x, y)\) acts sort of like an \emph{inverse} of \(t\) in the
-parameter \(y\). In general, any term \(t(x)\) has a canonical inverse term
-\(t^{-1}(y)\) given by
+denote a ``function'' of \(x\) (\ie{} a term in \(\LL\) with one free variable
+\(x\)). Intuitively, the demand semantics interpretation of \(t\) should be a
+``function'' \(t'(x, y)\) that takes, in addition to the original parameter
+\(x\), a new \emph{demand} parameter \(y\) representing ``how much'' of \(t(x)\)
+will ultimately be needed; and it should compute ``how much'' of \(x\) is needed
+in order to produce \(y\). From this specification, we can see that \(t'(x, y)\)
+acts sort of like an \emph{inverse} of \(t\) in the parameter \(y\). In general,
+any term \(t(x)\) has a canonical inverse term \(t^{-1}(y)\) given by
 \[
   t^{-1}(y) = \tlet{x}{\tfree{A}}{\tassert{\teq{t(x)}{y}}{x}} .
 \]
@@ -292,8 +292,8 @@ This is most of the way to the \transDname{}. The missing piece is that, being a
 \(\LL\). We could achieve this by composing \(t'\) with some previously-defined
 translation; and, as we show in \cref{sec:equiv}, the \transCname{} is exactly
 the translation that we need. After adjusting for the fact that the
-\transCname{} produces terms in \(\TMZ\), we arrive at the single-variable case
-of the \transDname{}:
+\transCname{} produces terms of type \(\TMZ\), we arrive at the single-variable
+case of the \transDname{}:
 \[
   \begin{array}{rcl}
     \transD{t}{\relax}(x, y) & = & \tlet{x'}{\tfree{A}}{\relax} \\

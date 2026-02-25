@@ -14,10 +14,12 @@ semantics~\cite{clairvoyant,forking-paths}, and a \emph{\transDname}, which is a
 wrapper around the \transCname, which produces terms modeling demand
 semantics~\cite{bjerner1989,demand-semantics}~(\cref{subsec:demand-translation}).
 
-\ifextended We have proven that these translation strategies are correct with
-  respect to the clairvoyance semantics and the demand semantics in Agda, but we
-  defer details of the correctness theorem, its proof, and the Agda development
-  to \cref{sec:equiv}. \fi
+\ifextended
+We have proven that these translation strategies are correct with respect to the
+clairvoyance semantics and the demand semantics in Agda, but we defer details of
+the correctness theorem, its proof, and the Agda development to
+\cref{sec:equiv}.
+\fi
 
 \subsection{The Base Language \(\LB\)}\label{subsec:base-lang}
 
@@ -231,16 +233,17 @@ simply run it and increment its accumulated cost by \(1\).
 
 \begin{figure}[t]
   \TransCname:
-  \begin{align*}
+  \begin{flalign*}
     \transC{x} = \treturn{x} &\qquad
     \transC{\tnil{}} = \treturn{\tnil{}} \\
     \transC{\tlet{x}{t_1}{t_2}} &= \tdo{x}{\transC{t_1}}{\transC{t_2}} \\
     \transC{\tcons{t_1}{t_2}} &= \tdo{y_1}{\transC{t_1}}{\tdo{y_2}{\transC{t_2}}{\treturn{\texttt{(\(\tcons{y_1}{y_2}\))}}}} \\
     \transC{\tfoldr{x_1}{x_2}{t_1}{t_2}{t_3}} &= \tdo{y}{\transC{t_3}}{\tfoldM{x_1}{x_2}{\transC{t_1}}{\transC{t_2}}{y}} \\
     \transC{\tlazy{t}} &= \tchoose{\treturn{\tundefined}}{\tdo{y}{t}{\treturn{\texttt{(\(\tresult{y}\))}}}} \\
-    \transC{\tforce{t}} &= \tdo{y_1}{t}{\tcase{y_1}{y_2}{\treturn{y_2}}{\tfail}} \\
-    \transC{\ttick{t}} &= \tlet{y}{\transC{t}}{\tpair{\tfst{y}}{\tsnd{u} + 1}}
-  \end{align*}
+    \transC{\tforce{t}} &= \texttt{\(y_1\)\ <-\ \(t\);\ \tcaseZ\ \(y_1\) of} \\
+    & \qquad \texttt{\tresult{y_2} => \(\treturn{y_2}\);\ \tundefined{} => \(\tfail\)} \\
+   \transC{\ttick{t}} &= \tlet{y}{\transC{t}}{\tpair{\tfst{y}}{\tsnd{u} + 1}}
+  \end{flalign*}
   \TransDname:
     \[
     \begin{array}{rl}
@@ -248,9 +251,8 @@ simply run it and increment its accumulated cost by \(1\).
                                                  \tassert{\tle{x'_1}{x_1}}{\relax} \\
                                                  &\multicolumn{1}{c}{\vdots} \\
                                                  &\tlet{x'_n}{\tfree{A_n}}{\relax} 
-                                                 \tassert{\tle{x'_n}{x_n}}{\relax} \\
-                                                 &\tlet{u}{\transC{t'}}{\relax}
-                                                 \tassert{\teq{\tfst{u}}{x}}{\relax} 
+                                                   \tassert{\tle{x'_n}{x_n}}{\relax} \\
+                                                 &\tlet{u}{\transC{t'}}{\relax} \\                                                 & \tassert{\teq{\tfst{u}}{x}}{\relax} 
                                                  \tpair{\texttt{(\( x'_1 \),\ \( \ldots \),\ \( x'_n \))}}{\tsnd{u}} \\
       \multicolumn{2}{c}{\text{where \( t' = t[x'_1/x_1, \ldots, x'_n/x_n] \).}}
     \end{array}

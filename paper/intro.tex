@@ -237,7 +237,7 @@ nondeterministically evaluated or skipped. The possible results of \cdh{[1,2,3]
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:2:$\bot$}, $\cdots$,
 \cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is skipped.
 Next, we run \cdh{take 2} over all the nondeterministic results of \cdh{[1,2,3]
-  ++ [4,5]}. If a branch gets ``stuck'', \eg~forcing the second element from
+  ++ [4,5]}. If a branch gets ``stuck,'' \eg~forcing the second element from
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)}, we
 discard it. In the end, one computation branch will have succeeded in the same
 amount of time as a standard lazy evaluation.

@@ -14,12 +14,10 @@ semantics~\cite{clairvoyant,forking-paths}, and a \emph{\transDname}, which is a
 wrapper around the \transCname, which produces terms modeling demand
 semantics~\cite{bjerner1989,demand-semantics}~(\cref{subsec:demand-translation}).
 
-\ifextended
-We have proven that these translation strategies are correct with respect to the
-clairvoyance semantics and the demand semantics in Agda, but we defer details of
-the correctness theorem, its proof, and the Adga development to
-\cref{sec:equiv}.
-\fi
+\ifextended We have proven that these translation strategies are correct with
+  respect to the clairvoyance semantics and the demand semantics in Agda, but we
+  defer details of the correctness theorem, its proof, and the Agda development
+  to \cref{sec:equiv}. \fi
 
 \subsection{The Base Language \(\LB\)}\label{subsec:base-lang}
 
@@ -162,7 +160,7 @@ language like Curry~\cite{curry-lang,curry-monadic-semantics} or the Verse
 calculus~\cite{verse} to keep our approach generally applicable.\lai{Maybe move
   this earlier in the section? To the front? Maybe as a footnote?}
 
-We show the semantic rules of \(L\) that are related to the choice
+We show the semantic rules of \(\LL\) that are related to the choice
 operator~(\tchooseZ) and free terms in \cref{fig:logic-semantics}.\ly{Did we
   refer to any papers when we define this semantics? If so, cite them.} Note
 that this semantics is eager; furthermore, due to \(\tfail\), it is partial.

@@ -75,11 +75,11 @@ appendD :: [a] -> [a] -> [a]$^A$ -> (([a]$^A$, [a]$^A$), $\mathbb{N}$)
 \end{figure}
 
 How can we bring locality, purity, order, and compositionality to lazy
-computation time costs when these properties fundamentally missing? Some recent
-work proposes that, instead of working with the stateful natural semantics of
-lazy evaluation~\cite{launchbury1993}, we can use simpler \emph{alternative
-  semantics} that are equivalent to lazy evaluation in terms of computation
-cost. Here, we focus on two such semantics: clairvoyance
+computation time costs when these properties are fundamentally missing? Some
+recent work proposes that, instead of working with the stateful natural
+semantics of lazy evaluation~\cite{launchbury1993}, we can use simpler
+\emph{alternative semantics} that are equivalent to lazy evaluation in terms of
+computation cost. Here, we focus on two such semantics: clairvoyance
 semantics~\cite{clairvoyant,forking-paths} and demand
 semantics~\cite{bjerner1989,demand-semantics}.
 
@@ -109,7 +109,7 @@ computation cost~\cite{bjerner1989,clairvoyant,forking-paths,demand-semantics}.
 In contrast to the natural semantics of lazy evaluation~\cite{launchbury1993},
 these semantics reify computation cost in pure and eager semantics, so we can
 use them to reason about lazy computation cost without being concerned with
-mutable heaps, sharing, or our-of-order executions.
+mutable heaps, sharing, or out-of-order executions.
 
 \fi
 
@@ -231,13 +231,13 @@ computation or skip it.
 
 To evaluate \cdh{take 2 ([1,2,3] ++ [4,5])} in clairvoyance semantics, we first
 evaluate \cdh{[1,2,3] ++ [4,5]}. Each recursive function application is then
-nondetermistically evaluated or skipped. The possible results of
-\cdh{[1,2,3] ++ [4,5]} are
+nondeterministically evaluated or skipped. The possible results of \cdh{[1,2,3]
+  ++ [4,5]} are
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$},
-\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:2:$\bot$}, $\cdots$, \cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is
-skipped. Next, we run \cdh{take 2} over all the nondeterministic results of
-\cdh{[1,2,3] ++ [4,5]}. If a branch gets ``stuck'', \eg~forcing the second
-element from
+\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:2:$\bot$}, $\cdots$,
+\cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is skipped.
+Next, we run \cdh{take 2} over all the nondeterministic results of \cdh{[1,2,3]
+  ++ [4,5]}. If a branch gets ``stuck'', \eg~forcing the second element from
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)}, we
 discard it. In the end, one computation branch will have succeeded in the same
 amount of time as a standard lazy evaluation.
@@ -355,13 +355,15 @@ We show an example of translating the Haskell \cdh{take} function to Curry~\cite
 \cref{fig:take-curry}. \cdc{takeC} is the result of a \transCname{}; while \cdc{takeD} is the result
 of a \transDname{}.
 
-The \cdc{takeC} function takes an \cdc{Int} and a \cdc{T (List a)}. The \cdc{T} datatype, defined in
-\cref{fig:curry-thunk-func}, represents a value that could be $\bot$~(represented by
-\cdc{Undefined}). The type \cdc{List a} is the approximation of \cdh{[a]}. The function returns a
-new \cdc{List a} inside a \cdc{Tick} monad, which encodes the computation cost associated with the
-returned \cdc{List a}. The function works similarly to \cdh{take} for the most part.\ly{TODO:
-  explain \cdc{fcase} and \cdc{=:=}.} The key to implementing clairvoyance semantics is the
-recursive call \cdc{thunk (takeC n' xsT')}, which unfolds to:
+The \cdc{takeC} function takes an \cdc{Int} and a \cdc{T (List a)}. The \cdc{T}
+datatype, defined in \cref{fig:take-curry}, represents a value that could be
+$\bot$~(represented by \cdc{Undefined}). The type \cdc{List a} is the
+approximation of \cdh{[a]}. The function returns a new \cdc{List a} inside a
+\cdc{Tick} monad, which encodes the computation cost associated with the
+returned \cdc{List a}. The function works similarly to \cdh{take} for the most
+part.\ly{TODO: explain \cdc{fcase} and \cdc{=:=}.} The key to implementing
+clairvoyance semantics is the recursive call \cdc{thunk (takeC n' xsT')}, which
+unfolds to:
 \begin{lstlisting}[language=Curry]
 pure Undefined ? fmap Thunk (takeC n' xsT')
 \end{lstlisting}

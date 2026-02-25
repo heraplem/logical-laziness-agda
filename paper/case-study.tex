@@ -112,12 +112,12 @@ takeD' xsT ysD |  xsTD <~ xsT
                =  Tick (xsTD, c)
   where xsTD, c free
 \end{lstlisting}
-In contrast to the definition in \cref{fig:takeD-curry}, we use the
-\cdc{<~} operator in a guard condition in \cdc{takeD'} to assert that \cdc{xsTD}
-is an approximation of \cdc{xsT}. In this case, Curry must ``guess'' a valid
-input demand, performing poorly. On the other hand, our implementation in
-\cref{fig:takeD-curry} uses a generator \cdc{approx} defined for the
-\cdc{List} datatype, which is more efficient.
+In contrast to the definition in \cref{fig:take-curry}, we use the \cdc{<~}
+operator in a guard condition in \cdc{takeD'} to assert that \cdc{xsTD} is an
+approximation of \cdc{xsT}. In this case, Curry must ``guess'' a valid input
+demand, performing poorly. On the other hand, our implementation in
+\cref{fig:take-curry} uses a generator \cdc{approx} defined for the \cdc{List}
+datatype, which is more efficient.
 
 % Finally, following the construction outlined in earlier sections, we can implement the demand function \cdc{takeD} in terms of % \cdc{takeC}. Here is a first attempt.
 % \begin{lstlisting}[language=Curry]

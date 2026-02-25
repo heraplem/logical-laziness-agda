@@ -16,30 +16,34 @@ our case studies can be found in our publicly-available artifact.\ly{TODO:
   link.}
 
 \begin{figure}[t]
-\begin{minipage}[b]{0.45\textwidth}
+\begin{minipage}[b]{0.4\textwidth}
 \begin{lstlisting}[language=Curry]
 newtype Tick a =
   Tick { runTick :: (a, Int) }
 
 data T a = Undefined | Thunk a
 
-thunk :: Applicative f => f a -> f (T a)
-thunk m = pure Undefined ? Thunk <$> m
+thunk :: Applicative f =>
+  f a -> f (T a)
+thunk m =
+  pure Undefined ? Thunk <$> m
 
-force :: Applicative f => T a -> f a
+force :: Applicative f =>
+  T a -> f a
 force (Thunk x) = pure x
-  
-data List a = Nil | (:~) a (T (List a))
 \end{lstlisting}
 \end{minipage}
 \qquad
 \begin{minipage}[b]{0.5\textwidth}
 \begin{lstlisting}[language=Curry]
+data List a =
+  Nil | (:~) a (T (List a))
+  
 class Data a => Approx a where
   (<~) :: a -> a -> Bool
 
-  approx :: a -> a
-  approx x | y <~ x = y where y free
+approx :: a -> a
+approx x | y <~ x = y where y free
   
 instance Approx a => Approx (T a) where
   Undefined <~ _         = True

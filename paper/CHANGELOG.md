@@ -15,3 +15,4 @@
 - Cut all explanation of exact and approximation values, leaving only a brief explanation of the ≤ relation in the correctness section.
 - Significantly expand the explanation of the logical demand translation.
 - Mention that it is specifically the *performance* of a lazily-evaluated term that is inherently stateful.
+- Mention that the logical clairvoyance translation can work in any setting with nondeterminism.

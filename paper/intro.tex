@@ -42,8 +42,8 @@ try to print the whole thing: at that point in time, we evaluate \cdh{take} and
 \cdh{(++)} ``one level deeper'' to obtain the second element, \cdh{2}, and
 \cdh{take} again to obtain the end of the list, \cdh{[]}. These computations are
 evaluated \emph{on demand} and \emph{out of order}, and they are
-\emph{interleaved}. Furthermore, even in a pure language like Haskell, the
-computation is inherently \emph{stateful}: the amount of work required to
+\emph{interleaved}. Furthermore, even in a pure language like Haskell, the performance characteristics of the
+computation are inherently \emph{stateful}: the amount of work required to
 evaluate a given expression depends on what has been evaluated previously.
 \iffalse
   Common cost models often cannot accommodate some or all of these properties of

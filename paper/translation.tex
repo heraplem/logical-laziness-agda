@@ -132,7 +132,7 @@ have been replaced by the \(\tthunkZ\) and \(\tundefined\) constructors and the
 \(\tcaseZ\) eliminator. The \(\tthunkZ\) operator reduces its argument and wraps it in a
 \(\sthunkZ\) value; \(\tundefined\) reduces to the special value
 \(\sundefined\); \(\tcaseZ\) discriminates between these two cases. In the
-\transCname{}, the two constructors indicate whether a computation is evaluated
+\transCname{}, the \(\tthunkZ\) and \(\tundefined\) constructors indicate whether a computation is evaluated
 or not; in the \transDname, they indicate whether a computation is demanded or
 not.
 
@@ -270,7 +270,7 @@ denote a `function' of \(x\) (\ie{} a term in \(\LL\) with one free variable
 \(x\), a new \emph{demand} parameter \(y\) representing `how much' of \(t(x)\)
 will ultimately be needed, and it should compute `how much' of \(x\) is needed
 in order to produce \(y\). From this specification, we can see that \(t'(x, y)\)
-acts sort of like an \emph{inverse} of \(t(x)\) in the parameter \(y\), in that it uses the \emph{output} of \(t(x)\) to compute `how much' of the \emph{input} it used.
+acts like an \emph{inverse} of \(t(x)\) in the parameter \(y\), in that it uses the \emph{output} of \(t(x)\) to compute `how much' of the \emph{input} it used.
 
 In general,
 any term \(t(x)\) has a canonical inverse term \(t^{-1}(y)\) given by

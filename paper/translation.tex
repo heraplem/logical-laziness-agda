@@ -264,13 +264,13 @@ We also define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
 in \cref{fig:demand-translation}. In general, the \transDname{} operates on open
 terms with an arbitrary number of free variables, but we can build an intuition
 for how it works by considering terms with just one free variable. Let \(t(x)\)
-denote a `function' of \(x\) (\ie{} a term in \(\LL\) with one free variable
+denote a ``function'' of \(x\) (\ie{} a term in \(\LL\) with one free variable
 \(x\)). Intuitively, the demand semantics interpretation of \(t\) should be a
-`function' \(t'(x, y)\) that takes, in addition to the original parameter
-\(x\), a new \emph{demand} parameter \(y\) representing `how much' of \(t(x)\)
-will ultimately be needed, and it should compute `how much' of \(x\) is needed
+``function'' \(t'(x, y)\) that takes, in addition to the original parameter
+\(x\), a new \emph{demand} parameter \(y\) representing ``how much'' of \(t(x)\)
+will ultimately be needed, and it should compute ``how much'' of \(x\) is needed
 in order to produce \(y\). From this specification, we can see that \(t'(x, y)\)
-acts like an \emph{inverse} of \(t(x)\) in the parameter \(y\), in that it uses the \emph{output} of \(t(x)\) to compute `how much' of the \emph{input} it used.
+acts like an \emph{inverse} of \(t(x)\) in the parameter \(y\), in that it uses the \emph{output} of \(t(x)\) to compute ``how much'' of the \emph{input} it used.
 
 In general,
 any term \(t(x)\) has a canonical inverse term \(t^{-1}(y)\) given by

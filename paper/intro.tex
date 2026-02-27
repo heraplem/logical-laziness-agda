@@ -26,7 +26,7 @@ Lazy evaluation is demand-driven, performing only those operations required to
 compute a final result~\cite{launchbury1993}. This gives programmers the luxury
 of writing highly compositional code that performs comparably to, or even better
 than, code written in an eagerly-evaluated language~\cite{fp-matters}. Sadly, as
-a `side-effect', it presents challenges for performance analysis.
+a ``side-effect,'' it presents challenges for performance analysis.
 
 For example, consider the Haskell functions \cdh{take} and \cdh{(++)}, which
 respectively take the length-\(n\) prefix of a list and concatenate two lists.
@@ -39,7 +39,7 @@ its result is \emph{demanded}. Suppose that we try to print just the first
 element of the result: we run \cdh{take} and \cdh{(++)} once to obtain
 \cdh{1}. Now suppose that we save the result in a variable and, in the future,
 try to print the whole thing: at that point in time, we evaluate \cdh{take} and
-\cdh{(++)} `one level deeper' to obtain the second element, \cdh{2}, and
+\cdh{(++)} ``one level deeper'' to obtain the second element, \cdh{2}, and
 \cdh{take} again to obtain the end of the list, \cdh{[]}. These computations are
 evaluated \emph{on demand} and \emph{out of order}, and they are
 \emph{interleaved}. Furthermore, even in a pure language like Haskell, the
@@ -237,7 +237,7 @@ nondeterministically evaluated or skipped. The possible results of \cdh{[1,2,3]
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:2:$\bot$}, $\cdots$,
 \cdh{[1,2,3,4,5]}, where $\bot$ represents a value whose evaluation is skipped.
 Next, we run \cdh{take 2} over all the nondeterministic results of \cdh{[1,2,3]
-  ++ [4,5]}. If a branch gets `stuck', \eg~forcing the second element from
+  ++ [4,5]}. If a branch gets ``stuck,'' \eg~forcing the second element from
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{take 2 (1:$\bot$)}, we
 discard it. In the end, one computation branch will have succeeded in the same
 amount of time as a standard lazy evaluation.
@@ -268,7 +268,7 @@ In our example of \cdh{take 2 ([1,2,3] ++ [4,5])}, we first consider a demand on
 the output,
 \eg~\lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}, where
 $\bot$ represents parts of the list that are not evaluated. We then run the
-\cdh{take} function `backward' to find that the minimal input demand required
+\cdh{take} function ``backward'' to find that the minimal input demand required
 for \cdh{take 2} is also
 \lstinline[language=Haskell,breakatwhitespace,mathescape]{1:$\bot$}. We then run
 the \cdh{(++)} function ``backward'' as well to find that the minimal input

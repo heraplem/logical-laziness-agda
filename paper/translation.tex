@@ -76,7 +76,7 @@ We can give language \(\LB\) a denotational semantics \(\EE{t}{\gamma}\) for any
 term \(t\) in an environment \(\gamma\) by simply ignoring all operations
 related to lazy evaluation and computation costs:
 \[
-  \EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma} .
+  \EE{\tlazy{t}}{\gamma} = \EE{\tforce{t}}{\gamma} = \EE{\ttick{t}}{\gamma} = \EE{t}{\gamma}
 \]
 
 \subsection{The Logic Language \(\LL\)}\label{subsec:logic-lang}
@@ -128,13 +128,13 @@ numbers \(\TNat\), and products \(\TProd{A}{B}\). \ifextended We need the
 
 Language \(\LL\) has introduction and elimination forms for all of the new
 types. In particular, the \(\tlazyZ\) and \(\tforceZ\) operators from \(\LB\)
-have been replaced by the \(\tthunkZ\) and \(\tundefined\) constructors and the
-\(\tcaseZ\) eliminator. The \(\tthunkZ\) operator reduces its argument and wraps it in a
-\(\sthunkZ\) value; \(\tundefined\) reduces to the special value
+have been replaced by constructors \(\tthunkZ\) and \(\tundefined\), and
+eliminator \(\tcaseZ\). The \(\tthunkZ\) operator reduces its argument and wraps
+it in a \(\sthunkZ\) value; \(\tundefined\) reduces to the special value
 \(\sundefined\); \(\tcaseZ\) discriminates between these two cases. In the
-\transCname{}, the \(\tthunkZ\) and \(\tundefined\) constructors indicate whether a computation is evaluated
-or not; in the \transDname, they indicate whether a computation is demanded or
-not.
+\transCname{}, the \(\tthunkZ\) and \(\tundefined\) constructors indicate
+whether a computation is evaluated or not; in the \transDname, they indicate
+whether a computation is demanded or not.
 
 Language \(\LL\) also has constructs for logic programming. Free terms
 (\(\tfreeZ\)) may evaluate to any value of a specified type; they can be thought
@@ -144,7 +144,10 @@ never evaluates to anything.
 
 Finally, \(\LL\) has two new relational operators, \(\teqZ\) and \(\tleZ\). The
 \(\teqZ\) operator indicates equality, as usual. The \(\tleZ\) does \emph{not}
-indicate the standard order on natural numbers; rather, it indicates the \emph{definedness} relation. Given two values \(a, a'\), we write \(a \le a'\), pronounced ``\(a\) is less defined than \(a'\)'', if \(a\) has the same shape as \(a'\), but with some \(\sthunkZ\) parts possibly replaced by \(\sundefined\).
+indicate the standard order on natural numbers; rather, it indicates the
+\emph{definedness} relation. Given two values \(a, a'\), we write \(a \tleZ a'\),
+pronounced ``\(a\) is less defined than \(a'\),'' if \(a\) has the same shape as
+\(a'\), but with some \(\sthunkZ\) parts possibly replaced by \(\sundefined\).
 
 \stl{
 So, any eager functional logic language is equivalent to a pure logic language
@@ -261,38 +264,36 @@ simply run it and increment its accumulated cost by \(1\).
 \end{figure}
 
 We also define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
-in \cref{fig:demand-translation}. In general, the \transDname{} operates on open
-terms with an arbitrary number of free variables, but we can build an intuition
-for how it works by considering terms with just one free variable.
+in \cref{fig:demand-translation}.
 
-Let \(t(x)\)
-denote a ``function'' of \(x\) (\ie{} a term in \(\LL\) with one free variable
-\(x\)). Intuitively, the demand semantics interpretation of \(t\) should be a
-``function'' \(t'(x, y)\) that takes, in addition to the original parameter
-\(x\), a new \emph{demand} parameter \(y\) representing ``how much'' of \(t(x)\)
-will ultimately be needed, and it should compute ``how much'' of \(x\) is needed
-in order to produce \(y\). From this specification, we can see that \(t'(x, y)\)
-acts like an \emph{inverse} of \(t(x)\) in the parameter \(y\) in that it uses the \emph{output} of \(t(x)\) to compute ``how much'' of the \emph{input} it used. In general,
-any term \(t(x)\) has a canonical inverse term \(t^{-1}(y)\) given by
+In general, the \transDname{} operates on open terms with an arbitrary number of
+free variables, but we can build an intuition for how it works by considering
+terms with just one free variable. Let \(t(x)\) be a term in \(\LL\) with one
+free variable \(x\). Intuitively, the demand semantics interpretation of \(t\)
+is a term \(t'(x, y)\) that takes the original parameter \(x\) and a new
+\emph{demand} parameter \(y\) representing the demand on \(t(x)\). The term
+\(t'(x, y)\) computes the minimal demand on \(x\) needed to produce \(y\). From
+this specification, we can see that \(t'(x, y)\) acts as an \emph{inverse} of
+\(t(x)\) in the parameter \(y\). In general, any term \(t(x)\) has a canonical
+inverse term \(t^{-1}(y)\) given by
 \[
   t^{-1}(y) = \tlet{x}{\tfree{A}}{\tassert{\teq{t(x)}{y}}{x}} .
 \]
-However, \(t'(x, y)\) cannot produce just any value inverse to \(y\):
-it must produce one that is less defined than \(x\). We add this as a
-constraint:
+The \transDname{} \emph{extends} such an inversion: \(t'(x, y)\) does not just
+produce any value inverse to \(y\), it produces one that is less defined than
+\(x\). We add this constraint:
 \[
   \begin{array}{rcl}
     t'(x, y) & = & \tlet{x'}{\tfree{A}}{\tassert{\tle{x'}{x}}{\relax}} \\
              &   & \tassert{\teq{t(x')}{y}}{x'} .
   \end{array}
 \]
-This is most of the way to the \transDname{}. The missing piece is that, being a
-\emph{translation}, the \transDname{} must turn terms in \(\LB\) into terms in
-\(\LL\). We can achieve this by composing \(t'\) with some previously-defined
-translation. As we show in \cref{sec:equiv}, the \transCname{} is exactly
-the translation that we need. After adjusting for the fact that the
-\transCname{} produces terms of type \(\TMZ\), we arrive at the single-variable
-case of the \transDname{}:
+The missing piece is that the \transDname{} must turn terms in \(\LB\) into
+terms in \(\LL\). We can achieve this by composing \(t'\) with some
+previously-defined translation. As we show in \cref{sec:equiv}, the
+\transCname{} is exactly the translation that we need. After adjusting for the
+fact that the \transCname{} produces terms of type \(\TMZ\), we arrive at the
+single-variable case of the \transDname{}:
 \[
   \begin{array}{rcl}
     \transD{t}{\relax}(x, y) & = & \tlet{x'}{\tfree{A}}{\tassert{\tle{x'}{x}}{\relax}} \\
@@ -300,6 +301,13 @@ case of the \transDname{}:
                              &   & \tpair{x'}{\tsnd{z}} .
   \end{array}
 \]
+Extending this translation to multiple variables gives us the translation in
+\cref{fig:demand-translation}.
+
+Notably, the demand semantics of Bjerner and Holmstr{\"{o}}m~\cite{bjerner1989}
+and Xia \emph{et al.}~\cite{demand-semantics} define how to inverse every term
+explicitly, whereas we simply rely on functional logic program's capability to
+resolve logic variables, \ie~narrowing.
 
 We prove that \transCname{} and \transDname{} preserve the well-typedness of the
 original term in \(\LB\):

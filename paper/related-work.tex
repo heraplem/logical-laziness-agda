@@ -30,15 +30,15 @@ along with a framework for mechanically reasoning computation
 costs~\cite{forking-paths}. Demand semantics was proposed by Bjerner and
 Holmstr{\"{o}}m~\cite{bjerner1989}. Xia \emph{et al.} later extended it to a
 typed setting and proved its equivalence to clairvoyance semantics, in forms of
-cost existence and cost minimality theorems. We rely on these results in our
-correctness theorems in \cref{sec:equiv}. They further use demand semantics to
-mechanically verify amortized costs and persistence of two of Okasaki's data
-structures: the banker's queue and the implicit queue~\cite{purely-functional}
-in Rocq. Recently, a third semantics, memorist semantics, was proposed by Li
-\emph{et al.}~\cite{memorist}. Memorist semantics works by tracking all the
-computation dependencies. As it works differently than clairvoyance semantics
-and demand semantics, it is unclear if there's a connection we can draw like in
-this paper.
+cost existence and cost minimality theorems~\cite{demand-semantics}. We rely on
+these results in our correctness theorems in \cref{sec:equiv}. They further use
+demand semantics to mechanically verify amortized costs and persistence of two
+of Okasaki's data structures: the banker's queue and the implicit
+queue~\cite{purely-functional} in Rocq. Recently, a third semantics, memorist
+semantics, was proposed by Li \emph{et al.}~\cite{memorist}. Memorist semantics
+works by tracking all the computation dependencies. As it works differently than
+clairvoyance semantics and demand semantics, it is unclear if there's a
+connection we can draw like in this paper.
 
 There has also been work on applying property-based testing to lazy
 computation cost analysis, such as Foner \textit{et al.}~\cite{foner2018} and

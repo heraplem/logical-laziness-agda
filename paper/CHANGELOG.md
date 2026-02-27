@@ -1,5 +1,4 @@
 - Correct margins (by removing `\usepackage{geometry}`).
-- Remove the `[t]` specification from Figure 3 so that the figures are all placed at least vaguely correctly.
 - Removed restated thunk and T definitions in Section 3
 - Removed the definitions of `take` and `(++)` from Figure 1, leaving only the type signatures (with corresponding changes to the text).
 - Cut Figure 2 (`forking-paths.pdf`).
@@ -7,14 +6,12 @@
 - Removed many rules from approximation relation figure
 - Cut "we do not need to model the natural semantics of language B".
 - Cut some of the explanation of approximation values.
-- Cut most cases in the definition of exact and approximation values (Fig. 6).
 - Cut the formal statements of the cost existence and cost minimality theorems, instead merely citing them at the point where they are used.
-- Set `\sloppy` to discourage margin overruns.
 - Fix artifact URL.
-- Fix margin overruns in Figure 4.
-- Cut some of the math notation in "Exact Values and Approximations".
+- Fix margin overruns.
 - Cut most of the explanation of Curry's search trees.
 - Cut the corresponding explanation in the "Limitations" section. (I don't like doing this, but the explanation in the previous section is now so brief that it makes no sense to use up so much space here.)
-- Cut even more from "Exact Values and Approximations".
 - Merge "Limitations" and "Conclusion".
-- Cut all explanation of exact and approximation values, leaving only the briefest explanation of the ≤ relation in the correctness section.
+- Cut all explanation of exact and approximation values, leaving only a brief explanation of the ≤ relation in the correctness section.
+- Significantly expand the explanation of the logical demand translation.
+- Mention that it is specifically the *performance* of a lazily-evaluated term that is inherently stateful.

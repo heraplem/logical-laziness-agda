@@ -224,10 +224,10 @@ The most important cases of the translation are those for \(\tlazyZ\) and
 nondeterministic choice operator \texttt{?} to either skip the inner term
 (\(\treturn{\tundefined}\)) or evaluate the inner term and wrap the result
 inside a \tresultZ. When the original term is \(\tforce{t}\), we first evaluate
-\(t\) and then pattern match on the result \(y_1\): if \(y_1\) evaluates to
-\(\tresult{y_2}\), then we return \(y_2\); otherwise, we \tfail. Note that
+\(t\) and then pattern match on the result \(z_1\): if \(z_1\) evaluates to
+\(\tresult{z_2}\), then we return \(z_2\); otherwise, we \tfail. Note that
 \tfail{} only terminates the current computation branch, so any branches where
-\(y_1\) evaluates to a \tresultZ{} will continue. To \ttickZ{} a computation, we
+\(z_1\) evaluates to a \tresultZ{} will continue. To \ttickZ{} a computation, we
 simply run it and increment its accumulated cost by \(1\).
 
 \begin{figure}[t]

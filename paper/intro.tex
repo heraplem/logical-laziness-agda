@@ -274,9 +274,9 @@ no demand on it.
 
 Because these demand functions are deterministic, computation costs are easy to
 test. Unfortunately, the demand translation is more complicated than the
-clairvoyance translation. This is because, given a function, the ``backward''
-direction of a function can be complex. This complexity makes it challenging to
-develop tools to formally reason about code under demand semantics.
+clairvoyance translation, because the ``backward'' direction of a function can
+be complex. This complexity makes it challenging to develop tools to formally
+reason about code under demand semantics.
 
 \paragraph{Our contributions.}
 It is unsatisfying that, although we have two semantics that model lazy
@@ -336,34 +336,34 @@ and in practice.
   implemented in Curry.}\label{fig:take-curry}
 \end{figure}
 
-We show an example of translating the Haskell \cdh{take} function to Curry~\cite{curry-lang} in
-\cref{fig:take-curry}; \cdc{takeC} is the result of a \transCname{}, while \cdc{takeD} is the result
-of a \transDname{}.
+We show an example of translating the Haskell \cdh{take} function to
+Curry~\cite{curry-lang} in \cref{fig:take-curry}. Function \cdc{takeC} is the
+result of a \transCname{}, while \cdc{takeD} is the result of a \transDname{}.
 
 The \cdc{takeC} function takes an \cdc{Int} and a \cdc{T (List a)}. The \cdc{T}
-datatype, defined in \cref{fig:take-curry}, represents a value that could be
-$\bot$~(represented by \cdc{Undefined}). The type \cdc{List a} is the
-approximation of \cdh{[a]}. The function returns a new \cdc{List a} inside a
-\cdc{Tick} monad, which encodes the computation cost associated with the
-returned \cdc{List a}. The function works similarly to \cdh{take} for the most
-part.\ly{TODO: explain \cdc{fcase} and \cdc{=:=}.} The key to implementing
-clairvoyance semantics is the recursive call \cdc{thunk (takeC n' xsT')}, which
-unfolds to:
+datatype represents a value that could be $\bot$~(represented by
+\cdc{Undefined}). \cdc{List a} is the approximation of \cdh{[a]}. The function
+returns a new \cdc{List a} inside a \cdc{Tick} monad, which encodes the
+computation cost associated with the returned \cdc{List a}. The function works
+similarly to \cdh{take} for the most part.\ly{TODO: explain \cdc{fcase} and
+  \cdc{=:=}.} The key to implementing clairvoyance semantics is the recursive
+call \cdc{thunk (takeC n' xsT')}, which unfolds to:
 \begin{lstlisting}[language=Curry]
 pure Undefined ? fmap Thunk (takeC n' xsT')
 \end{lstlisting}
-That is, we use Curry's nondeterministic choice operator \cdc{?} to either skip the evaluation and
-return \cdc{Undefined} (\ie~$\bot$), or to evaluate the recursive call and wrap the result inside a
-\cdc{Thunk} constructor. (Note that the target language for this translation does not have to be a functional logic language specifically; it merely needs to be able to express nondeterminism.)
+That is, we use Curry's nondeterministic choice operator \cdc{?} to either skip
+the evaluation and return \cdc{Undefined} (\ie~$\bot$), or to evaluate the
+recursive call and wrap the result inside a \cdc{Thunk} constructor.
 
 The \cdc{takeD} function is implemented in terms of \cdc{takeC}. The core of
 \cdc{takeD} is its guard condition: \cdc{takeC n xsTD =:= Tick (ysD, c)}, where
 \cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, and \cdc{xsTD} and \cdc{c}
 are free variables~(also known as logic variables). In this way, \cdc{takeD}
 computes the input \cdc{xsTD} and parts of the output \cdc{c} of \cdc{takeC},
-given the rest of its output \cdc{ysD}. Put differently, \cdc{takeD} is a kind
-of \emph{inversion} of \cdc{takeC}. In addition, we require \cdc{xsTD} to be an
-approximation of \cdc{xsT}, another argument of \cdc{takeD}, so that it either is \cdc{xsT}, or is ``less evaluated'' than \cdc{xsT}.
+given the rest of its output \cdc{ysD}. Put differently, \cdc{takeD} is an
+\emph{inversion} of \cdc{takeC}. In addition, we require \cdc{xsTD} to be an
+approximation of \cdc{xsT}, another argument of \cdc{takeD}, so that it either
+is \cdc{xsT}, or is ``less evaluated'' than \cdc{xsT}.
 
 \ifextended
 In addition, our result shows a simple way of executing clairvoyance semantics

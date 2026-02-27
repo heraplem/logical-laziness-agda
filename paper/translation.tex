@@ -113,9 +113,9 @@ related to lazy evaluation and computation costs:
     \(\LL\).}\label{fig:syntax-logic}\label{fig:logic-semantics}
 \end{figure}
 
-We show the syntax of language \(\LL\) in \cref{fig:syntax-logic}. Compared with
-\(\LB\), language \(\LL\) has more types: a unit type \(\TUnit\), natural
-numbers \(\TNat\), and product types \(\TProd{A}{B}\). \ifextended We need the
+We show the syntax of language \(\LL\) in \cref{fig:syntax-logic}. Compared to
+\(\LB\), language \(\LL\) has more types: unit \(\TUnit\), natural
+numbers \(\TNat\), and products \(\TProd{A}{B}\). \ifextended We need the
   natural number type to model computation costs, and we need product types to
   return computation results along with costs. Since we are going to model
   demand semantics, we also need products to model evaluation contexts, and we
@@ -129,7 +129,7 @@ numbers \(\TNat\), and product types \(\TProd{A}{B}\). \ifextended We need the
 Language \(\LL\) has introduction and elimination forms for all of the new
 types. In particular, the \(\tlazyZ\) and \(\tforceZ\) operators from \(\LB\)
 have been replaced by the \(\tthunkZ\) and \(\tundefined\) constructors and the
-\(\tcaseZ\) eliminator. \(\tthunkZ\) reduces its argument and wraps it in a
+\(\tcaseZ\) eliminator. The \(\tthunkZ\) operator reduces its argument and wraps it in a
 \(\sthunkZ\) value; \(\tundefined\) reduces to the special value
 \(\sundefined\); \(\tcaseZ\) discriminates between these two cases. In the
 \transCname{}, the two constructors indicate whether a computation is evaluated
@@ -137,7 +137,7 @@ or not; in the \transDname, they indicate whether a computation is demanded or
 not.
 
 Language \(\LL\) also has constructs for logic programming. Free terms
-(\(\tfreeZ\)) may evaluate to any value of a specified type; they may be thought
+(\(\tfreeZ\)) may evaluate to any value of a specified type; they can be thought
 of as ``anonymous logic variables''. The choice operator (\(\tchooseZ\))
 evaluates nondeterministically to either of its operands. Failure (\(\tfail\))
 never evaluates to anything.
@@ -165,7 +165,7 @@ calculus~\cite{verse} to keep our approach generally applicable.\lai{Maybe move
 We show the semantic rules of \(\LL\) that are related to the choice
 operator~(\tchooseZ) and free terms in \cref{fig:logic-semantics}.\ly{Did we
   refer to any papers when we define this semantics? If so, cite them.} Note
-that this semantics is eager; furthermore, due to \(\tfail\), it is partial.
+that this semantics is eager, and due to \(\tfail\), it is partial.
 
 \begin{figure}[t] 
   \[
@@ -202,11 +202,10 @@ computation that costs \(0\). We use \tdo{x}{t_1}{t_2} to chain computations
 all of their costs. The \tfoldMZ{} operation employs an auxiliary construct
 \ttransposeZ, which converts terms of type $\TThunk{\texttt{(\(\TM{A}\))}}$ to terms of
 type $\TM{\texttt{(\(\TThunk{A}\))}}$. In addition, we define \tassertZ{}, which ensures
-that a given condition holds, causing the computation to fail if it does not.
+that a given condition holds, causing the computation to fail otherwise.
 
 We show all the typing rules related to these derived terms in
-\cref{fig:logic-derived}. Readers who are familiar with monads might
-recognize \texttt{M} as a writer monad~\cite{moggi-monad,wadler-monad}.
+\cref{fig:logic-derived}.
 
 \subsection{\TransCname{} and \TransDname{}}\label{subsec:clairvoyance-translation}\label{subsec:demand-translation}
 
@@ -265,18 +264,20 @@ We also define the \transDname{} \(\transD{t}{\Gamma}\) from \(\LB\) to \(\LL\)
 in \cref{fig:demand-translation}. In general, the \transDname{} operates on open
 terms with an arbitrary number of free variables, but we can build an intuition
 for how it works by considering terms with just one free variable. Let \(t(x)\)
-denote a ``function'' of \(x\) (\ie{} a term in \(\LL\) with one free variable
+denote a `function' of \(x\) (\ie{} a term in \(\LL\) with one free variable
 \(x\)). Intuitively, the demand semantics interpretation of \(t\) should be a
-``function'' \(t'(x, y)\) that takes, in addition to the original parameter
-\(x\), a new \emph{demand} parameter \(y\) representing ``how much'' of \(t(x)\)
-will ultimately be needed; and it should compute ``how much'' of \(x\) is needed
+`function' \(t'(x, y)\) that takes, in addition to the original parameter
+\(x\), a new \emph{demand} parameter \(y\) representing `how much' of \(t(x)\)
+will ultimately be needed, and it should compute `how much' of \(x\) is needed
 in order to produce \(y\). From this specification, we can see that \(t'(x, y)\)
-acts sort of like an \emph{inverse} of \(t\) in the parameter \(y\). In general,
+acts sort of like an \emph{inverse} of \(t(x)\) in the parameter \(y\), in that it uses the \emph{output} of \(t(x)\) to compute `how much' of the \emph{input} it used.
+
+In general,
 any term \(t(x)\) has a canonical inverse term \(t^{-1}(y)\) given by
 \[
   t^{-1}(y) = \tlet{x}{\tfree{A}}{\tassert{\teq{t(x)}{y}}{x}} .
 \]
-But \(t'(x, y)\) cannot produce just any value inverse to \(y\):
+However, \(t'(x, y)\) cannot produce just any value inverse to \(y\):
 it must produce one that is less defined than \(x\). We add this as a
 constraint:
 \[
@@ -288,9 +289,9 @@ constraint:
   \end{array}
 \]
 This is most of the way to the \transDname{}. The missing piece is that, being a
-\emph{translation}, the \transDname{} must take terms in \(\LB\) to terms in
+\emph{translation}, the \transDname{} must turn terms in \(\LB\) into terms in
 \(\LL\). We could achieve this by composing \(t'\) with some previously-defined
-translation; and, as we show in \cref{sec:equiv}, the \transCname{} is exactly
+translation. As we show in \cref{sec:equiv}, the \transCname{} is exactly
 the translation that we need. After adjusting for the fact that the
 \transCname{} produces terms of type \(\TMZ\), we arrive at the single-variable
 case of the \transDname{}:

@@ -283,8 +283,7 @@ constraint:
 \[
   \begin{array}{rcl}
     t'(x, y) & = & \tlet{x'}{\tfree{A}}{\tassert{\tle{x'}{x}}{\relax}} \\
-             &   & \tassert{\teq{t(x')}{y}}{\relax} \\
-             &   & x' .
+             &   & \tassert{\teq{t(x')}{y}}{x'} .
   \end{array}
 \]
 This is most of the way to the \transDname{}. The missing piece is that, being a

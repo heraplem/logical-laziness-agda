@@ -368,7 +368,7 @@ pure Undefined ? fmap Thunk (takeC n' xsT')
 \end{lstlisting}
 That is, we use Curry's nondeterministic choice operator \cdc{?} to either skip the evaluation and
 return \cdc{Undefined} (\ie~$\bot$), or to evaluate the recursive call and wrap the result inside a
-\cdc{Thunk} constructor.
+\cdc{Thunk} constructor. (Note that the target language for this translation does not have to be a functional logic language specifically; it merely needs to be able to express nondeterminism.)
 
 The \cdc{takeD} function is implemented in terms of \cdc{takeC}. The core of
 \cdc{takeD} is its guard condition: \cdc{takeC n xsTD =:= Tick (ysD, c)}, where

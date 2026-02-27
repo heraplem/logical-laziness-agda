@@ -282,8 +282,7 @@ it must produce one that is less defined than \(x\). We add this as a
 constraint:
 \[
   \begin{array}{rcl}
-    t'(x, y) & = & \tlet{x'}{\tfree{A}}{\relax} \\
-             &   & \tassert{\tle{x'}{x}}{\relax} \\
+    t'(x, y) & = & \tlet{x'}{\tfree{A}}{\tassert{\tle{x'}{x}}{\relax}} \\
              &   & \tassert{\teq{t(x')}{y}}{\relax} \\
              &   & x' .
   \end{array}
@@ -297,10 +296,8 @@ the translation that we need. After adjusting for the fact that the
 case of the \transDname{}:
 \[
   \begin{array}{rcl}
-    \transD{t}{\relax}(x, y) & = & \tlet{x'}{\tfree{A}}{\relax} \\
-                             &   & \tassert{\tle{x'}{x}}{\relax} \\
-                             &   & \tlet{z}{\transC{t}(x')}{\relax} \\
-                             &   & \tassert{\teq{\tfst{z}}{y}}{\relax} \\
+    \transD{t}{\relax}(x, y) & = & \tlet{x'}{\tfree{A}}{\tassert{\tle{x'}{x}}{\relax}} \\
+                             &   & \tlet{z}{\transC{t}(x')}{\tassert{\teq{\tfst{z}}{y}}{\relax}} \\
                              &   & \tpair{x'}{\tsnd{z}} .
   \end{array}
 \]

@@ -1,11 +1,13 @@
 \section{Correctness}\label{sec:equiv}
 
-In this section, we prove that our \transCname{} and \transDname{} correctly
+In this section, we prove that \transCname{} and \transDname{} correctly
 implement clairvoyance semantics and demand semantics, respectively. All of our
-proofs are mechanized in the proof assistant
-Agda~\cite{DBLP:conf/tldi/Norell09}. All formalizations, theorems, and proofs
-can be found in our publicly-available artifact.\ly{TODO: Make sure we have
-  the code materials ready for submission as well.}
+proofs are mechanized in the Agda proof
+assistant~\cite{DBLP:conf/tldi/Norell09}. Our proofs rely on the equivalence
+between clairvoyance and demand semantics proven by Xia \textit{et
+  al.}~\cite[Section 3.3]{demand-semantics}, which we axiomatize in our
+formalization. All formalizations, theorems, and proofs can be found in our
+publicly-available artifact.
 
 % In this section, we define clairvoyance and demand semantics on \(\LB\) and
 % establish the equivalence of our translation with respect to both semantics,
@@ -55,13 +57,12 @@ Clairvoyance semantics is a big-step operational semantics with the judgment
 schema \(\EC{\gamma}{t}{c}{v}\). Intuitively, \(c\) is the number of
 \(\ttickZ\)s encountered while evaluating \(t\) to \(v\). Our semantics is
 similar to the original clairvoyance semantics of Hackett and
-Hutton~\cite{clairvoyant}; e.g., like their semantics, ours is based on
-improvement theory~\cite{moran1999}. The most significant difference is that,
-unlike Hackett and Hutton's calculus, our calculus has explicit \(\tlazyZ\) and
-\(\tforceZ\) operators. Therefore, whereas Hackett and Hutton introduce
-nondeterminism at \(\tletZ\) bindings, we must introduce it at \(\tlazyZ\)
-terms. Readers can find detailed definitions of our clairvoyance semantics in
-\cref{apx:clairvoyance-semantics} and in our artifact.
+Hutton~\cite{clairvoyant}. Like their semantics, ours is based on improvement
+theory~\cite{moran1999}. The most significant difference is that our calculus
+has explicit \(\tlazyZ\) and \(\tforceZ\) operators. Therefore, whereas Hackett
+and Hutton introduce nondeterminism at \(\tletZ\) bindings, we must introduce it
+at \(\tlazyZ\) terms. Readers can find detailed definitions of our clairvoyance
+semantics in \cref{apx:clairvoyance-semantics} and in our artifact.
 % when evaluating \( \tlet{x}{t_1}{t_2} \) in their semantics, either \( x \) is
 % either immediately bound to the result of evaluating \( t_1 \), or it s not
 % bound at all.

@@ -358,7 +358,7 @@ recursive call and wrap the result inside a \cdc{Thunk} constructor.
 The \cdc{takeD} function is implemented in terms of \cdc{takeC}. The core of
 \cdc{takeD} is its guard condition: \cdc{takeC n xsTD =:= Tick (ysD, c)}, where
 \cdc{n} and \cdc{ysD} are \cdc{takeD}'s arguments, and \cdc{xsTD} and \cdc{c}
-are free variables~(also known as logic variables). In this way, \cdc{takeD}
+are logic variables~(also known as free variables). In this way, \cdc{takeD}
 computes the input \cdc{xsTD} and parts of the output \cdc{c} of \cdc{takeC},
 given the rest of its output \cdc{ysD}. Put differently, \cdc{takeD} is an
 \emph{inversion} of \cdc{takeC}. In addition, we require \cdc{xsTD} to be an

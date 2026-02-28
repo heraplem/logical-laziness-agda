@@ -342,12 +342,13 @@ result of a \transCname{}, while \cdc{takeD} is the result of a \transDname{}.
 
 The \cdc{takeC} function takes an \cdc{Int} and a \cdc{T (List a)}. The \cdc{T}
 datatype represents a value that could be $\bot$~(represented by
-\cdc{Undefined}). \cdc{List a} is the approximation of \cdh{[a]}. The function
-returns a new \cdc{List a} inside a \cdc{Tick} monad, which encodes the
-computation cost associated with the returned \cdc{List a}. The function works
-similarly to \cdh{take} for the most part.\ly{TODO: explain \cdc{fcase} and
-  \cdc{=:=}.} The key to implementing clairvoyance semantics is the recursive
-call \cdc{thunk (takeC n' xsT')}, which unfolds to:
+\cdc{Undefined}). \cdc{List a} is the approximation of \cdh{[a]}: \cdc{Nil} is
+the empty list, and the \cdc{:~} operator is the cons operator on \cdc{List a}.
+The function returns a new \cdc{List a} inside a \cdc{Tick} monad, which encodes
+the computation cost associated with the returned \cdc{List a}. The function
+works similarly to \cdh{take} for the most part.\ly{TODO: explain \cdc{fcase}
+  and \cdc{=:=}.} The key to implementing clairvoyance semantics is the
+recursive call \cdc{thunk (takeC n' xsT')}, which unfolds to:
 \begin{lstlisting}[language=Curry]
 pure Undefined ? fmap Thunk (takeC n' xsT')
 \end{lstlisting}

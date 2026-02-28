@@ -70,7 +70,9 @@ approximates its right-hand operand. The other method, \cdc{approx},
 nondeterministically returns a value that approximates its argument. We include
 a default implementation of \cdc{approx} using free variables, but a specialized
 implementation can be much faster. The \cdc{Approx} typeclass depends on the
-\cdc{Data} typeclass, which is required for free variables. The \cdc{List} type models lazy lists: \cdc{Nil} is the empty list, and the \cdc{:~} operator produces a new list by adding an element to the front of a (thunked) list.
+\cdc{Data} typeclass, which is required for free variables. The \cdc{List} type
+models lazy lists: \cdc{Nil} is the empty list, and the \cdc{:~} operator
+produces a new list by adding an element to the front of a (thunked) list.
 
 The \cdc{Tick} datatype is a product type which uses an \cdc{Int} to represent
 the computation cost associated with its value. It is essentially a writer

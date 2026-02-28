@@ -17,4 +17,5 @@
 - Mention that it is specifically the *performance* of a lazily-evaluated term that is inherently stateful.
 - Mention that the logical clairvoyance translation can work in any setting with nondeterminism.
 - Ensure that "semantics" is singular in the intro.
-- Explain the `:~` operator in the conclusion.
+- Explain the `:~` operator in the introduction.
+- Fix several references.

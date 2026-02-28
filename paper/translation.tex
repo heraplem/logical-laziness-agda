@@ -231,7 +231,10 @@ inside a \tresultZ. When the original term is \(\tforce{t}\), we first evaluate
 \(\tresult{z_2}\), then we return \(z_2\); otherwise, we \tfail. Note that
 \tfail{} only terminates the current computation branch, so any branches where
 \(z_1\) evaluates to a \tresultZ{} will continue. To \ttickZ{} a computation, we
-simply run it and increment its accumulated cost by \(1\).
+simply run it and increment its accumulated cost by \(1\). This translation
+correctly models sharing---a feature that typically poses a challenge to cost
+analysis---because the result term in \(\LB\) eagerly evaluates each value only
+once in every nondeterministic branch.
 
 \begin{figure}[t]
   \TransCname:
@@ -319,8 +322,7 @@ original term in \(\LB\):
   If \( \TB{\Gamma}{t}{A} \), then \( \TL{\Gamma, x : A}{\transD{t}{\Gamma}}{\TM{\verts{\Gamma}}} \).
 \end{theorem}
 The operation \( \verts{\cdot} \) turns typing contexts into product types. Both
-theorems are formalized and proven in Agda, which is included in our
-publicly-available artifact.
+theorems are formalized and proven in Agda.
 % \[
 %   \verts{x_1 : A_1, \ldots, x_n : A_1} = \TProd{A_1}{\TProd{\cdots}{A_n}} ,
 % \]

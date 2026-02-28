@@ -7,7 +7,8 @@
 - Cut "we do not need to model the natural semantics of language B".
 - Cut some of the explanation of approximation values.
 - Cut the formal statements of the cost existence and cost minimality theorems, instead merely citing them at the point where they are used.
-- Fix artifact URL.
+- Fix artifact project repo name
+- Update the artifact URL to use Zenodo DOI
 - Fix margin overruns.
 - Cut most of the explanation of Curry's search trees.
 - Cut the corresponding explanation in the "Limitations" section. (I don't like doing this, but the explanation in the previous section is now so brief that it makes no sense to use up so much space here.)
